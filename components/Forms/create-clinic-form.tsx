@@ -14,18 +14,9 @@ import { SelectItem } from "../ui/select";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import SubmitButton from "../submit-button";
+import { daysOfWeek } from "@/constants/data";
 
 type PetClinicFormValue = z.infer<typeof CreatePetClinicSchema>;
-
-const daysOfWeek = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 
 export default function CreatePetClinicForm() {
   const { toast } = useToast();
@@ -34,7 +25,7 @@ export default function CreatePetClinicForm() {
     { dow: "", startTime: "", endTime: "" },
   ]);
   const [treatments, setTreatments] = useState([""]);
-  const [tools, setTools] = useState([]);
+  const [tools, setTools] = useState([""]);
 
   const router = useRouter();
   const form = useForm<PetClinicFormValue>({
@@ -53,15 +44,15 @@ export default function CreatePetClinicForm() {
     setTreatments([...treatments, "index"]);
   };
 
-  const removeTreatment = (index: number) => {
-    setTreatments(treatments.filter((_, i) => i !== index));
-  };
-
-  const addTool = () => {
-    setTreatments([...treatments, ""]);
+  const addTool = (index: number) => {
+    setTools([...tools, "index"]);
   };
 
   const removeTool = (index: number) => {
+    setTools(tools.filter((_, i) => i !== index));
+  };
+
+  const removeTreatment = (index: number) => {
     setTreatments(treatments.filter((_, i) => i !== index));
   };
 
@@ -242,6 +233,7 @@ export default function CreatePetClinicForm() {
                   />
                 )}
               </div>
+
               <div className="flex md:flex-row xl:flex-row gap-6 items-center">
                 <Controller
                   control={form.control}
@@ -249,19 +241,11 @@ export default function CreatePetClinicForm() {
                   render={({ field }) => (
                     <CustomFormField
                       control={form.control}
-                      fieldType={FormFieldType.SELECT}
+                      fieldType={FormFieldType.INPUT}
                       placeholder="Choose Tools"
                       label="Tools"
                       {...field}
-                    >
-                      {tools.map((tool, i) => (
-                        <SelectItem key={tool + i} value={tool}>
-                          <div className="flex cursor-pointer items-center gap-2">
-                            <p>{tool}</p>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </CustomFormField>
+                    ></CustomFormField>
                   )}
                 />
                 <CirclePlus
@@ -269,6 +253,8 @@ export default function CreatePetClinicForm() {
                   className="h-5 w-5 mt-7 hover:cursor-pointer"
                   onClick={addTool}
                 />
+
+                {/* Tools */}
               </div>
             </div>
 

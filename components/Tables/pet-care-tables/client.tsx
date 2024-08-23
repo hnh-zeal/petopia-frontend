@@ -7,26 +7,7 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-
-async function fetServices(page: number, pageSize: number) {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/care-services?page=${page}&pageSize=${pageSize}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch services");
-  }
-
-  const data = await response.json();
-  return data;
-}
+import { fetServices } from "@/pages/api/api";
 
 export const CareServicesClient = () => {
   const router = useRouter();

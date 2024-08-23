@@ -7,26 +7,7 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-
-async function fetchPetClinics(page: number, pageSize: number) {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics?page=${page}&pageSize=${pageSize}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
-  const data = await response.json();
-  return data;
-}
+import { fetchPetClinics } from "@/pages/api/api";
 
 export const PetClinicClient = () => {
   const router = useRouter();

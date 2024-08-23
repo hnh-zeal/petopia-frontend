@@ -12,23 +12,32 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateCafeRoomSchema } from "@/validations/formValidation";
 import { useState } from "react";
-import { createCafeRoom } from "@/pages/api/api";
+import { updateCafeRoomByID } from "@/pages/api/api";
 import { ScrollArea } from "../ui/scroll-area";
 
 type ServiceFormValue = z.infer<typeof CreateCafeRoomSchema>;
 
-export default function CreateCafeRoomForm() {
+export default function EditCafeRoomForm({ cafeRoom }: any) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   const form = useForm<ServiceFormValue>({
     resolver: zodResolver(CreateCafeRoomSchema),
+    defaultValues: {
+      name: cafeRoom?.name || "",
+      roomNo: cafeRoom?.roomNo || "",
+      price: cafeRoom?.price,
+      roomType: cafeRoom?.roomType || "",
+      // facilities: cafeRoom?.facilities || "",
+      description: cafeRoom?.description || "",
+    },
   });
 
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await createCafeRoom(formValues);
+      const data = await updateCafeRoomByID(cafeRoom.id, formValues);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -53,7 +62,7 @@ export default function CreateCafeRoomForm() {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Create Pet Cafe Room" />
+        <Heading title="Update Pet Cafe Room" />
       </div>
       <Separator />
       <ScrollArea className="h-[calc(100vh-220px)] px-4">
@@ -130,7 +139,7 @@ export default function CreateCafeRoomForm() {
                   Reset
                 </Button>
                 <SubmitButton isLoading={loading} className="ml-auto w-full">
-                  Create
+                  Update
                 </SubmitButton>
               </div>
             </div>

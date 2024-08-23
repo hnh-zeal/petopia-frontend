@@ -3,7 +3,6 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { UserClient } from "@/components/Tables/user-tables/client";
 import { Toaster } from "@/components/ui/toaster";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },

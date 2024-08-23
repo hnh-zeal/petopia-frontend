@@ -19,6 +19,7 @@ import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { motion } from "framer-motion";
 import { fetchPetClinics } from "@/pages/api/api";
+import { daysOfWeek } from "@/constants/data";
 
 const steps = [
   { id: "Step 1", name: "Personal Information" },
@@ -56,6 +57,9 @@ export default function CreateDoctorForm() {
   ]);
   const [educations, setEducations] = useState([
     { year: "", name: "", location: "" },
+  ]);
+  const [schedule, setSchedule] = useState([
+    { dayOfWeek: "", startTime: "", endTime: "" },
   ]);
 
   const processForm: SubmitHandler<DoctorFormValue> = (data) => {
@@ -99,6 +103,14 @@ export default function CreateDoctorForm() {
     setEducations(educations.filter((_, i) => i !== index));
   };
 
+  const addSchedule = () => {
+    setSchedule([...schedule, { dayOfWeek: "", startTime: "", endTime: "" }]);
+  };
+
+  const removeSchedule = (index: number) => {
+    setSchedule(schedule.filter((_, i) => i !== index));
+  };
+
   useEffect(() => {
     const getPetClinics = async () => {
       setLoading(true);
@@ -121,8 +133,9 @@ export default function CreateDoctorForm() {
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
     try {
-      // Call API
+      // const schedule =
       const formData = {
+        // schedule: {}
         ...formValues,
         ...{ clinicId: Number(formValues.clinicId) },
       };
@@ -438,14 +451,84 @@ export default function CreateDoctorForm() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
-                <>
-                  <h2 className="text-base font-semibold leading-7 text-gray-900">
-                    Complete
-                  </h2>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
-                    Create the doctor.
-                  </p>
-                </>
+                <div className="flex flex-col gap-6">
+                  <Card className="flex flex-col gap-6 p-5">
+                    <div className="flex md:flex-row xl:flex-row gap-6 justify-between items-center ">
+                      <h3 className="font-bold">Add Schedule</h3>
+                    </div>
+                    <div>
+                      {schedule.map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex md:flex-row xl:flex-row gap-6 space-y-5 items-center"
+                        >
+                          <Controller
+                            control={form.control}
+                            name={`schedule.${index}.dayOfWeek`}
+                            render={({ field }) => (
+                              <CustomFormField
+                                fieldType={FormFieldType.SELECT}
+                                control={form.control}
+                                placeholder="Choose days of week"
+                                label="Days of week"
+                                {...field}
+                              >
+                                {daysOfWeek.map((day, i) => (
+                                  <SelectItem key={day + i} value={day}>
+                                    <div className="flex cursor-pointer items-center gap-2">
+                                      <p>{day}</p>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </CustomFormField>
+                            )}
+                          />
+
+                          <Controller
+                            control={form.control}
+                            name={`schedule.${index}.startTime`}
+                            render={({ field }) => (
+                              <CustomFormField
+                                control={form.control}
+                                fieldType={FormFieldType.TIME}
+                                placeholder="Start Time"
+                                label="Start Time"
+                                {...field}
+                              />
+                            )}
+                          />
+
+                          <Controller
+                            control={form.control}
+                            name={`schedule.${index}.endTime`}
+                            render={({ field }) => (
+                              <CustomFormField
+                                control={form.control}
+                                fieldType={FormFieldType.TIME}
+                                placeholder="End Time"
+                                label="End Time"
+                                {...field}
+                              />
+                            )}
+                          />
+
+                          {schedule.length > 1 && (
+                            <Trash2
+                              type="button"
+                              className="h-5 w-5 hover:cursor-pointer"
+                              onClick={() => removeSchedule(index)}
+                            />
+                          )}
+                          <CirclePlus
+                            type="button"
+                            className="h-5 w-5 hover:cursor-pointer"
+                            onClick={addSchedule}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
               </motion.div>
             )}
 

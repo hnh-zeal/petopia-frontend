@@ -17,7 +17,7 @@ import { PetClinic } from "@/constants/data";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
-import { fetchDoctorByID } from "@/pages/api/api";
+import { fetchDoctorByID, updateDoctorByID } from "@/pages/api/api";
 
 async function fetchPetClinics() {
   // Call API
@@ -125,24 +125,12 @@ export default function EditDoctorForm({ id }: EditDoctorFormProps) {
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
     try {
-      // Call API
       const formData = {
         ...formValues,
         ...{ clinicId: Number(formValues.clinicId) },
       };
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/doctors/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      const data = await response.json();
+      const data = await updateDoctorByID(id, formData);
       if (data.error) {
         toast({
           variant: "destructive",

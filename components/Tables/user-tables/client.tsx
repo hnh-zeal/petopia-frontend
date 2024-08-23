@@ -7,11 +7,9 @@ import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchUsers } from "@/pages/api/api";
 import { adminAuthState } from "@/states/auth";
-import { useRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 
 export const UserClient = () => {
-  const router = useRouter();
-
   const [usersData, setUsersData] = useState({
     users: [],
     count: 0,
@@ -21,7 +19,7 @@ export const UserClient = () => {
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [auth, setAuth] = useRecoilState(adminAuthState);
+  const auth = useRecoilValue(adminAuthState);
 
   useEffect(() => {
     const getUsers = async () => {

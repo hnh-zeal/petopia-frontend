@@ -68,7 +68,12 @@ export const CreateServiceSchema = z.object({
 
 export const CreateCafeRoomSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
+  roomNo: z.string(),
+  price: z.string(),
+  roomType: z.string(),
   description: z.string(),
+  // facilities: z.string(),
+  // menus: z.string(),
 });
 
 export const CreateCafePetSchema = z.object({
@@ -116,12 +121,19 @@ const educationSchema = z.object({
   location: z.string(),
 });
 
+const scheduleSchema = z.object({
+  dayOfWeek: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+});
+
 export const CreateDoctorSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   email: z.string().email({ message: "Enter a valid email address" }),
   clinicId: z.string().min(1, { message: "Pet Center is required" }),
   phoneNumber: z.string(),
   about: z.string(),
+  schedule: z.array(scheduleSchema),
   work_experiences: z.array(experienceSchema),
   education: z.array(educationSchema),
   // specialties: z.array(z.string()),

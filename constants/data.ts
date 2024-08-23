@@ -1,5 +1,15 @@
 import { NavItem } from "@/types";
 
+export const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
 export type User = {
   id: number;
   name: string;

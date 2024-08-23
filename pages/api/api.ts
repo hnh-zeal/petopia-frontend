@@ -114,9 +114,9 @@ export async function fetchUsers(
   pageSize?: number
 ) {
   const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
-  const sortParams = "" || `&sort=[{"orderBy":"name", "order":"desc"}]`;
+  // const sortParams = "" || `&sort=[{"orderBy":"name", "order":"desc"}]`;
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/users${queryUrl}${sortParams}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/users${queryUrl}`,
     {
       method: "GET",
       headers: {
@@ -188,7 +188,11 @@ export async function toggleActiveUser(id: number) {
   return data;
 }
 
-export async function fetchDoctors(page?: number, pageSize?: number) {
+export async function fetchDoctors(
+  page?: number,
+  pageSize?: number,
+  adminToken?: string
+) {
   const queryUrl = `?page=${page}&pageSize=${pageSize}`;
 
   const response = await fetch(
@@ -197,6 +201,7 @@ export async function fetchDoctors(page?: number, pageSize?: number) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
       },
     }
   );
@@ -228,6 +233,25 @@ export async function fetchDoctorByID(id: number) {
   return data;
 }
 
+export async function updateDoctorByID(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/doctors/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch Pet Clinics");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 export async function fetchPetClinics(page?: number, pageSize?: number) {
   const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
 
@@ -246,6 +270,50 @@ export async function fetchPetClinics(page?: number, pageSize?: number) {
   }
 
   return await response.json();
+}
+
+export async function fetchPetSitters(
+  page?: number,
+  pageSize?: number,
+  token?: string
+) {
+  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${token}`
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Pet Clinics");
+  }
+
+  return await response.json();
+}
+
+export async function fetServices(page: number, pageSize: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-services?page=${page}&pageSize=${pageSize}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch services");
+  }
+
+  const data = await response.json();
+  return data;
 }
 
 export async function fetchCafePets(page?: number, pageSize?: number) {
@@ -267,9 +335,9 @@ export async function fetchCafePets(page?: number, pageSize?: number) {
 }
 
 export async function fetchCafeRooms(
-  adminToken?: string,
   page?: number,
-  pageSize?: number
+  pageSize?: number,
+  adminToken?: string
 ) {
   const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
   const response = await fetch(
@@ -282,6 +350,51 @@ export async function fetchCafeRooms(
       },
     }
   );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchCafeRoomByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
+}
+
+export async function updateCafeRoomByID(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/rooms/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+  const data = await response.json();
+  return data;
+}
+
+export async function createCafeRoom(formValues: any, adminToken?: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/rooms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify(formValues),
+  });
 
   const data = await response.json();
   return data;

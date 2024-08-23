@@ -7,31 +7,12 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-
-async function fetchDoctors(page: number, pageSize: number) {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters?page=${page}&pageSize=${pageSize}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch petSitters");
-  }
-
-  const data = await response.json();
-  return data;
-}
+import { fetchPetSitters } from "@/pages/api/api";
 
 export const PetSitterClient = () => {
   const router = useRouter();
 
-  const [petSittersData, setDoctorsData] = useState({
+  const [petSittersData, setPetSittersData] = useState({
     petSitters: [],
     count: 0,
     totalPages: 0,
@@ -45,8 +26,11 @@ export const PetSitterClient = () => {
     const getUsers = async () => {
       setLoading(true);
       try {
-        const data = await fetchDoctors(currentPage, petSittersData.pageSize);
-        setDoctorsData((prevState) => ({
+        const data = await fetchPetSitters(
+          currentPage,
+          petSittersData.pageSize
+        );
+        setPetSittersData((prevState) => ({
           ...prevState,
           ...data,
         }));

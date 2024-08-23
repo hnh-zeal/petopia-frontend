@@ -47,72 +47,70 @@ export default function ForgotPassword() {
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-60px)] px-2">
-      <section className="bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
-          <div className="w-1/2 my-10 bg-white rounded-lg shadow dark:border sm:max-w-2xl dark:bg-gray-800 dark:border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Forgot Password
-              </h1>
-              <p className="text-sm text-muted-foreground ">
-                Enter your email to send OTP for resetting password.
-              </p>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex-1 space-y-12"
-                >
-                  <section className="space-y-6">
-                    <CustomFormField
-                      fieldType={FormFieldType.INPUT}
-                      control={form.control}
-                      name="email"
-                      label="Email address"
-                      placeholder="user@gmail.com"
-                      required={true}
-                    />
-                  </section>
+    <section className="bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
+        <div className="w-1/2 my-10 bg-white rounded-lg shadow dark:border sm:max-w-2xl dark:bg-gray-800 dark:border-gray-700">
+          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Forgot Password
+            </h1>
+            <p className="text-sm text-muted-foreground ">
+              Enter your email to send OTP for resetting password.
+            </p>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex-1 space-y-12"
+              >
+                <section className="space-y-6">
+                  <CustomFormField
+                    fieldType={FormFieldType.INPUT}
+                    control={form.control}
+                    name="email"
+                    label="Email address"
+                    placeholder="user@gmail.com"
+                    required={true}
+                  />
+                </section>
 
-                  <div className="flex flex-row justify-end space-x-4 w-full">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        router.push("/login");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="shad-primary-btn"
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center gap-4">
-                          <Image
-                            src="/assets/icons/loader.svg"
-                            alt="loader"
-                            width={24}
-                            height={24}
-                            className="animate-spin"
-                          />
-                          Loading...
-                        </div>
-                      ) : (
-                        <>Send Email</>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </div>
-            <div>
-              <Toaster />
-            </div>
+                <div className="flex flex-row justify-end space-x-4 w-full">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      router.push("/login");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="shad-primary-btn"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/assets/icons/loader.svg"
+                          alt="loader"
+                          width={24}
+                          height={24}
+                          className="animate-spin"
+                        />
+                        Loading...
+                      </div>
+                    ) : (
+                      <>Send Email</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+          <div>
+            <Toaster />
           </div>
         </div>
-      </section>
-    </ScrollArea>
+      </div>
+    </section>
   );
 }
