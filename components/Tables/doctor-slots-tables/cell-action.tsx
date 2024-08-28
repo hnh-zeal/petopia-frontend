@@ -8,13 +8,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Doctor } from "@/constants/data";
+import { AppointmentSlot } from "@/constants/data";
 import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: Doctor;
+  data: AppointmentSlot;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {

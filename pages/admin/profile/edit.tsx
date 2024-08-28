@@ -1,5 +1,5 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import AdminProfile from "@/components/Layout/adminProfile";
+import AdminProfile from "@/components/Layout/Profile/adminProfile";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { ScrollArea } from "@radix-ui/react-scroll-area";

@@ -1,3 +1,5 @@
+import qs from "querystring";
+
 export async function adminLogin(formValues: any) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/auth/admin-login`,
@@ -193,7 +195,7 @@ export async function fetchDoctors(
   pageSize?: number,
   adminToken?: string
 ) {
-  const queryUrl = `?page=${page}&pageSize=${pageSize}`;
+  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/doctors${queryUrl}`,
@@ -226,7 +228,7 @@ export async function fetchDoctorByID(id: number) {
   );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
+    throw new Error("Failed to fetch Doctor");
   }
 
   const data = await response.json();
@@ -270,6 +272,53 @@ export async function fetchPetClinics(page?: number, pageSize?: number) {
   }
 
   return await response.json();
+}
+
+export async function createDateSchedule(formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/appointment-slots`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchAppointmentSlots(
+  page?: number,
+  pageSize?: number,
+  doctorId?: number,
+  date?: Date
+) {
+  const query = {
+    ...(doctorId && { doctorId }),
+    ...(date && { date: date.toISOString() }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/appointment-slots${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
 }
 
 export async function fetchPetSitters(

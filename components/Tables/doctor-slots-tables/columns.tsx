@@ -1,13 +1,13 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { Doctor } from "@/constants/data";
+import { AppointmentSlot } from "@/constants/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
-import { truncate } from "@/utils/truncate";
+import { formatDate } from "date-fns";
 
-export const columns: ColumnDef<Doctor>[] = [
+export const columns: ColumnDef<AppointmentSlot>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -32,44 +32,41 @@ export const columns: ColumnDef<Doctor>[] = [
     header: ({ column }) => <SortColumn column={column} title="Id" />,
   },
   {
-    accessorKey: "name",
-    header: ({ column }) => <SortColumn column={column} title="Name" />,
-  },
-  {
-    accessorKey: "email",
-    header: ({ column }) => <SortColumn column={column} title="Email" />,
-  },
-  {
-    accessorKey: "phoneNumber",
-    header: ({ column }) => <SortColumn column={column} title="Phone Number" />,
-  },
-  {
-    accessorFn: (row) => row.clinic.name,
-    id: "clinic.name",
-    header: ({ column }) => <SortColumn column={column} title="Pet Clinic" />,
-  },
-  {
-    accessorKey: "about",
-    header: ({ column }) => <SortColumn column={column} title="About" />,
+    accessorKey: "date",
+    header: ({ column }) => <SortColumn column={column} title="Date" />,
     cell: ({ row }) => (
-      <span className="text-pretty">{truncate(row.original.about)}</span>
+      <span>{formatDate(row.original.date, "dd MMMM, yyyy")}</span>
     ),
   },
   {
-    accessorKey: "isActive",
+    accessorKey: "startTime",
+    header: ({ column }) => <SortColumn column={column} title="Start Time" />,
+    cell: ({ row }) => (
+      <span>{formatDate(row.original.startTime, "HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "endTime",
+    header: ({ column }) => <SortColumn column={column} title="End Time" />,
+    cell: ({ row }) => (
+      <span>{formatDate(row.original.endTime, "HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "status",
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.isActive ? (
-          <Badge className="bg-green-500">Active</Badge>
+        {row.original?.status ? (
+          <Badge className="bg-green-500">Available</Badge>
         ) : (
-          <Badge variant="destructive">Inactive</Badge>
+          <Badge variant="destructive">Not Available</Badge>
         )}
       </>
     ),
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <CellAction data={row.original} />,
-  },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <CellAction data={row.original} />,
+  // },
 ];

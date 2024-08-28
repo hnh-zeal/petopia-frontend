@@ -4,7 +4,6 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { useRouter } from "next/router";
 import { fetchCafeRoomByID, fetchCafeRooms } from "@/pages/api/api";
 
 import type {

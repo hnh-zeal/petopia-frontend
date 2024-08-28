@@ -3,10 +3,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
 import { CareService } from "@/constants/data";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
+import { truncate } from "@/utils/truncate";
 
 export const columns: ColumnDef<CareService>[] = [
   {
@@ -39,6 +38,11 @@ export const columns: ColumnDef<CareService>[] = [
   {
     accessorKey: "description",
     header: ({ column }) => <SortColumn column={column} title="Description" />,
+    cell: ({ row }) => (
+      <span className="text-pretty">
+        {truncate(row.original.description, 300)}
+      </span>
+    ),
   },
   {
     accessorKey: "isActive",

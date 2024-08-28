@@ -169,3 +169,9 @@ export function getAppointmentSchema(type: string) {
       return ScheduleAppointmentSchema;
   }
 }
+
+export const CreateSlotSchema = z.object({
+  doctorId: z.number(),
+  startDate: z.date(),
+  endDate: z.date(),
+});

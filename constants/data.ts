@@ -10,6 +10,24 @@ export const daysOfWeek = [
   "Sunday",
 ];
 
+export type Schedule = {
+  id: number;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+};
+
+export type AppointmentSlot = {
+  id: number;
+  dow: string;
+  dayOfWeek: number;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  status: boolean;
+};
+
 export type User = {
   id: number;
   name: string;
@@ -27,6 +45,7 @@ export type Doctor = {
   name: string;
   email: string;
   phoneNumber: string;
+  about: string;
   clinic: PetClinic;
   verified: boolean;
   isActive: string;

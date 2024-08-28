@@ -1,21 +1,13 @@
 "use client";
-import { Heading } from "../ui/heading";
+import { Heading } from "../../ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "../../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ScrollArea } from "../ui/scroll-area";
-import { useRecoilState } from "recoil";
-import { adminLoggedInData } from "@/types";
+import { Button } from "../../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { ScrollArea } from "../../ui/scroll-area";
+import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { formatDate } from "date-fns";
 import { useRouter } from "next/router";
@@ -23,36 +15,7 @@ import { useRouter } from "next/router";
 export default function AdminProfile() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [auth, setAuth] = useRecoilState<adminLoggedInData | undefined>(
-    adminAuthState
-  );
-  const [adminData, setAdminData] = useState({
-    name: "",
-    email: "",
-    lastLoginDate: new Date(),
-    profileUrl: "",
-    about: "",
-    isActive: true,
-  });
-
-  useEffect(() => {
-    const getAdmin = async () => {
-      setLoading(true);
-      try {
-        const admin = auth?.admin;
-        setAdminData((prevState) => ({
-          ...prevState,
-          ...admin,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Admin", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getAdmin();
-  }, [auth]);
+  const auth = useRecoilValue(adminAuthState);
 
   return (
     <>
@@ -66,15 +29,18 @@ export default function AdminProfile() {
           <CardHeader>
             <div className="flex items-center space-x-3">
               <Avatar className="mr-4 h-20 w-20">
-                <AvatarImage src={adminData.profileUrl} alt="Profile Picture" />
+                <AvatarImage
+                  src={auth?.admin.profileUrl}
+                  alt="Profile Picture"
+                />
                 <AvatarFallback>Admin</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-xl font-bold">{adminData.name}</h2>
+                <h2 className="text-xl font-bold">{auth?.admin.name}</h2>
                 <p className="text-gray-600">
                   Last Login on{" "}
                   {formatDate(
-                    adminData.lastLoginDate ?? "",
+                    auth?.admin.lastLoginDate ?? "",
                     "dd MMM yyyy, HH:mm a"
                   )}
                 </p>
@@ -96,15 +62,15 @@ export default function AdminProfile() {
                 <div className="grid grid-cols-2 gap-4 my-4">
                   <div>
                     <p className="font-bold">Name</p>
-                    <p>{adminData?.name}</p>
+                    <p>{auth?.admin?.name}</p>
                   </div>
                   <div>
                     <p className="font-bold">Email</p>
-                    <p>{adminData?.email}</p>
+                    <p>{auth?.admin?.email}</p>
                   </div>
                   <div>
                     <p className="font-bold">Role</p>
-                    <p>{adminData.isActive || "09420888219"}</p>
+                    <p>{auth?.admin.isActive || "09420888219"}</p>
                   </div>
                   <div>
                     <p className="font-bold">Address</p>
@@ -114,7 +80,7 @@ export default function AdminProfile() {
                 <Separator />
                 <div className="my-4">
                   <h3 className="text-lg font-bold">About</h3>
-                  <p className="text-gray-600">{adminData.about}</p>
+                  <p className="text-gray-600">{auth?.admin.about}</p>
                 </div>
                 <Separator />
                 <div className="mt-4">
@@ -137,21 +103,21 @@ export default function AdminProfile() {
               <CardContent>
                 <div className="my-4">
                   <h3 className="text-lg font-bold">Permissions</h3>
-                  <p className="text-gray-600">{adminData.about}</p>
+                  <p className="text-gray-600">{auth?.admin.about}</p>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-4 my-4">
                   <div>
                     <p className="font-bold">Name</p>
-                    <p>{adminData?.name}</p>
+                    <p>{auth?.admin?.name}</p>
                   </div>
                   <div>
                     <p className="font-bold">Email</p>
-                    <p>{adminData?.email}</p>
+                    <p>{auth?.admin?.email}</p>
                   </div>
                   <div>
                     <p className="font-bold">Role</p>
-                    <p>{adminData.isActive || "09420888219"}</p>
+                    <p>{auth?.admin.isActive || "09420888219"}</p>
                   </div>
                   <div>
                     <p className="font-bold">Address</p>
@@ -179,21 +145,21 @@ export default function AdminProfile() {
               <CardContent>
                 <div className="my-4">
                   <h3 className="text-lg font-bold">Permissions</h3>
-                  <p className="text-gray-600">{adminData.about}</p>
+                  <p className="text-gray-600">{auth?.admin.about}</p>
                 </div>
                 <Separator />
                 <div className="grid grid-cols-2 gap-4 my-4">
                   <div>
                     <p className="font-bold">Name</p>
-                    <p>{adminData?.name}</p>
+                    <p>{auth?.admin?.name}</p>
                   </div>
                   <div>
                     <p className="font-bold">Email</p>
-                    <p>{adminData?.email}</p>
+                    <p>{auth?.admin?.email}</p>
                   </div>
                   <div>
                     <p className="font-bold">Role</p>
-                    <p>{adminData.isActive || "09420888219"}</p>
+                    <p>{auth?.admin.isActive || "09420888219"}</p>
                   </div>
                   <div>
                     <p className="font-bold">Address</p>
