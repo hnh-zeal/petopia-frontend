@@ -274,6 +274,24 @@ export async function fetchPetClinics(page?: number, pageSize?: number) {
   return await response.json();
 }
 
+export async function fetchPetClinicByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Pet Clinic");
+  }
+
+  return await response.json();
+}
+
 export async function createDateSchedule(formValues: any) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/appointment-slots`,

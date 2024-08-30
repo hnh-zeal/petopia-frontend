@@ -53,6 +53,7 @@ export type Doctor = {
 
 export type PetClinic = {
   id: number;
+  image?: string;
   name: string;
   contact: string;
   description: string;

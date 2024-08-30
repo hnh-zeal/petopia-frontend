@@ -13,6 +13,7 @@ import type {
   GetStaticPaths,
 } from "next";
 import EditDoctorForm from "@/components/Forms/edit-doctor-form";
+import { Doctor, PetClinicData } from "@/types/api";
 
 const breadcrumbItems = (doctor: any) => [
   { title: "Dashboard", link: "/admin/dashboard" },
@@ -25,8 +26,8 @@ export const getStaticProps = (async (context) => {
   const petClinics = await fetchPetClinics();
   return { props: { doctor, petClinics } };
 }) satisfies GetStaticProps<{
-  doctor: RoomsData;
-  petClinics: RoomsData;
+  doctor: Doctor;
+  petClinics: PetClinicData;
 }>;
 
 export const getStaticPaths = (async () => {

@@ -1,7 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchDoctorByID, fetchDoctors } from "@/pages/api/api";
 import React from "react";
 import type {
@@ -10,6 +9,7 @@ import type {
   GetStaticPaths,
 } from "next";
 import DoctorInfo from "@/components/Layout/Profile/DoctorInfo";
+import { RoomsData } from "@/types/api";
 
 const breadcrumbItems = (doctor: any) => [
   { title: "Dashboard", link: "/admin/dashboard" },

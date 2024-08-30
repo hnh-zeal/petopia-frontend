@@ -91,7 +91,7 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
         // Delete the file first
         if (doctor.profileUrl) {
           const key = doctor.profileUrl.split("/").pop();
-          const deleted = await deleteFile(key, auth?.accessToken as string);
+          await deleteFile(key, auth?.accessToken as string);
         }
 
         // Upload

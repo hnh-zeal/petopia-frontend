@@ -1,22 +1,23 @@
 import PetClinics from "@/components/Layout/Pet Clinic/PetClinics";
-import { fetchPetClinics } from "../api/api";
+import { fetchDoctors } from "../../api/api";
 
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { PetClinicData } from "@/types/api";
+import Doctors from "@/components/Layout/Pet Clinic/Doctors";
 
 export const getStaticProps = (async () => {
-  const clinicData = await fetchPetClinics();
-  return { props: { clinicData } };
+  const doctorsData = await fetchDoctors();
+  return { props: { doctorsData } };
 }) satisfies GetStaticProps<{
-  clinicData: PetClinicData;
+  doctorsData: PetClinicData;
 }>;
 
 export default function PetClinicPage({
-  clinicData,
+  doctorsData,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
-      <PetClinics clinicData={clinicData} />
+      <Doctors doctorsData={doctorsData} />
     </>
   );
 }
