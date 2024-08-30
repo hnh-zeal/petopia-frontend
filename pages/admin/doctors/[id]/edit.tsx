@@ -1,7 +1,11 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { fetchDoctorByID, fetchDoctors } from "@/pages/api/api";
+import {
+  fetchDoctorByID,
+  fetchDoctors,
+  fetchPetClinics,
+} from "@/pages/api/api";
 import React from "react";
 import type {
   InferGetStaticPropsType,
@@ -18,9 +22,11 @@ const breadcrumbItems = (doctor: any) => [
 
 export const getStaticProps = (async (context) => {
   const doctor = await fetchDoctorByID(Number(context.params?.id));
-  return { props: { doctor } };
+  const petClinics = await fetchPetClinics();
+  return { props: { doctor, petClinics } };
 }) satisfies GetStaticProps<{
   doctor: RoomsData;
+  petClinics: RoomsData;
 }>;
 
 export const getStaticPaths = (async () => {
@@ -38,6 +44,7 @@ export const getStaticPaths = (async () => {
 
 export default function DoctorDetails({
   doctor,
+  petClinics,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
@@ -47,7 +54,7 @@ export default function DoctorDetails({
         <main className="flex-1 overflow-hidden pt-16">
           <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
             <Breadcrumbs items={breadcrumbItems(doctor)} />
-            <EditDoctorForm id={doctor.id} />
+            <EditDoctorForm doctor={doctor} petClinics={petClinics} />
           </div>
         </main>
       </div>

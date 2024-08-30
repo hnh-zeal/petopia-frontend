@@ -6,8 +6,15 @@ import { useRouter } from "next/router";
 import { Toaster } from "@/components/ui/toaster";
 import { RecoilRoot } from "recoil";
 import Footer from "@/components/Layout/footer";
+import Head from "next/head";
+import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+  title: "Petopia",
+  description: "Learn more about us and what we do.",
+};
 
 export default function App({
   Component,
@@ -19,6 +26,10 @@ export default function App({
   return (
     <>
       <RecoilRoot>
+        <Head>
+          <title>Petopia - Your Pet Companion</title>
+          <link rel="icon" href="/logo.ico" sizes="any" />
+        </Head>
         {!isAdminRoute && Component.displayName !== "notFound" && (
           <main className={inter.className}>
             <Navbar />

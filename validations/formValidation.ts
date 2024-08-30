@@ -127,15 +127,32 @@ const scheduleSchema = z.object({
   endTime: z.string(),
 });
 
+const MAX_FILE_SIZE = 50000000000;
+const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+
 export const CreateDoctorSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   email: z.string().email({ message: "Enter a valid email address" }),
   clinicId: z.string().min(1, { message: "Pet Center is required" }),
-  phoneNumber: z.string(),
-  about: z.string(),
-  schedule: z.array(scheduleSchema),
-  work_experiences: z.array(experienceSchema),
-  education: z.array(educationSchema),
+  phoneNumber: z.string().optional(),
+  about: z.string().optional(),
+  schedule: z.array(scheduleSchema).optional(),
+  work_experiences: z.array(experienceSchema).optional(),
+  education: z.array(educationSchema).optional(),
+  profile: z
+    .instanceof(File)
+    .refine((file) => {
+      return ACCEPTED_IMAGE_TYPES.includes(file.type);
+    }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
+    .optional(),
+  // .refine((file) => {
+  //   file?.size < MAX_FILE_SIZE;
+  // }, `Max image size is 5MB.`)
   // specialties: z.array(z.string()),
   // languages: z.array(z.string()),
 });

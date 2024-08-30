@@ -468,7 +468,6 @@ export async function fetchCafePetByID(id: number) {
 }
 
 export async function updateCafePetByID(id: number, formValues: any) {
-  console.log(formValues);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/cafe-pets/${id}`,
     {
@@ -512,6 +511,57 @@ export async function fetchUserWithToken(token: string) {
     `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
     {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`${data.message}`);
+  }
+
+  return data;
+}
+
+export async function singleFileUpload(fileData: any, token: string) {
+  const formData = new FormData();
+  formData.append("file", fileData.file);
+  formData.append("isPublic", fileData.isPublic);
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/files/upload`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    }
+  );
+
+  // Check for JSON response
+  const contentType = response.headers.get("Content-Type");
+  if (contentType && contentType.includes("application/json")) {
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`${data.message}`);
+    }
+    return data;
+  } else {
+    // Handle non-JSON response
+    const text = await response.text();
+    throw new Error(`Unexpected response format: ${text}`);
+  }
+}
+
+export async function deleteFile(key: string, token: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/files/delete/${key}`,
+    {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,

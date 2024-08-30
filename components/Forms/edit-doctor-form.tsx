@@ -1,6 +1,14 @@
 "use client";
+import { useState, useRef, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -12,52 +20,38 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateDoctorSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { useEffect, useState } from "react";
 import { PetClinic } from "@/constants/data";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
-import { fetchDoctorByID, updateDoctorByID } from "@/pages/api/api";
-
-async function fetchPetClinics() {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
-  const data = await response.json();
-  return data;
-}
+import {
+  deleteFile,
+  singleFileUpload,
+  updateDoctorByID,
+} from "@/pages/api/api";
+import ProfilePictureUpload from "../Layout/profile-upload";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 type DoctorFormValue = z.infer<typeof CreateDoctorSchema>;
-interface EditDoctorFormProps {
-  id: number;
-}
 
-export default function EditDoctorForm({ id }: EditDoctorFormProps) {
+export default function EditDoctorForm({ doctor, petClinics }: any) {
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useRecoilValue(adminAuthState);
   const [loading, setLoading] = useState(false);
-  const [doctor, setDoctor] = useState({});
-  const [petClinicsData, setPetClinicsData] = useState({
-    clinics: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
+
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreateDoctorSchema),
+    defaultValues: {
+      name: doctor.name,
+      email: doctor.email,
+      profile: doctor.profileUrl,
+      phoneNumber: doctor.phoneNumber,
+      about: doctor.about,
+      work_experiences: doctor.work_experiences,
+      education: doctor.education,
+    },
   });
 
   const [experiences, setExperiences] = useState([
@@ -86,63 +80,63 @@ export default function EditDoctorForm({ id }: EditDoctorFormProps) {
     setEducations(educations.filter((_, i) => i !== index));
   };
 
-  useEffect(() => {
-    const getPetClinics = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPetClinics();
-        setPetClinicsData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const getDoctor = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchDoctorByID(id);
-        setDoctor((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-        form.reset(data);
-      } catch (error) {
-        console.error("Failed to fetch Doctor", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getDoctor();
-    getPetClinics();
-  }, [id, form]);
-
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
+
     try {
+      const { profile, clinicId, ...otherValues } = formValues;
+      let profileUrl;
+
+      if (profile instanceof File) {
+        // Delete the file first
+        if (doctor.profileUrl) {
+          const key = doctor.profileUrl.split("/").pop();
+          const deleted = await deleteFile(key, auth?.accessToken as string);
+        }
+
+        // Upload
+        const fileData = await singleFileUpload(
+          { file: profile, isPublic: false },
+          auth?.accessToken as string
+        );
+
+        if (fileData.error) {
+          toast({
+            variant: "destructive",
+            description: fileData.message,
+          });
+          return;
+        }
+
+        profileUrl = fileData.url;
+      }
+
+      // Prepare formData for API request
       const formData = {
-        ...formValues,
-        ...{ clinicId: Number(formValues.clinicId) },
+        ...otherValues,
+        profileUrl,
+        clinicId: Number(clinicId),
       };
 
-      const data = await updateDoctorByID(id, formData);
-      if (data.error) {
+      const response = await updateDoctorByID(doctor.id, formData);
+      if (response.error) {
         toast({
           variant: "destructive",
-          description: `${data.message}`,
+          description: response.message,
         });
       } else {
         toast({
           variant: "success",
-          description: "Doctor updated.",
+          description: "Doctor updated successfully.",
         });
         router.push("/admin/doctors");
       }
+    } catch (error) {
+      console.error("An error occurred:", error);
+      toast({
+        variant: "destructive",
+        description: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -164,6 +158,25 @@ export default function EditDoctorForm({ id }: EditDoctorFormProps) {
             className="w-full space-y-5 px-2"
             onSubmit={form.handleSubmit(onSubmit)}
           >
+            <FormField
+              control={form.control}
+              name="profile"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="shad-input-label">
+                    Profile Picture
+                  </FormLabel>
+                  <FormControl>
+                    <ProfilePictureUpload
+                      field={field}
+                      defaultImage={doctor.profileUrl}
+                    />
+                  </FormControl>
+                  <FormMessage className="shad-error" />
+                </FormItem>
+              )}
+            />
+
             {/* Name and Email */}
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
@@ -192,7 +205,7 @@ export default function EditDoctorForm({ id }: EditDoctorFormProps) {
                 label="Pet Center"
                 placeholder="Select Pet Center"
               >
-                {petClinicsData.clinics.map((center: PetClinic, i) => (
+                {petClinics.clinics.map((center: PetClinic, i: number) => (
                   <SelectItem key={center.name + i} value={`${center.id}`}>
                     <div className="flex cursor-pointer items-center gap-2">
                       <p>{center.name}</p>

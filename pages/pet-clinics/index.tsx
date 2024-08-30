@@ -1,11 +1,21 @@
-import { Navbar } from "@/components/Navbar";
-import { Inter } from "next/font/google";
-import Head from "next/head";
+import PetClinics from "@/components/Layout/Pet Clinic/PetClinic";
+import { fetchPetClinics } from "../api/api";
 
-export default function PetClinic() {
+import type { InferGetStaticPropsType, GetStaticProps } from "next";
+
+export const getStaticProps = (async () => {
+  const clinicData = await fetchPetClinics();
+  return { props: { clinicData } };
+}) satisfies GetStaticProps<{
+  clinicData: PetClinicData;
+}>;
+
+export default function PetClinicPage({
+  clinicData,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
-    <div>
-      Hello
-    </div>
-  )
+    <>
+      <PetClinics clinicData={clinicData} />
+    </>
+  );
 }
