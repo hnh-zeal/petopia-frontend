@@ -88,7 +88,7 @@ export default function ClinicDetails({ clinic }: any) {
 
         {/* Sidebar */}
         <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2">
-          <div className="lg:sticky lg:top-20 space-y-4">
+          <div className="lg:sticky lg:top-24 space-y-4">
             <Card>
               <CardContent className="p-4">
                 <ul className="space-y-4">

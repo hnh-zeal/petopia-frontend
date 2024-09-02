@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { AppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
+import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
 import { fetchUsers } from "@/pages/api/api";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useEffect, useState } from "react";
@@ -24,7 +24,7 @@ export default function ClinicAppointments() {
         <main className="flex-1 overflow-hidden pt-16">
           <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
             <Breadcrumbs items={breadcrumbItems} />
-            <AppointmentClient />
+            <ClinicAppointmentClient isAdmin={true} />
           </div>
         </main>
       </div>

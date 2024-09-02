@@ -69,10 +69,15 @@ export function UserAvatar() {
         <DropdownMenuGroup>
           <DropdownMenuItem
             className="hover:cursor-pointer"
-            onClick={() => router.push(`/users/profile`)}
+            onClick={() => router.push(`/profile`)}
           >
             Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="hover:cursor-pointer"
+            onClick={() => router.push(`/appointments`)}
+          >
+            Appointments
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -81,7 +86,7 @@ export function UserAvatar() {
           onClick={() => logout()}
         >
           Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          {/* <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

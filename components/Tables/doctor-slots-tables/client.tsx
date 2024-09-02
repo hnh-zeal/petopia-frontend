@@ -42,11 +42,11 @@ export const AvailableSlotsClient = ({ doctor }: any) => {
     const getData = async () => {
       setLoading(true);
       try {
-        const data = await fetchAppointmentSlots(
-          currentPage,
-          slotData.pageSize,
-          doctor.id
-        );
+        const data = await fetchAppointmentSlots({
+          doctorId: doctor.id,
+          page: currentPage,
+          pageSize: slotData.pageSize,
+        });
         setSlotData((prevState) => ({
           ...prevState,
           ...data,

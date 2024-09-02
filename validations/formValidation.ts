@@ -192,3 +192,12 @@ export const CreateSlotSchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
 });
+
+export const EditProfileSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+  phoneNumber: z.string(),
+  profile: z.any(),
+});
+
+export const ClinicAppointmentSchema = z.object({});

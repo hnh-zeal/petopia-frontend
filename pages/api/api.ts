@@ -151,7 +151,7 @@ export async function fetchUserByID(id: number) {
   return data;
 }
 
-export async function updateUserWithToken(token: string) {
+export async function updateUserWithToken(token: string, formValues: any) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/users/update`,
     {
@@ -160,6 +160,7 @@ export async function updateUserWithToken(token: string) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify(formValues),
     }
   );
 
@@ -309,12 +310,8 @@ export async function createDateSchedule(formValues: any) {
   return data;
 }
 
-export async function fetchAppointmentSlots(
-  page?: number,
-  pageSize?: number,
-  doctorId?: number,
-  date?: Date
-) {
+export async function fetchAppointmentSlots(queryData: any) {
+  const { doctorId, date, page, pageSize } = queryData;
   const query = {
     ...(doctorId && { doctorId }),
     ...(date && { date: date.toISOString() }),
@@ -592,5 +589,39 @@ export async function deleteFile(key: string, token: string) {
     throw new Error(`${data.message}`);
   }
 
+  return data;
+}
+
+export async function fetchClinicAppointments(
+  page?: number,
+  pageSize?: number,
+  userId?: any,
+  token?: string
+) {
+  const query = {
+    ...(userId && { userId }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/clinic-appointments${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch clinic appointments");
+  }
+
+  const data = await response.json();
   return data;
 }

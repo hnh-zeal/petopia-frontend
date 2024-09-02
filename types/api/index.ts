@@ -14,6 +14,14 @@ export interface PetClinicData {
   totalPages: number;
 }
 
+export interface DoctorData {
+  doctors: [];
+  count: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface Root {
   id: number;
   name: string;

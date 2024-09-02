@@ -6,7 +6,47 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 
-export const columns: ColumnDef<Doctor>[] = [
+export const userColumns: ColumnDef<Doctor>[] = [
+  {
+    accessorKey: "id",
+    header: ({ column }) => <SortColumn column={column} title="Id" />,
+  },
+  {
+    accessorKey: "doctor",
+    header: ({ column }) => <SortColumn column={column} title="Doctor" />,
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => <SortColumn column={column} title="Date" />,
+  },
+  {
+    accessorKey: "startTime",
+    header: ({ column }) => <SortColumn column={column} title="Start Time" />,
+  },
+  {
+    accessorKey: "endTime",
+    header: ({ column }) => <SortColumn column={column} title="End Time" />,
+  },
+  {
+    accessorKey: "isActive",
+    header: ({ column }) => <SortColumn column={column} title="Status" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.isActive ? (
+          <Badge className="bg-green-500">Active</Badge>
+        ) : (
+          <Badge variant="destructive">Inactive</Badge>
+        )}
+      </>
+    ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <CellAction data={row.original} />,
+  },
+];
+
+export const adminColumns: ColumnDef<Doctor>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -31,25 +71,24 @@ export const columns: ColumnDef<Doctor>[] = [
     header: ({ column }) => <SortColumn column={column} title="Id" />,
   },
   {
-    accessorKey: "name",
-    header: ({ column }) => <SortColumn column={column} title="Name" />,
+    accessorKey: "user",
+    header: ({ column }) => <SortColumn column={column} title="User" />,
   },
   {
-    accessorKey: "email",
-    header: ({ column }) => <SortColumn column={column} title="Email" />,
+    accessorKey: "doctor",
+    header: ({ column }) => <SortColumn column={column} title="Doctor" />,
   },
   {
-    accessorKey: "phoneNumber",
-    header: ({ column }) => <SortColumn column={column} title="Phone Number" />,
+    accessorKey: "date",
+    header: ({ column }) => <SortColumn column={column} title="Date" />,
   },
   {
-    accessorFn: (row) => row.clinic.name,
-    id: "clinic.name",
-    header: ({ column }) => <SortColumn column={column} title="Pet Clinic" />,
+    accessorKey: "startTime",
+    header: ({ column }) => <SortColumn column={column} title="Start Time" />,
   },
   {
-    accessorKey: "about",
-    header: ({ column }) => <SortColumn column={column} title="About" />,
+    accessorKey: "endTime",
+    header: ({ column }) => <SortColumn column={column} title="End Time" />,
   },
   {
     accessorKey: "isActive",

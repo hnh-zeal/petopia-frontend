@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import { adminColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchClinicAppointments } from "@/pages/api/api";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 
-export const ClinicAppointmentClient = ({ isAdmin = false }) => {
+export const CareAppointmentClient = ({ isAdmin = false }) => {
   const router = useRouter();
 
   const auth = useRecoilValue(userAuthState);

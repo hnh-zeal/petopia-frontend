@@ -46,7 +46,14 @@ type User = {
   phoneNumber: string;
   departmentId: number;
   lastLoginDate: string;
+  birthDate: Date;
+  clinicAppointments: any[];
+  packages: any[];
+  pets: any[];
   profileUrl: string;
+  city: string;
+  state: string;
+  country: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
