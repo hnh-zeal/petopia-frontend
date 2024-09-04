@@ -117,3 +117,55 @@ export interface OperatingHour {
   startTime: string;
   endTime: string;
 }
+
+export interface ClinicAppointment {
+  id: number;
+  description: string;
+  date: string;
+  status: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  user: User;
+  pet: Pet;
+  doctor: any;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  loginType: string;
+  phone?: string;
+  birthDate: string;
+  address: string;
+  city?: string;
+  state: any;
+  country?: string;
+  postalCode: any;
+  emergencyContact: any;
+  contactNumber: any;
+  profileUrl: any;
+  lastLoginDate: any;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Pet {
+  id: number;
+  name: string;
+  petType: string;
+  age: number;
+  month?: number;
+  breed: string;
+  sex: string;
+  medication: any;
+  vaccinationRecords: any;
+  specialNeeds: any;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

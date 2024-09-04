@@ -205,8 +205,6 @@ export const navItems: NavItem[] = [
   },
 ];
 
-export const GenderOptions = ["Male", "Female", "Other"];
-
 export type Gender = {
   id: number;
   name: string;
@@ -300,3 +298,24 @@ export const StatusIcon = {
   pending: "/assets/icons/pending.svg",
   cancelled: "/assets/icons/cancelled.svg",
 };
+
+export const petTypes = [
+  {
+    name: "dog",
+    label: "Dog",
+  },
+  {
+    name: "cat",
+    label: "Cat",
+  },
+  {
+    name: "bird",
+    label: "Bird",
+  },
+  {
+    name: "rabbit",
+    label: "Rabbit",
+  },
+];
+
+export const GenderOptions = ["male", "female", "other"];

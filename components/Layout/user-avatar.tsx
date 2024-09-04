@@ -75,7 +75,7 @@ export function UserAvatar() {
           </DropdownMenuItem>
           <DropdownMenuItem
             className="hover:cursor-pointer"
-            onClick={() => router.push(`/appointments`)}
+            onClick={() => router.push(`/profile/appointments`)}
           >
             Appointments
           </DropdownMenuItem>

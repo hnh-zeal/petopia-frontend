@@ -27,6 +27,7 @@ import { Calendar } from "./ui/calendar";
 
 export enum FormFieldType {
   INPUT = "input",
+  NUMBER = "number",
   EMAIL = "email",
   PASSWORD = "password",
   TEXTAREA = "textarea",
@@ -62,6 +63,12 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
       return (
         <FormControl>
           <Input type="input" placeholder={props.placeholder} {...field} />
+        </FormControl>
+      );
+    case FormFieldType.NUMBER:
+      return (
+        <FormControl>
+          <Input type="number" placeholder={props.placeholder} {...field} />
         </FormControl>
       );
     case FormFieldType.EMAIL:

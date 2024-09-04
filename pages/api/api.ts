@@ -613,13 +613,34 @@ export async function fetchClinicAppointments(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     }
   );
 
   if (!response.ok) {
     throw new Error("Failed to fetch clinic appointments");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function submitAppointment(formValues: any, userToken: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/clinic-appointments`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to submit clinic appointments");
   }
 
   const data = await response.json();

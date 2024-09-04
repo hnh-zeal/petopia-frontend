@@ -8,13 +8,14 @@ import { useRouter } from "next/navigation";
 import { adminColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchClinicAppointments } from "@/pages/api/api";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { userAuthState } from "@/states/auth";
+import { useRecoilValue } from "recoil";
+import { adminAuthState, userAuthState } from "@/states/auth";
 
 export const ClinicAppointmentClient = ({ isAdmin = false }) => {
   const router = useRouter();
 
-  const auth = useRecoilValue(userAuthState);
+  const userAuth = useRecoilValue(userAuthState);
+  const adminAuth = useRecoilValue(adminAuthState);
   const [appointments, setAppointments] = useState({
     doctors: [],
     count: 0,
@@ -29,11 +30,14 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
     const getAppointments = async () => {
       setLoading(true);
       try {
-        const userId = auth?.user?.id || null; // Extract userId only once
+        const userId = userAuth?.user?.id || null; // Extract userId only once
+        const userToken = userAuth?.accessToken;
+        const adminToken = adminAuth?.accessToken;
         const data = await fetchClinicAppointments(
           currentPage,
           appointments.pageSize,
-          userId
+          userId,
+          userToken || adminToken
         );
 
         setAppointments((prevState) => ({
@@ -48,7 +52,7 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
     };
 
     getAppointments();
-  }, [auth, currentPage, appointments.pageSize]);
+  }, [userAuth, adminAuth, currentPage, appointments.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));

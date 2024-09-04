@@ -39,8 +39,9 @@ import {
   fetchAppointmentSlots,
   fetchDoctors,
   fetchPetClinics,
+  submitAppointment,
 } from "@/pages/api/api";
-import { Doctor, PetClinic } from "@/constants/data";
+import { Doctor, GenderOptions, PetClinic, petTypes } from "@/constants/data";
 import {
   Card,
   CardContent,
@@ -48,24 +49,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
+import { userAuthState } from "@/states/auth";
+import { useRecoilValue } from "recoil";
 
 const formSchema = z.object({
-  petName: z.string().min(2, {
+  petOptions: z.enum(["new", "other"]).optional(),
+  name: z.string().min(2, {
     message: "Pet name must be at least 2 characters.",
   }),
   petType: z.string().min(2, {
     message: "Pet type must be at least 2 characters.",
   }),
+  age: z.number().min(0, "Year must be at least 0"),
+  month: z
+    .number()
+    .min(1, "Month must be at least 1")
+    .max(12, "Month must not be greater than 12."),
+  sex: z.enum(["male", "female", "other"]),
+  breed: z.string().optional(),
+  vaccinationRecords: z.any().optional(),
+  imageUrl: z.any().optional(),
+
   option: z.enum(["choose", "recommend"]),
-  clinicId: z.string().optional(),
-  doctorId: z.string().optional(),
+  description: z.string(),
   date: z.date({
     required_error: "A date is required.",
   }),
   time: z.string({
     required_error: "A time slot is required.",
   }),
-  note: z.string().optional(),
+  doctorId: z.string().optional(),
+  clinicId: z.string().optional(),
 });
 
 const steps = [
@@ -73,8 +89,6 @@ const steps = [
   { id: "AppointmentInfo", label: "Appointment Information" },
   { id: "Confirm", label: "Confirm" },
 ];
-
-const petTypes = [{ name: "Dog" }, { name: "Cat" }];
 
 export const getStaticProps = (async (context) => {
   const doctorsData = await fetchDoctors();
@@ -117,28 +131,73 @@ export default function BookAppointment({
   doctorsData,
   petClinicsData,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [time, setTime] = useState<string>();
-  const router = useRouter();
   const [doctors, setDoctors] = useState<Doctor[]>(doctorsData.doctors);
   const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
   const [loading, setLoading] = useState(false);
+  const auth = useRecoilValue(userAuthState);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      petName: "",
-      petType: "",
-      option: "choose",
-      note: "",
+      option: "recommend",
+      age: 0,
+      month: 1,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
+  const onSubmit = async (formValues: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    try {
+      const {
+        name,
+        option,
+        petType,
+        age,
+        month,
+        sex,
+        description,
+        date,
+        time,
+      } = formValues;
+
+      const formData = {
+        petData: {
+          option: "new",
+          name,
+          petType,
+          age,
+          month,
+          sex,
+        },
+        appointmentData: {
+          option,
+          description,
+          date: format(date, "yyyy-MM-dd"),
+          time,
+        },
+      };
+
+      const data = await submitAppointment(
+        formData,
+        auth?.accessToken as string
+      );
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
+        router.push("/");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,6 +243,16 @@ export default function BookAppointment({
     form.setValue("date", date as Date);
   };
 
+  useEffect(() => {
+    if (!auth) {
+      router.push("/register");
+    }
+  }, [auth, router]);
+
+  if (!auth) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6 text-center">Appointment Form</h1>
@@ -221,31 +290,156 @@ export default function BookAppointment({
                   Fill out your pet information.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col space-y-6">
+                {/* Pet Type and Breed */}
                 <div className="flex flex-col gap-6 xl:flex-row">
-                  <CustomFormField
-                    fieldType={FormFieldType.INPUT}
-                    control={form.control}
-                    name="petName"
-                    placeholder="Pet's Name"
-                    label="Enter Your Pet Name"
-                  />
-
                   <CustomFormField
                     fieldType={FormFieldType.SELECT}
                     control={form.control}
                     name="petType"
                     label="Pet Type"
                     placeholder="Select Pet Type"
+                    required={true}
                   >
                     {petTypes.map((pet, i) => (
                       <SelectItem key={pet.name + i} value={pet.name}>
                         <div className="flex cursor-pointer items-center gap-2">
-                          <p>{pet.name}</p>
+                          <p>{pet.label}</p>
                         </div>
                       </SelectItem>
                     ))}
                   </CustomFormField>
+
+                  <CustomFormField
+                    fieldType={FormFieldType.SELECT}
+                    control={form.control}
+                    name="breed"
+                    label="Breed"
+                    placeholder="Select Breed"
+                  >
+                    {petTypes.map((pet, i) => (
+                      <SelectItem key={pet.name + i} value={pet.name}>
+                        <div className="flex cursor-pointer items-center gap-2">
+                          <p>{pet.label}</p>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </CustomFormField>
+                </div>
+
+                {/* Pet Name and Sex */}
+                <div className="flex flex-col gap-6 xl:flex-row">
+                  <CustomFormField
+                    fieldType={FormFieldType.INPUT}
+                    control={form.control}
+                    name="name"
+                    placeholder="Pet's Name"
+                    label="Enter Your Pet Name"
+                    required={true}
+                  />
+
+                  <CustomFormField
+                    fieldType={FormFieldType.SKELETON}
+                    control={form.control}
+                    name="sex"
+                    label="Sex"
+                    required={true}
+                    renderSkeleton={(field) => (
+                      <FormControl>
+                        <RadioGroup
+                          className="flex h-11 gap-6 xl:justify-between"
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          {GenderOptions.map((option, i) => {
+                            const capitalizedOption =
+                              option.charAt(0).toUpperCase() +
+                              option.slice(1).toLowerCase();
+
+                            return (
+                              <div key={i} className="radio-group">
+                                <div className="flex flex-row space-x-2 items-center mt-3">
+                                  <RadioGroupItem
+                                    value={option}
+                                    id={capitalizedOption}
+                                  />
+                                  <Label
+                                    htmlFor={capitalizedOption}
+                                    className="cursor-pointer"
+                                  >
+                                    {capitalizedOption}
+                                  </Label>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </RadioGroup>
+                      </FormControl>
+                    )}
+                  />
+                </div>
+
+                {/* Age and Month */}
+                <div className="flex flex-col gap-6 xl:flex-row">
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="shad-input-label">
+                          Enter Age (Year){" "}
+                          <span className="text-red-400">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Pet's Age"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                            min={0}
+                          />
+                        </FormControl>
+                        <FormMessage className="shad-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="month"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="shad-input-label">
+                          Enter Age (Months){" "}
+                          <span className="text-red-400">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="Pet's Age"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.valueAsNumber)
+                            }
+                            min={1}
+                            max={12}
+                          />
+                        </FormControl>
+                        <FormMessage className="shad-error" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-6 xl:flex-row">
+                  <CustomFormField
+                    fieldType={FormFieldType.IMAGE}
+                    control={form.control}
+                    name="vaccinationRecords"
+                    label="Vaccination Records"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -455,7 +649,7 @@ export default function BookAppointment({
                   <CustomFormField
                     fieldType={FormFieldType.TEXTAREA}
                     control={form.control}
-                    name="note"
+                    name="description"
                     label="Initial symptoms / Services requiring an appointment"
                     placeholder="Additional note about your pet"
                     required={true}
@@ -476,7 +670,7 @@ export default function BookAppointment({
               <CardContent>
                 <div className="space-y-2">
                   <p>
-                    <strong>Pet Name:</strong> {form.getValues("petName")}
+                    <strong>Pet Name:</strong> {form.getValues("name")}
                   </p>
                   <p>
                     <strong>Pet Type:</strong> {form.getValues("petType")}
@@ -497,7 +691,10 @@ export default function BookAppointment({
                     <strong>Time:</strong> {form.getValues("time")}
                   </p>
                   <p>
-                    <strong>Note:</strong> {form.getValues("note")}
+                    <strong>
+                      Initial symptoms / Services requiring an appointment:
+                    </strong>{" "}
+                    {form.getValues("description")}
                   </p>
                 </div>
               </CardContent>

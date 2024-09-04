@@ -1,12 +1,15 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { Doctor } from "@/constants/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
+import DoctorRow from "../doctorRow";
+import UserRow from "../userRow";
+import { format } from "date-fns";
+import { ClinicAppointment } from "@/types/api";
 
-export const userColumns: ColumnDef<Doctor>[] = [
+export const userColumns: ColumnDef<ClinicAppointment>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,
@@ -14,6 +17,7 @@ export const userColumns: ColumnDef<Doctor>[] = [
   {
     accessorKey: "doctor",
     header: ({ column }) => <SortColumn column={column} title="Doctor" />,
+    cell: ({ row }) => <DoctorRow row={row} />,
   },
   {
     accessorKey: "date",
@@ -46,7 +50,7 @@ export const userColumns: ColumnDef<Doctor>[] = [
   },
 ];
 
-export const adminColumns: ColumnDef<Doctor>[] = [
+export const adminColumns: ColumnDef<ClinicAppointment>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -73,6 +77,11 @@ export const adminColumns: ColumnDef<Doctor>[] = [
   {
     accessorKey: "user",
     header: ({ column }) => <SortColumn column={column} title="User" />,
+    cell: ({ row }) => <UserRow row={row} />,
+  },
+  {
+    accessorKey: "pet",
+    header: ({ column }) => <SortColumn column={column} title="Pet" />,
   },
   {
     accessorKey: "doctor",
@@ -81,6 +90,9 @@ export const adminColumns: ColumnDef<Doctor>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => <SortColumn column={column} title="Date" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
+    ),
   },
   {
     accessorKey: "startTime",
