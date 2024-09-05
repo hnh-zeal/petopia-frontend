@@ -120,7 +120,7 @@ export function DataTable<TData, TValue>({
         <Table className="relative">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="text-black">
+              <TableRow key={headerGroup.id} className="text-black text-center">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -143,7 +143,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:cursor-pointer"
+                  className="hover:cursor-pointer "
                   onClick={() =>
                     !!onClickRow && onClickRow((row.original as any).id)
                   }

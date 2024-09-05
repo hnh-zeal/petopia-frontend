@@ -128,7 +128,7 @@ export interface ClinicAppointment {
   updatedAt: string;
   user: User;
   pet: Pet;
-  doctor: any;
+  doctor: Doctor;
 }
 
 export interface User {

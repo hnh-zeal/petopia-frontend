@@ -125,16 +125,28 @@ const UserRegisterForm = () => {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      {GenderOptions.map((option, i) => (
-                        <div key={option + i} className="radio-group">
-                          <div className="flex flex-row space-x-2 items-center mt-3">
-                            <RadioGroupItem value={option} id={option} />
-                            <Label htmlFor={option} className="cursor-pointer">
-                              {option}
-                            </Label>
+                      {GenderOptions.map((option, i) => {
+                        const capitalizedOption =
+                          option.charAt(0).toUpperCase() +
+                          option.slice(1).toLowerCase();
+
+                        return (
+                          <div key={i} className="radio-group">
+                            <div className="flex flex-row space-x-2 items-center mt-3">
+                              <RadioGroupItem
+                                value={option}
+                                id={capitalizedOption}
+                              />
+                              <Label
+                                htmlFor={capitalizedOption}
+                                className="cursor-pointer"
+                              >
+                                {capitalizedOption}
+                              </Label>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </RadioGroup>
                   </FormControl>
                 )}

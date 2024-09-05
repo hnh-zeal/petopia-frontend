@@ -55,6 +55,8 @@ interface CustomProps {
   renderSkeleton?: (field: any) => React.ReactNode;
   fieldType: FormFieldType;
   required?: boolean;
+  isDisabled?: boolean;
+  value?: string;
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -239,7 +241,7 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
 };
 
 const CustomFormField = (props: CustomProps) => {
-  const { control, name, label, required } = props;
+  const { control, isDisabled, name, label, required } = props;
 
   return (
     <FormField
@@ -253,7 +255,11 @@ const CustomFormField = (props: CustomProps) => {
               {required ? <span className="text-red-400">*</span> : <></>}
             </FormLabel>
           )}
-          <RenderInput field={field} props={props} />
+          {isDisabled ? (
+            <Input disabled type={props.fieldType} placeholder={props.value} />
+          ) : (
+            <RenderInput field={field} props={props} />
+          )}
           <FormMessage className="shad-error" />
         </FormItem>
       )}

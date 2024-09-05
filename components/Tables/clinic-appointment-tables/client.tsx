@@ -16,8 +16,8 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
 
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
-  const [appointments, setAppointments] = useState({
-    doctors: [],
+  const [appointmentsData, setAppointmentsData] = useState({
+    clinicAppointments: [],
     count: 0,
     totalPages: 0,
     page: 1,
@@ -35,12 +35,12 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
         const adminToken = adminAuth?.accessToken;
         const data = await fetchClinicAppointments(
           currentPage,
-          appointments.pageSize,
+          appointmentsData.pageSize,
           userId,
           userToken || adminToken
         );
 
-        setAppointments((prevState) => ({
+        setAppointmentsData((prevState) => ({
           ...prevState,
           ...data,
         }));
@@ -52,7 +52,7 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
     };
 
     getAppointments();
-  }, [userAuth, adminAuth, currentPage, appointments.pageSize]);
+  }, [userAuth, adminAuth, currentPage, appointmentsData.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));
@@ -78,9 +78,9 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
         <DataTable
           searchKey="name"
           columns={isAdmin ? adminColumns : userColumns}
-          data={appointments.doctors}
+          data={appointmentsData.clinicAppointments}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={appointments.totalPages}
+          totalPages={appointmentsData.totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />

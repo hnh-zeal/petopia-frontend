@@ -13,9 +13,10 @@ interface FormProps {
   form: any;
   name: string;
   label: string;
+  required?: boolean;
 }
 
-export const Password = ({ form, name, label }: FormProps) => {
+export const Password = ({ form, name, label, required = true }: FormProps) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleTogglePassword = () => {
@@ -29,7 +30,8 @@ export const Password = ({ form, name, label }: FormProps) => {
       render={({ field }) => (
         <FormItem className="flex-1">
           <FormLabel className="block text-sm font-medium text-gray-700">
-            {label} <span className="text-red-400">*</span>
+            {label}
+            {required && <span className="text-red-400"> *</span>}
           </FormLabel>
           <FormControl>
             <div className="relative flex items-center">

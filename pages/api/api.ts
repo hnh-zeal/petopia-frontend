@@ -153,7 +153,7 @@ export async function fetchUserByID(id: number) {
 
 export async function updateUserWithToken(token: string, formValues: any) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/users/update`,
+    `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
     {
       method: "PUT",
       headers: {
@@ -248,7 +248,7 @@ export async function updateDoctorByID(id: number, formValues: any) {
     }
   );
   if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
+    throw new Error("Failed to update Doctor");
   }
 
   const data = await response.json();

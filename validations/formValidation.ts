@@ -17,7 +17,7 @@ export const UserRegisterSchema = z.object({
     .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number")
     .optional(),
   birthDate: z.date().optional(),
-  gender: z.enum(["Male", "Female", "Other"]),
+  gender: z.enum(["male", "female", "other"]),
   address: z.string().optional(),
   terms: z.boolean(),
   privacy: z.boolean(),
@@ -194,10 +194,11 @@ export const CreateSlotSchema = z.object({
 });
 
 export const EditProfileSchema = z.object({
-  name: z.string(),
-  email: z.string(),
-  phoneNumber: z.string(),
-  profile: z.any(),
+  name: z.string().optional(),
+  phone: z.string().optional(),
+  profile: z.any().optional(),
+  address: z.string().optional(),
+  password: z.string().optional(),
 });
 
 export const ClinicAppointmentSchema = z.object({});

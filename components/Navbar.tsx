@@ -45,10 +45,6 @@ const petClinicMenus: { title: string; href: string }[] = [
     title: "Make an appointment",
     href: "/pet-clinics/appointments",
   },
-  {
-    title: "Packages",
-    href: "/pet-clinics/packages",
-  },
 ];
 
 const petCareMenus: { title: string; href: string }[] = [

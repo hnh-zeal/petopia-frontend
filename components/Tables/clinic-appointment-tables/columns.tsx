@@ -8,6 +8,7 @@ import DoctorRow from "../doctorRow";
 import UserRow from "../userRow";
 import { format } from "date-fns";
 import { ClinicAppointment } from "@/types/api";
+import PetRow from "../petRow";
 
 export const userColumns: ColumnDef<ClinicAppointment>[] = [
   {
@@ -36,7 +37,7 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.isActive ? (
+        {row.original?.status ? (
           <Badge className="bg-green-500">Active</Badge>
         ) : (
           <Badge variant="destructive">Inactive</Badge>
@@ -51,25 +52,25 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
 ];
 
 export const adminColumns: ColumnDef<ClinicAppointment>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select Row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={table.getIsAllPageRowsSelected()}
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select Row"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,
@@ -82,10 +83,12 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
   {
     accessorKey: "pet",
     header: ({ column }) => <SortColumn column={column} title="Pet" />,
+    cell: ({ row }) => <PetRow row={row} />,
   },
   {
     accessorKey: "doctor",
     header: ({ column }) => <SortColumn column={column} title="Doctor" />,
+    cell: ({ row }) => <DoctorRow row={row} />,
   },
   {
     accessorKey: "date",
@@ -95,19 +98,18 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
     ),
   },
   {
-    accessorKey: "startTime",
-    header: ({ column }) => <SortColumn column={column} title="Start Time" />,
-  },
-  {
-    accessorKey: "endTime",
-    header: ({ column }) => <SortColumn column={column} title="End Time" />,
+    accessorKey: "createdAt",
+    header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
+    ),
   },
   {
     accessorKey: "isActive",
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.isActive ? (
+        {row.original?.status ? (
           <Badge className="bg-green-500">Active</Badge>
         ) : (
           <Badge variant="destructive">Inactive</Badge>
