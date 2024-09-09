@@ -14,6 +14,7 @@ import { CreateServiceSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
 import { useEffect, useState } from "react";
 import { PetClinic } from "@/constants/data";
+import { createCareService } from "@/pages/api/api";
 
 type ServiceFormValue = z.infer<typeof CreateServiceSchema>;
 
@@ -28,18 +29,7 @@ export default function CreateServiceForm() {
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/care-services`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formValues),
-        }
-      );
-
-      const data = await response.json();
+      const data = await createCareService(formValues);
       if (data.error) {
         toast({
           variant: "destructive",

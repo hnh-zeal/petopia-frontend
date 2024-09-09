@@ -8,18 +8,18 @@ import { truncate } from "@/utils/truncate";
 import { PetClinic } from "@/constants/data";
 import { Cat, ChevronDown, Search } from "lucide-react";
 
-export default function PetClinics({ clinicData }: any) {
+export default function CareServices({ servicesData }: any) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [clinics, setClinics] = useState(clinicData.clinics || []);
+  const [clinics, setClinics] = useState(servicesData.clinics || []);
 
   useEffect(() => {
-    const filteredClinics = clinicData.clinics.filter((clinic: any) => {
+    const filteredClinics = servicesData.clinics.filter((clinic: any) => {
       return (
         clinic.name?.toLowerCase().includes(searchTerm.toLowerCase()) || ""
       );
     });
     setClinics(filteredClinics);
-  }, [searchTerm, clinicData.clinics]);
+  }, [searchTerm, servicesData.clinics]);
 
   const router = useRouter();
 

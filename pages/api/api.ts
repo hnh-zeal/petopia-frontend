@@ -361,7 +361,27 @@ export async function fetchPetSitters(
   return await response.json();
 }
 
-export async function fetServices(page: number, pageSize: number) {
+export async function createCareService(formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-services`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch services");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchServices(page?: number, pageSize?: number) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/care-services?page=${page}&pageSize=${pageSize}`,
     {
@@ -499,6 +519,20 @@ export async function updateCafePetByID(id: number, formValues: any) {
   }
 
   return await response.json();
+}
+
+export async function submitBooking(formValues: any, token: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(formValues),
+  });
+
+  const data = await response.json();
+  return data;
 }
 
 export async function fetchAdminWithToken(token: string) {

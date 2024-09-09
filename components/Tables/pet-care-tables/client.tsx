@@ -7,7 +7,7 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-import { fetServices } from "@/pages/api/api";
+import { fetchServices } from "@/pages/api/api";
 
 export const CareServicesClient = () => {
   const router = useRouter();
@@ -26,7 +26,7 @@ export const CareServicesClient = () => {
     const getUsers = async () => {
       setLoading(true);
       try {
-        const data = await fetServices(currentPage, servicesData.pageSize);
+        const data = await fetchServices(currentPage, servicesData.pageSize);
         setServicesData((prevState) => ({
           ...prevState,
           ...data,

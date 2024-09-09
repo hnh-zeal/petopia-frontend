@@ -39,19 +39,19 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchKey: string;
   isLoading?: boolean;
+  onClickRow?: (id: string) => void;
   totalPages: number;
   currentPage: number;
   onPageChange: (page: number) => void;
-  onClickRow?: (id: string) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   searchKey,
+  onClickRow,
   totalPages,
   currentPage,
-  onClickRow,
   onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -116,14 +116,14 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Table className="relative">
-        <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
-          <TableHeader className="bg-zinc-300">
+      <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
+        <Table className="relative">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="text-black text-center">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-black">
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -143,14 +143,13 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:cursor-pointer "
+                  onClick={() =>
+                    !!onClickRow && onClickRow((row.original as any).id)
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() =>
-                        !!onClickRow && onClickRow((row.original as any).id)
-                      }
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -171,8 +170,8 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
           <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </Table>
+        </Table>
+      </ScrollArea>
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">

@@ -69,11 +69,15 @@ const petCareMenus: { title: string; href: string }[] = [
 const petCafeMenus: { title: string; href: string }[] = [
   {
     title: "Explore Cafe Rooms",
-    href: "/pet-cafe",
+    href: "/pet-cafe/rooms",
   },
   {
-    title: "Make an appointment",
-    href: "/pet-cafe/appointments",
+    title: "Pets",
+    href: "/pet-cafe/pets",
+  },
+  {
+    title: "Booking",
+    href: "/pet-cafe/booking",
   },
 ];
 

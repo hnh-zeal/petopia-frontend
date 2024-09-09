@@ -76,7 +76,7 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
       )}
       {!loading && (
         <DataTable
-          searchKey="name"
+          searchKey="user"
           columns={isAdmin ? adminColumns : userColumns}
           data={appointmentsData.clinicAppointments}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}

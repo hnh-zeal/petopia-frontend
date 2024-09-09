@@ -8,6 +8,7 @@ import { RecoilRoot } from "recoil";
 import Footer from "@/components/Layout/footer";
 import Head from "next/head";
 import Image from "next/image";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,18 +31,20 @@ export default function App({
           <title>Petopia - Your Pet Companion</title>
           <link rel="icon" href="/logo.ico" sizes="any" />
         </Head>
-        {!isAdminRoute && Component.displayName !== "notFound" && (
-          <main className={inter.className}>
-            <Navbar />
-          </main>
-        )}
-        <Component {...pageProps} />
-        {!isAdminRoute && Component.displayName !== "notFound" && (
-          <main className={inter.className}>
-            <Footer />
-          </main>
-        )}
-        <Toaster />
+        <ScrollArea className="h-[calc(100vh)]">
+          {!isAdminRoute && Component.displayName !== "notFound" && (
+            <main className={inter.className}>
+              <Navbar />
+            </main>
+          )}
+          <Component {...pageProps} />
+          {!isAdminRoute && Component.displayName !== "notFound" && (
+            <main className={inter.className}>
+              <Footer />
+            </main>
+          )}
+          <Toaster />
+        </ScrollArea>
       </RecoilRoot>
     </>
   );

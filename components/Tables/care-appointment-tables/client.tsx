@@ -9,14 +9,15 @@ import { adminColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchClinicAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
-import { userAuthState } from "@/states/auth";
+import { adminAuthState, userAuthState } from "@/states/auth";
 
-export const CareAppointmentClient = ({ isAdmin = false }) => {
+export const ClinicAppointmentClient = ({ isAdmin = false }) => {
   const router = useRouter();
 
-  const auth = useRecoilValue(userAuthState);
-  const [appointments, setAppointments] = useState({
-    doctors: [],
+  const userAuth = useRecoilValue(userAuthState);
+  const adminAuth = useRecoilValue(adminAuthState);
+  const [appointmentsData, setAppointmentsData] = useState({
+    clinicAppointments: [],
     count: 0,
     totalPages: 0,
     page: 1,
@@ -29,14 +30,17 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     const getAppointments = async () => {
       setLoading(true);
       try {
-        const userId = auth?.user?.id || null; // Extract userId only once
+        const userId = userAuth?.user?.id || null; // Extract userId only once
+        const userToken = userAuth?.accessToken;
+        const adminToken = adminAuth?.accessToken;
         const data = await fetchClinicAppointments(
           currentPage,
-          appointments.pageSize,
-          userId
+          appointmentsData.pageSize,
+          userId,
+          userToken || adminToken
         );
 
-        setAppointments((prevState) => ({
+        setAppointmentsData((prevState) => ({
           ...prevState,
           ...data,
         }));
@@ -48,7 +52,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     };
 
     getAppointments();
-  }, [auth, currentPage, appointments.pageSize]);
+  }, [userAuth, adminAuth, currentPage, appointmentsData.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));
@@ -74,9 +78,9 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
         <DataTable
           searchKey="name"
           columns={isAdmin ? adminColumns : userColumns}
-          data={appointments.doctors}
+          data={appointmentsData.clinicAppointments}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={appointments.totalPages}
+          totalPages={appointmentsData.totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />

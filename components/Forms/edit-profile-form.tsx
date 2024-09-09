@@ -89,6 +89,7 @@ export default function EditProfileForm({ user }: { user: any }) {
       }
 
       // Prepare formData for API request
+      console.log("Phone", phone);
       const formData = {
         ...(name && { name }),
         ...(phone && { phone }),
@@ -234,7 +235,7 @@ export default function EditProfileForm({ user }: { user: any }) {
                   fieldType={FormFieldType.INPUT}
                   placeholder="Enter your phone number"
                   control={form.control}
-                  name="phoneNumber"
+                  name="phone"
                   label="Phone Number"
                 />
 

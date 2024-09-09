@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { CellAction } from "./cell-action";
+import { AdminCellAction, UserCellAction } from "./cell-action";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
@@ -16,6 +16,11 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
     header: ({ column }) => <SortColumn column={column} title="Id" />,
   },
   {
+    accessorKey: "pet",
+    header: ({ column }) => <SortColumn column={column} title="Pet" />,
+    cell: ({ row }) => <PetRow row={row} />,
+  },
+  {
     accessorKey: "doctor",
     header: ({ column }) => <SortColumn column={column} title="Doctor" />,
     cell: ({ row }) => <DoctorRow row={row} />,
@@ -23,54 +28,58 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => <SortColumn column={column} title="Date" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
+    ),
   },
   {
-    accessorKey: "startTime",
-    header: ({ column }) => <SortColumn column={column} title="Start Time" />,
+    accessorKey: "createdAt",
+    header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
+    ),
   },
   {
-    accessorKey: "endTime",
-    header: ({ column }) => <SortColumn column={column} title="End Time" />,
-  },
-  {
-    accessorKey: "isActive",
+    accessorKey: "status",
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.status ? (
-          <Badge className="bg-green-500">Active</Badge>
+        {row.original?.status === "ACCEPTED" ? (
+          <Badge className="bg-green-500">Accepted</Badge>
+        ) : row.original?.status === "PENDING" ? (
+          <Badge className="bg-orange-500">Pending</Badge>
         ) : (
-          <Badge variant="destructive">Inactive</Badge>
+          <Badge variant="destructive">Rejected</Badge>
         )}
       </>
     ),
   },
   {
     id: "actions",
-    cell: ({ row }) => <CellAction data={row.original} />,
+    cell: ({ row }) => <UserCellAction data={row.original} />,
   },
 ];
 
 export const adminColumns: ColumnDef<ClinicAppointment>[] = [
-  // {
-  //   id: "select",
-  //   header: ({ table }) => (
-  //     <Checkbox
-  //       checked={table.getIsAllPageRowsSelected()}
-  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-  //       aria-label="Select all"
-  //     />
-  //   ),
-  //   cell: ({ row }) => (
-  //     <Checkbox
-  //       checked={row.getIsSelected()}
-  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
-  //       aria-label="Select Row"
-  //     />
-  //   ),
-  //   enableSorting: false,
-  //   enableHiding: false,
-  // },
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select Row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,
@@ -105,20 +114,22 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
     ),
   },
   {
-    accessorKey: "isActive",
+    accessorKey: "status",
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.status ? (
-          <Badge className="bg-green-500">Active</Badge>
+        {row.original?.status === "ACCEPTED" ? (
+          <Badge className="bg-green-500">Accepted</Badge>
+        ) : row.original?.status === "PENDING" ? (
+          <Badge className="bg-orange-500">Pending</Badge>
         ) : (
-          <Badge variant="destructive">Inactive</Badge>
+          <Badge variant="destructive">Rejected</Badge>
         )}
       </>
     ),
   },
   {
     id: "actions",
-    cell: ({ row }) => <CellAction data={row.original} />,
+    cell: ({ row }) => <AdminCellAction data={row.original} />,
   },
 ];
