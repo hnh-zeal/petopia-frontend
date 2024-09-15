@@ -1,29 +1,13 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { format } from "date-fns";
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -32,92 +16,137 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
+import { cn } from "@/lib/utils";
+import { useBookingStore } from "@/utils/zustand";
+import {
+  addDays,
+  differenceInHours,
+  format,
+  parse,
+  startOfDay,
+} from "date-fns";
+import {
+  AlertCircle,
+  CalendarIcon,
+  Clock,
+  MapPinIcon,
+  StarIcon,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import {
+  FormControl,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
-import { DoctorData, PetClinicData } from "@/types/api";
-import {
-  fetchAppointmentSlots,
-  fetchDoctors,
-  fetchPetClinics,
-  submitBooking,
-} from "@/pages/api/api";
-import { Doctor, GenderOptions, PetClinic, petTypes } from "@/constants/data";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { fetchRoomSlots, submitBooking } from "@/pages/api/api";
 import { toast } from "@/components/ui/use-toast";
-import { userAuthState } from "@/states/auth";
 import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
+
+export const defaultTimeSlots = [
+  "09:00 AM",
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "01:00 PM",
+  "02:00 PM",
+  "03:00 PM",
+  "04:00 PM",
+  "05:00 PM",
+];
+
+export const defaultEndSlots = [
+  "10:00 AM",
+  "11:00 AM",
+  "12:00 PM",
+  "01:00 PM",
+  "02:00 PM",
+  "03:00 PM",
+  "04:00 PM",
+  "05:00 PM",
+  "06:00 PM",
+];
 
 const formSchema = z.object({
-  roomId: z.number(),
-  date: z.date(),
-  time: z.string(),
+  date: z.date({
+    required_error: "A date is required",
+  }),
+  startTime: z.string().min(1, "A time is required"),
+  endTime: z.string().min(1, "A time is required"),
+  guests: z.number().min(1, "At least one guest is required"),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(),
+  email: z.string().email("Invalid email address").optional(),
+  card: z.string().min(1, "Card information is required").optional(),
+  month: z
+    .string()
+    .min(2, "Month is required")
+    .max(2, "Invalid month")
+    .optional(),
+  year: z.string().min(2, "Year is required").max(2, "Invalid year").optional(),
+  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV").optional(),
+  // billingAddress: z.string().min(1, "Billing address is required"),
+  // billingCity: z.string().min(1, "City is required"),
+  // billingState: z.string().min(1, "State is required"),
+  // billingZip: z.string().min(1, "ZIP code is required"),
 });
 
-const steps = [
-  { id: "RoomInfo", label: "Room Selection" },
-  { id: "UserInfo", label: "Booking Information" },
-  { id: "Confirm", label: "Confirm" },
-];
-
-export const getStaticProps = (async (context) => {
-  const doctorsData = await fetchDoctors();
-  const petClinicsData = await fetchPetClinics();
-  return { props: { doctorsData, petClinicsData } };
-}) satisfies GetStaticProps<{
-  doctorsData: DoctorData;
-  petClinicsData: PetClinicData;
-}>;
-
-const defaultTimeSlots = [
-  "09:00 AM",
-  "09:30 AM",
-  "10:00 AM",
-  "10:30 AM",
-  "11:00 AM",
-  "11:30 AM",
-  "12:00 PM",
-  "12:30 PM",
-  "01:00 PM",
-  "01:30 PM",
-  "02:00 PM",
-  "02:30 PM",
-  "03:00 PM",
-  "03:30 PM",
-  "04:00 PM",
-  "04:30 PM",
-  "05:00 PM",
-  "05:30 PM",
-  "06:00 PM",
-  "06:30 PM",
-];
-
-export default function BookAppointment({
-  doctorsData,
-  petClinicsData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function ReservationConfirmation() {
+  const today = startOfDay(new Date());
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [time, setTime] = useState<string>();
-  const [doctors, setDoctors] = useState<Doctor[]>(doctorsData.doctors);
-  const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
-  const [loading, setLoading] = useState(false);
   const auth = useRecoilValue(userAuthState);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
+  const [endTimeSlots, setEndTimeSlots] = useState<string[]>(defaultEndSlots);
+  const { date, startTime, endTime, duration, guests, cafeRoom, setDuration } =
+    useBookingStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      date: date || new Date(),
+      startTime,
+      endTime,
+      guests: guests,
+      firstName: "",
+      lastName: "",
+      email: "",
+      // billingAddress: "",
+      // billingCity: "",
+      // billingState: "",
+      // billingZip: "",
+    },
   });
 
-  const onSubmit = async (formValues: z.infer<typeof formSchema>) => {
-    setLoading(true);
+  const toggleEdit = () => setIsEditing(!isEditing);
+
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+
+  const onSubmit = async (formValues: any) => {
+    setIsLoading(true);
     try {
-      const data = await submitBooking(formValues, auth?.accessToken as string);
+      const { date, ...otherValues } = formValues;
+      const formData = {
+        ...otherValues,
+        roomId: cafeRoom?.id,
+        date: format(date, "yyyy-MM-dd"),
+        duration,
+      };
+
+      const data = await submitBooking(formData, auth?.accessToken as string);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -131,30 +160,35 @@ export default function BookAppointment({
         router.push("/");
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleSelectDate = async (date: Date | undefined) => {
+  const calculateDuration = (startTime: string, endTime: string) => {
+    const start = parse(startTime, "hh:mm a", form.getValues("date"));
+    const end = parse(endTime, "hh:mm a", form.getValues("date"));
+    return differenceInHours(end, start);
+  };
+
+  const handleDateChange = async (date: Date | undefined) => {
     if (date) {
-      const doctorId = form.getValues("roomId");
-      if (doctorId) {
-        setLoading(true);
-        try {
-          const fetchedTimeSlots = await fetchAppointmentSlots({
-            doctorId,
-            date,
-          });
-          const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
-            format(new Date(slot.startTime), "h:mm a")
-          );
-          setTimeSlots(formattedTimeSlots);
-        } catch (error) {
-          console.error("Error fetching time slots:", error);
-          setTimeSlots([]);
-        } finally {
-          setLoading(false);
-        }
+      setIsLoading(true);
+      try {
+        const fetchedTimeSlots = await fetchRoomSlots({
+          roomId: cafeRoom?.id,
+          status: true,
+          date,
+        });
+
+        const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
+          format(new Date(slot.startTime), "h:mm a")
+        );
+        setTimeSlots(formattedTimeSlots);
+      } catch (error) {
+        console.error("Error fetching time slots:", error);
+        setTimeSlots([]);
+      } finally {
+        setIsLoading(false);
       }
     } else {
       setTimeSlots(defaultTimeSlots);
@@ -162,303 +196,459 @@ export default function BookAppointment({
     form.setValue("date", date as Date);
   };
 
-  useEffect(() => {
-    if (!auth) {
-      router.push("/register");
-    }
-  }, [auth, router]);
+  const handleStartTimeChange = (startTime: string) => {
+    form.setValue("startTime", startTime);
+    setDuration(calculateDuration(startTime, form.getValues("endTime")));
+    const startTimeIndex = defaultTimeSlots.indexOf(startTime);
+    const updatedEndTimeSlots =
+      startTimeIndex === 0
+        ? defaultEndSlots
+        : defaultEndSlots.slice(startTimeIndex);
 
-  if (!auth) {
-    return null;
-  }
+    setEndTimeSlots(updatedEndTimeSlots);
+  };
+
+  const handleEndTimeChange = (endTime: string) => {
+    form.setValue("endTime", endTime);
+    setDuration(calculateDuration(form.getValues("startTime"), endTime));
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6 text-center">Appointment Form</h1>
+    <div className="container mx-auto p-4 max-w-6xl">
+      <nav className="mb-6">
+        <ol className="flex text-sm text-gray-500">
+          <li className="after:content-['>'] after:mx-2">Room detail</li>
+          <li>Booking</li>
+        </ol>
+      </nav>
 
-      <div className="flex justify-between items-center mb-8 space-x-4 mx-auto">
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center">
-            <div
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center font-semibold",
-                currentStep >= index
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-300 text-gray-600"
-              )}
-            >
-              {index + 1}
-            </div>
-            <div className="ml-2 text-lg">{step.label}</div>
-          </div>
-        ))}
-      </div>
+      <h1 className="text-2xl font-bold mb-6">Confirm your room booking</h1>
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col justify-between gap-5"
-        >
-          {currentStep === 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold mb-4">
-                  Pet Information
-                </CardTitle>
-                <CardDescription>
-                  Fill out your pet information.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col space-y-6">
-                {/* Pet Type and Breed */}
-                <div className="flex flex-col gap-6 xl:flex-row">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              {/* Date & Time */}
+              <Card className="w-full max-w-full space-y-3">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-2xl font-bold">
+                    Booking summary
+                  </CardTitle>
+                  <Button variant="ghost" type="button" onClick={toggleEdit}>
+                    {isEditing ? "Cancel" : "Edit"}
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex flex-row gap-3">
+                      <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Date</FormLabel>
+                            <Popover>
+                              <PopoverTrigger
+                                asChild
+                                disabled={!isEditing}
+                                className="disabled:opacity-100"
+                              >
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                    disabled={!isEditing}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={handleDateChange}
+                                  disabled={(date) =>
+                                    date < today || date > addDays(today, 14)
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="guests"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Number of Guests</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(parseInt(e.target.value))
+                                  }
+                                  className="pl-10 disabled:opacity-100"
+                                  disabled={!isEditing}
+                                />
+                                <Users className="absolute w-5 h-5 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex flex-row gap-3 ">
+                      {/* <FormField
+                        control={form.control}
+                        name="duration"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Duration</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={duration}
+                                className="flex !mt-4 gap-3 disabled:opacity-100"
+                                disabled={!isEditing}
+                              >
+                                {durationList.map((d) => (
+                                  <FormItem
+                                    key={d.value}
+                                    className="flex items-center space-x-3"
+                                  >
+                                    <FormControl>
+                                      <RadioGroupItem value={d.value} />
+                                    </FormControl>
+                                    <FormLabel className="font-normal">
+                                      {d.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                ))}
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      /> */}
+
+                      <FormField
+                        control={form.control}
+                        name="startTime"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Start Time</FormLabel>
+                            <Select
+                              onValueChange={handleStartTimeChange}
+                              defaultValue={field.value}
+                              disabled={!isEditing}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="disabled:opacity-100">
+                                  <SelectValue placeholder="Select time" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {timeSlots.map((slot) => (
+                                  <SelectItem key={slot} value={slot}>
+                                    {slot}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="endTime"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>End Time</FormLabel>
+                            <Select
+                              onValueChange={handleEndTimeChange}
+                              defaultValue={field.value}
+                              disabled={!isEditing}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="disabled:opacity-100">
+                                  <SelectValue placeholder="Select time" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {endTimeSlots.map((slot) => (
+                                  <SelectItem key={slot} value={slot}>
+                                    {slot}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    {isEditing && (
+                      <Button
+                        type="button"
+                        onClick={handleSave}
+                        className="w-full"
+                      >
+                        Save Changes
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* User Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Enter user information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="firstName"
+                      placeholder="First Name"
+                      label="First Name"
+                      required={true}
+                    />
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="lastName"
+                      placeholder="Last Name"
+                      label="Last Name"
+                      required={true}
+                    />
+                  </div>
+
                   <CustomFormField
-                    fieldType={FormFieldType.SELECT}
+                    fieldType={FormFieldType.EMAIL}
                     control={form.control}
-                    name="petType"
-                    label="Pet Type"
-                    placeholder="Select Pet Type"
+                    name="email"
+                    placeholder="Email"
+                    label="Email"
                     required={true}
-                  >
-                    {petTypes.map((pet, i) => (
-                      <SelectItem key={pet.name + i} value={pet.name}>
-                        <div className="flex cursor-pointer items-center gap-2">
-                          <p>{pet.label}</p>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </CustomFormField>
+                  />
+                </CardContent>
+              </Card>
 
-                  <CustomFormField
-                    fieldType={FormFieldType.SELECT}
-                    control={form.control}
-                    name="breed"
-                    label="Breed"
-                    placeholder="Select Breed"
-                  >
-                    {petTypes.map((pet, i) => (
-                      <SelectItem key={pet.name + i} value={pet.name}>
-                        <div className="flex cursor-pointer items-center gap-2">
-                          <p>{pet.label}</p>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </CustomFormField>
-                </div>
-
-                {/* Pet Name and Sex */}
-                <div className="flex flex-col gap-6 xl:flex-row">
+              {/* Credit Card Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pay with Credit or Debit Card</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <CustomFormField
                     fieldType={FormFieldType.INPUT}
                     control={form.control}
-                    name="name"
-                    placeholder="Pet's Name"
-                    label="Enter Your Pet Name"
+                    name="card"
+                    placeholder="Card"
+                    label="Credit or Debit Card"
                     required={true}
                   />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-row gap-4">
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="month"
+                        placeholder="09"
+                        label="MM"
+                        required={true}
+                      />
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="year"
+                        placeholder="28"
+                        label="YY"
+                        required={true}
+                      />
+                    </div>
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="cvv"
+                      placeholder="866"
+                      label="CVV"
+                      required={true}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-                  <CustomFormField
-                    fieldType={FormFieldType.SKELETON}
-                    control={form.control}
-                    name="sex"
-                    label="Sex"
-                    required={true}
-                    renderSkeleton={(field) => (
-                      <FormControl>
-                        <RadioGroup
-                          className="flex h-11 gap-6 xl:justify-between"
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          {GenderOptions.map((option, i) => {
-                            const capitalizedOption =
-                              option.charAt(0).toUpperCase() +
-                              option.slice(1).toLowerCase();
+              {/* Billing Address */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Billing address</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Input placeholder="22 Rhine Street" />
+                  <Input placeholder="Suite 1234A" />
+                  <Input placeholder="Austin" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input placeholder="MS" />
+                    <Input placeholder="4300" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                            return (
-                              <div key={i} className="radio-group">
-                                <div className="flex flex-row space-x-2 items-center mt-3">
-                                  <RadioGroupItem
-                                    value={option}
-                                    id={capitalizedOption}
-                                  />
-                                  <Label
-                                    htmlFor={capitalizedOption}
-                                    className="cursor-pointer"
-                                  >
-                                    {capitalizedOption}
-                                  </Label>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </RadioGroup>
-                      </FormControl>
-                    )}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-6 xl:flex-row">
-                  <CustomFormField
-                    fieldType={FormFieldType.IMAGE}
-                    control={form.control}
-                    name="vaccinationRecords"
-                    label="Vaccination Records"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {currentStep === 1 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold mb-4">
-                  Appointment Information
-                </CardTitle>
-                <CardDescription>
-                  Fill out appointment information.
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="flex flex-col space-y-6">
-                <div className="flex flex-col gap-6 xl:flex-row"></div>
-
-                <div className="grid grid-cols-2 place-content-center gap-6 xl:flex-row">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-gray-700 flex flex-row items-center gap-3">
-                          <CalendarIcon />
-                          Select Date
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex flex-col items-center">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={handleSelectDate}
-                              disabled={(date) =>
-                                date < new Date() ||
-                                date >
-                                  new Date(
-                                    new Date().setMonth(
-                                      new Date().getMonth() + 2
-                                    )
-                                  )
-                              }
-                              className="rounded-lg overflow-hidden"
-                              initialFocus
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-red-500" />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex flex-row items-center gap-3 text-gray-700">
-                          <Clock />
-                          <p>Select Time</p>
-                        </FormLabel>
-                        <div className="mt-3">
-                          <FormControl>
-                            <div className="grid grid-cols-3 gap-2 p-4">
-                              {timeSlots.map((slot) => (
-                                <h2
-                                  key={slot}
-                                  onClick={() => {
-                                    setTime(slot);
-                                    field.onChange(slot);
-                                  }}
-                                  className={`p-2 border hover:bg-red-200 border-gray-300 rounded-3xl text-center cursor-pointer 
-                                  ${slot === time && "bg-red-200"}`}
-                                >
-                                  {slot}
-                                </h2>
-                              ))}
+            <div className="flex flex-col gap-4">
+              {/* Room Information */}
+              {cafeRoom ? (
+                <>
+                  <Card>
+                    <CardContent className="p-0">
+                      <Image
+                        src={cafeRoom?.mainImage || "/Pet Cafe/cafeRoom.jpg"}
+                        alt="Cafe Room"
+                        width={600}
+                        height={600}
+                        className="w-full h-64 object-cover rounded-t-lg"
+                      />
+                      <div className="p-6 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex flex-col gap-2">
+                            <h2 className="text-xl font-semibold">
+                              {cafeRoom?.name} ({cafeRoom?.roomNo})
+                            </h2>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <MapPinIcon className="w-4 h-4" />
+                              <span>Bangkok, Thailand</span>
                             </div>
-                          </FormControl>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <StarIcon className="w-5 h-5 text-yellow-400 fill-current" />
+                            <span className="font-semibold">
+                              {cafeRoom?.rating || 4.8}
+                            </span>
+                          </div>
                         </div>
-                        <FormMessage className="text-red-500" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
-                <div className="flex flex-col gap-6 xl:flex-row">
-                  <CustomFormField
-                    fieldType={FormFieldType.TEXTAREA}
-                    control={form.control}
-                    name="description"
-                    label="Initial symptoms / Services requiring an appointment"
-                    placeholder="Additional note about your pet"
-                    required={true}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                        <div className="space-y-2">
+                          <h3 className="font-semibold">Price details</h3>
+                          <div className="flex justify-between text-sm">
+                            <span>
+                              ฿ {cafeRoom?.price} x {duration} h
+                            </span>
+                            <span>฿ {Number(cafeRoom?.price) * duration}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Discount (10%)</span>
+                            <span>฿ {Number(cafeRoom?.price) / 10}</span>
+                          </div>
+                          <div className="flex justify-between font-semibold pt-2 border-t">
+                            <span>Total</span>
+                            <span>
+                              ฿{" "}
+                              {Number(cafeRoom?.price) * Number(duration) -
+                                Number(cafeRoom?.price) / 10}
+                            </span>
+                          </div>
+                        </div>
 
-          {currentStep === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold mb-4">
-                  Confirm Appointment
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-2">
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {form.getValues("date")
-                      ? format(form.getValues("date"), "PPP")
-                      : ""}
+                        {/* <div className="space-y-2">
+                  <Label htmlFor="discount-code">Discount code</Label>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="discount-code"
+                      placeholder="Apply your discount code here"
+                    />
+                    <Button>Redeem code</Button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Got a discount code? Apply it now and watch those prices
+                    drop!
                   </p>
-                  <p>
-                    <strong>Time:</strong> {form.getValues("time")}
-                  </p>
-                  <p>
-                    <strong>
-                      Initial symptoms / Services requiring an appointment:
-                    </strong>{" "}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </div> */}
+                      </div>
+                    </CardContent>
+                  </Card>
 
-          <div className="flex justify-between">
-            {currentStep > 0 ? (
-              <Button
-                type="button"
-                variant={"outline"}
-                onClick={() => setCurrentStep(currentStep - 1)}
-              >
-                <ChevronLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-            ) : (
-              <div className="w-16"></div>
-            )}
+                  <Button type="submit" disabled={isEditing}>
+                    Submit Booking
+                  </Button>
+                </>
+              ) : (
+                <Card className="shadow-md border border-gray-200 rounded-lg">
+                  <CardContent className="flex flex-col items-center p-4 space-y-4">
+                    {/* Icon and Text */}
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="text-red-500 w-6 h-6" />
+                      <h2 className="text-lg font-semibold text-gray-800">
+                        Please select a room before booking
+                      </h2>
+                    </div>
 
-            {currentStep === steps.length - 1 ? (
-              <Button type="submit">Confirm</Button>
-            ) : (
-              <Button
-                type="button"
-                onClick={() => setCurrentStep(currentStep + 1)}
-              >
-                Next <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
+                    {/* Button */}
+                    <Button
+                      type="button"
+                      onClick={() => router.push("/pet-cafe/rooms")}
+                      className=" text-white px-4 py-2 "
+                    >
+                      Choose Room First
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Cancellation Rules */}
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Cancellation policy</h3>
+                <p className="text-sm text-gray-600">
+                  Free cancellation before 2:00 PM on Oct 20. Cancel before Oct
+                  27 for a partial refund.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  By selecting the button below, I agree to the Host&apos;s
+                  House Rules, Ground rules for guests, Teraluxe&apos;s
+                  Rebooking and Refund Policy, and that Teraluxe can charge my
+                  payment method if I&apos;m responsible for damage.
+                </p>
+                <p className="text-sm text-gray-600">
+                  I also agree to the{" "}
+                  <a href="#" className="text-blue-600">
+                    updated Terms of Service
+                  </a>
+                  ,{" "}
+                  <a href="#" className="text-blue-600">
+                    Payments Terms of Service
+                  </a>
+                  , and I acknowledge the{" "}
+                  <a href="#" className="text-blue-600">
+                    Privacy Policy
+                  </a>
+                  .
+                </p>
+              </div>
+            </div>
           </div>
         </form>
       </Form>

@@ -15,7 +15,8 @@ export type Schedule = {
   dayOfWeek: number;
   startTime: string;
   endTime: string;
-  isActive: boolean;
+  status: boolean;
+  doctor: Doctor;
 };
 
 export type AppointmentSlot = {
@@ -25,6 +26,7 @@ export type AppointmentSlot = {
   date: Date;
   startTime: string;
   endTime: string;
+  doctor: Doctor;
   status: boolean;
 };
 
@@ -47,6 +49,7 @@ export type Doctor = {
   phoneNumber: string;
   about: string;
   clinic: PetClinic;
+  specialties: string[];
   verified: boolean;
   isActive: string;
 };

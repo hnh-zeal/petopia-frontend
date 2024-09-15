@@ -29,7 +29,7 @@ const PetServices = () => {
               services. From routine check-ups to advanced treatments, we’ve got
               you covered.
             </p>
-            <Link href="/pet-clinic">
+            <Link href="/pet-clinics">
               <Button className="rounded-3xl text-white">Learn more ➔</Button>
             </Link>
           </div>
@@ -63,7 +63,7 @@ const PetServices = () => {
               Our pet-friendly café offers a cozy space for you and your furry
               friend.
             </p>
-            <Link href="/pet-cafe">
+            <Link href="/pet-cafe/rooms">
               <Button className="rounded-3xl text-white">Learn more ➔</Button>
             </Link>
           </div>

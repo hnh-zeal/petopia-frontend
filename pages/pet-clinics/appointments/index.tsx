@@ -222,10 +222,13 @@ export default function BookAppointment({
       if (doctorId) {
         setLoading(true);
         try {
-          const fetchedTimeSlots = await fetchAppointmentSlots({
-            doctorId,
-            date,
-          });
+          const fetchedTimeSlots = await fetchAppointmentSlots(
+            {
+              doctorId,
+              date: date.toISOString(),
+            },
+            auth?.accessToken as string
+          );
           const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
             format(new Date(slot.startTime), "h:mm a")
           );
@@ -539,7 +542,7 @@ export default function BookAppointment({
 
                     <FormField
                       control={form.control}
-                      name={"clinicId"}
+                      name={"doctorId"}
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormLabel className="shad-input-label">

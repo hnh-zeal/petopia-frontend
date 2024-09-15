@@ -1,3 +1,4 @@
+import { CafeBookingClient } from "@/components/Tables/cafe-booking-tables/client";
 import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -21,40 +22,14 @@ export default function MyAppointments() {
 
         {/* Pet Care Tab Content */}
         <TabsContent value="care">
-          {/* <DataTable
-            data={careBookings}
-            columns={[
-              { header: "Service", accessor: "service" },
-              { header: "Provider", accessor: "provider" },
-              { header: "Date", accessor: "date" },
-              { header: "Time", accessor: "time" },
-              {
-                header: "Actions",
-                accessor: (row) => (
-                  <button className="text-blue-500">Cancel Appointment</button>
-                ),
-              },
-            ]}
-          /> */}
+          {/* <CareAppointmentClient isAdmin={false} /> */}
         </TabsContent>
 
         {/* Pet Cafe Tab Content */}
         <TabsContent value="cafe">
-          {/* <DataTable
-            data={cafeBookings}
-            columns={[
-              { header: "Pet Name", accessor: "petName" },
-              { header: "Room", accessor: "room" },
-              { header: "Date", accessor: "date" },
-              { header: "Time", accessor: "time" },
-              {
-                header: "Actions",
-                accessor: (row) => (
-                  <button className="text-blue-500">Cancel Appointment</button>
-                ),
-              },
-            ]}
-          /> */}
+          <div className="flex flex-col gap-5">
+            <CafeBookingClient isAdmin={false} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

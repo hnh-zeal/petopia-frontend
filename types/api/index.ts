@@ -14,6 +14,14 @@ export interface PetClinicData {
   totalPages: number;
 }
 
+export interface CareServicesData {
+  careServices: [];
+  count: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface DoctorData {
   doctors: [];
   count: number;
@@ -129,6 +137,7 @@ export interface ClinicAppointment {
   user: User;
   pet: Pet;
   doctor: Doctor;
+  reason: string;
 }
 
 export interface User {
@@ -168,4 +177,70 @@ export interface Pet {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CafePet {
+  id: number;
+  name: string;
+  description: string;
+  petType: string;
+  age: number;
+  month?: number;
+  breed: string;
+  sex: string;
+  medication: any;
+  vaccinationRecords: any;
+  specialNeeds: any;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CareService {
+  id: number;
+  name: string;
+  description: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CafeRoom {
+  id: string;
+  name: string;
+  roomNo: string;
+  description: string;
+  price: number;
+  promotion: string;
+  rating: number;
+  reviews: number;
+  amenities: string[];
+  mainImage: string;
+  images: string[];
+  pets: {
+    id: string;
+    name: string;
+    petType: string;
+    age: number;
+    sex: string;
+    description: string;
+    imageUrl: string;
+  }[];
+  operatingHours: { dow: string }[];
+  contact: string;
+}
+
+export interface CafeBooking {
+  id: string;
+  room: CafeRoom;
+  user: User;
+  guests: number;
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  status: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

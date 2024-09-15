@@ -100,6 +100,82 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => <DoctorRow row={row} />,
   },
   {
+    accessorKey: "type",
+    header: ({ column }) => <SortColumn column={column} title="Type" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.type === "RECOMMEND" ? (
+          <span>Recommend doctor</span>
+        ) : (
+          <span>Choose Doctor</span>
+        )}
+      </>
+    ),
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => <SortColumn column={column} title="Date" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => <SortColumn column={column} title="Status" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "ACCEPTED" ? (
+          <Badge className="bg-green-500">Accepted</Badge>
+        ) : row.original?.status === "PENDING" ? (
+          <Badge className="bg-orange-500">Pending</Badge>
+        ) : (
+          <Badge variant="destructive">Rejected</Badge>
+        )}
+      </>
+    ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <AdminCellAction data={row.original} />,
+  },
+];
+
+export const doctorColumns: ColumnDef<ClinicAppointment>[] = [
+  {
+    accessorKey: "id",
+    header: ({ column }) => <SortColumn column={column} title="Id" />,
+  },
+  {
+    accessorKey: "user",
+    header: ({ column }) => <SortColumn column={column} title="User" />,
+    cell: ({ row }) => <UserRow row={row} />,
+  },
+  {
+    accessorKey: "pet",
+    header: ({ column }) => <SortColumn column={column} title="Pet" />,
+    cell: ({ row }) => <PetRow row={row} />,
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => <SortColumn column={column} title="Type" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.type === "RECOMMEND" ? (
+          <span>Recommend doctor</span>
+        ) : (
+          <span>Choose Doctor</span>
+        )}
+      </>
+    ),
+  },
+  {
     accessorKey: "date",
     header: ({ column }) => <SortColumn column={column} title="Date" />,
     cell: ({ row }) => (

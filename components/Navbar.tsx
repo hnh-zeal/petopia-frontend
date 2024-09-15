@@ -50,19 +50,19 @@ const petClinicMenus: { title: string; href: string }[] = [
 const petCareMenus: { title: string; href: string }[] = [
   {
     title: "Care Services",
-    href: "/pet-care",
+    href: "/pet-care/services",
   },
   {
     title: "Pet Sitters",
-    href: "/pet-clinics/doctors",
+    href: "/pet-care/pet-sitters",
   },
   {
     title: "Make an appointment",
-    href: "/pet-clinics/appointments",
+    href: "/pet-care/appointments",
   },
   {
     title: "Packages",
-    href: "/pet-clinics/packages",
+    href: "/pet-care/packages",
   },
 ];
 
@@ -74,10 +74,6 @@ const petCafeMenus: { title: string; href: string }[] = [
   {
     title: "Pets",
     href: "/pet-cafe/pets",
-  },
-  {
-    title: "Booking",
-    href: "/pet-cafe/booking",
   },
 ];
 

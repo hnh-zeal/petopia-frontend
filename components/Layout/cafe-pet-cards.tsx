@@ -41,7 +41,7 @@ export default function CafePetsCards() {
 
   useEffect(() => {
     const fetchPets = async () => {
-      const petsData = await fetchCafePets(currentPage, 6);
+      const petsData = await fetchCafePets({ page: currentPage, pageSize: 6 });
       setPets(petsData);
     };
 

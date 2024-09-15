@@ -1,4 +1,4 @@
-import { fetchCafeRooms, fetchPetClinics } from "../../api/api";
+import { fetchCafeRooms } from "../../api/api";
 
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { PetClinicData } from "@/types/api";

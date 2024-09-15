@@ -2,9 +2,6 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
-import { fetchUsers } from "@/pages/api/api";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { useEffect, useState } from "react";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },

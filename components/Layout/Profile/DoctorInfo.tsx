@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { format } from "date-fns";
 import DoctorSchedule from "./DoctorSchedule";
 import { AvailableSlotsClient } from "@/components/Tables/doctor-slots-tables/client";
+import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
 
 export default function DoctorInfo({ doctor }: any) {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function DoctorInfo({ doctor }: any) {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Profile" />
+        <Heading title="Doctor Profile" />
         <div className="flex items-center gap-10">
           <Switch checked={isActive} onCheckedChange={handleStatusToggle} />
           <Button
@@ -182,10 +183,7 @@ export default function DoctorInfo({ doctor }: any) {
           {/* Appointments Tab */}
           <TabsContent value="appointments">
             <Card className="p-6 my-6">
-              <CardContent>
-                {/* Add appointments content here */}
-                <p className="text-gray-600">Appointments details go here.</p>
-              </CardContent>
+              <ClinicAppointmentClient isAdmin={true} doctor={doctor} />
             </Card>
           </TabsContent>
         </ScrollArea>

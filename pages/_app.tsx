@@ -31,20 +31,20 @@ export default function App({
           <title>Petopia - Your Pet Companion</title>
           <link rel="icon" href="/logo.ico" sizes="any" />
         </Head>
-        <ScrollArea className="h-[calc(100vh)]">
-          {!isAdminRoute && Component.displayName !== "notFound" && (
-            <main className={inter.className}>
-              <Navbar />
-            </main>
-          )}
-          <Component {...pageProps} />
-          {!isAdminRoute && Component.displayName !== "notFound" && (
-            <main className={inter.className}>
-              <Footer />
-            </main>
-          )}
-          <Toaster />
-        </ScrollArea>
+        {/* <ScrollArea className="h-[calc(100vh)]"> */}
+        {!isAdminRoute && Component.displayName !== "notFound" && (
+          <main className={inter.className}>
+            <Navbar />
+          </main>
+        )}
+        <Component {...pageProps} />
+        {!isAdminRoute && Component.displayName !== "notFound" && (
+          <main className={inter.className}>
+            <Footer />
+          </main>
+        )}
+        <Toaster />
+        {/* </ScrollArea> */}
       </RecoilRoot>
     </>
   );

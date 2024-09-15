@@ -310,11 +310,13 @@ export async function createDateSchedule(formValues: any) {
   return data;
 }
 
-export async function fetchAppointmentSlots(queryData: any) {
-  const { doctorId, date, page, pageSize } = queryData;
+export async function fetchAppointmentSlots(queryData: any, token?: string) {
+  const { doctorId, date, time, status, page, pageSize } = queryData;
   const query = {
     ...(doctorId && { doctorId }),
-    ...(date && { date: date.toISOString() }),
+    ...(date && { date }),
+    ...(time && { time }),
+    ...(status && { status }),
     ...(page && { page }),
     ...(pageSize && { pageSize }),
   };
@@ -327,7 +329,7 @@ export async function fetchAppointmentSlots(queryData: any) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${adminToken}`,
+        // Authorization: `Bearer ${token}`,
       },
     }
   );
@@ -381,9 +383,17 @@ export async function createCareService(formValues: any) {
   return data;
 }
 
-export async function fetchServices(page?: number, pageSize?: number) {
+export async function fetchServices(queryData?: any) {
+  const { page, pageSize } = queryData;
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/care-services?page=${page}&pageSize=${pageSize}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/care-services${queryUrl}`,
     {
       method: "GET",
       headers: {
@@ -400,9 +410,36 @@ export async function fetchServices(page?: number, pageSize?: number) {
   return data;
 }
 
-export async function fetchCafePets(page?: number, pageSize?: number) {
+export async function fetchServiceByID(id: number) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/cafe-pets?page=${page}&pageSize=${pageSize}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/care-services/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch service by ID");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchCafePets(queryData?: any) {
+  const { page, pageSize } = queryData;
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/cafe-pets${queryUrl}`,
     {
       method: "GET",
       headers: {
@@ -521,15 +558,75 @@ export async function updateCafePetByID(id: number, formValues: any) {
   return await response.json();
 }
 
+export async function fetchRoomSlots(queryData: any) {
+  const { roomId, status, date, page, pageSize } = queryData;
+  const query = {
+    ...(roomId && { roomId }),
+    ...(date && { date: date.toISOString() }),
+    ...(status && { status }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/room-slots${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function submitBooking(formValues: any, token: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/booking`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(formValues),
-  });
+  console.log(formValues);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/room-booking`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchRoomBooking(queryData: any, token: string) {
+  const { userId, roomId, status, date, page, pageSize } = queryData;
+
+  const query = {
+    ...(userId && { userId }),
+    ...(roomId && { roomId }),
+    ...(status && { status }),
+    ...(page && { page }),
+    ...(date && { date: date.toISOString() }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/room-booking${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   const data = await response.json();
   return data;
@@ -626,14 +723,13 @@ export async function deleteFile(key: string, token: string) {
   return data;
 }
 
-export async function fetchClinicAppointments(
-  page?: number,
-  pageSize?: number,
-  userId?: any,
-  token?: string
-) {
+export async function fetchClinicAppointments(queryData: any, token?: string) {
+  const { userId, doctorId, date, page, pageSize } = queryData;
+
   const query = {
     ...(userId && { userId }),
+    ...(doctorId && { doctorId }),
+    ...(date && { date: date.toISOString() }),
     ...(page && { page }),
     ...(pageSize && { pageSize }),
   };
@@ -654,6 +750,48 @@ export async function fetchClinicAppointments(
 
   if (!response.ok) {
     throw new Error("Failed to fetch clinic appointments");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchClinicAppointmentByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/clinic-appointments/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Clinic Appointment By ID");
+  }
+
+  return await response.json();
+}
+
+export async function updateClinicAppointment(
+  id: number,
+  formValues: any,
+  token: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/clinic-appointments/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to update clinic appointment!");
   }
 
   const data = await response.json();

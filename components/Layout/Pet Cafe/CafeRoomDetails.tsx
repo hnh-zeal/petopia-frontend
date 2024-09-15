@@ -1,7 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { HeartPulse, MessageCircle, Star, Cat, Siren } from "lucide-react";
+import {
+  HeartPulse,
+  MessageCircle,
+  Star,
+  Cat,
+  Siren,
+  CalendarIcon,
+  Users,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -10,8 +18,146 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
+import { useRouter } from "next/router";
+import { Calendar } from "@/components/ui/calendar";
+import { useForm } from "react-hook-form";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  addDays,
+  differenceInHours,
+  format,
+  parse,
+  startOfDay,
+} from "date-fns";
+import { cn } from "@/lib/utils";
+import { useBookingStore } from "@/utils/zustand";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { CafeRoom } from "@/types/api";
+import { useEffect, useState } from "react";
+import { defaultEndSlots, defaultTimeSlots } from "@/pages/pet-cafe/booking";
+import { fetchRoomSlots } from "@/pages/api/api";
 
-export default function CafeRoomDetails({ cafeRoom }: any) {
+const formSchema = z.object({
+  date: z.date({
+    required_error: "A date is required",
+  }),
+  startTime: z.string().min(1, "A time is required"),
+  endTime: z.string().min(1, "A duration is required"),
+  guests: z.number().min(1, "At least one guest is required"),
+});
+
+interface CafeRoomDetailProps {
+  cafeRoom: CafeRoom;
+}
+
+export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
+  const [isClient, setIsClient] = useState(false);
+  const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
+  const [endTimeSlots, setEndTimeSlots] = useState<string[]>(defaultEndSlots);
+  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    setDate,
+    setStartTime,
+    setEndTime,
+    setDuration,
+    setGuests,
+    setCafeRoom,
+  } = useBookingStore();
+
+  const today = startOfDay(new Date());
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setDate(values.date);
+    setStartTime(values.startTime);
+    setEndTime(values.endTime);
+
+    const start = parse(values.startTime, "hh:mm a", values.date);
+    const end = parse(values.endTime, "hh:mm a", values.date);
+    const duration = differenceInHours(end, start);
+    setDuration(duration);
+    setGuests(values.guests);
+    setCafeRoom(cafeRoom);
+    router.push(`/pet-cafe/booking`);
+  };
+
+  const handleDateChange = async (date: Date | undefined) => {
+    if (date) {
+      setLoading(true);
+      try {
+        const fetchedTimeSlots = await fetchRoomSlots({
+          roomId: cafeRoom.id,
+          status: true,
+          date,
+        });
+
+        const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
+          format(new Date(slot.startTime), "h:mm a")
+        );
+        setTimeSlots(formattedTimeSlots);
+      } catch (error) {
+        console.error("Error fetching time slots:", error);
+        setTimeSlots([]);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setTimeSlots(defaultTimeSlots);
+    }
+    form.setValue("date", date as Date);
+  };
+
+  const handleStartTimeChange = (startTime: string) => {
+    form.setValue("startTime", startTime);
+
+    const startTimeIndex = defaultTimeSlots.indexOf(startTime);
+    const updatedEndTimeSlots =
+      startTimeIndex === 0
+        ? defaultEndSlots
+        : defaultEndSlots.slice(startTimeIndex);
+
+    setEndTimeSlots(updatedEndTimeSlots);
+  };
+
+  const router = useRouter();
+  const auth = useRecoilValue(userAuthState);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; // Return null on the server side
+  }
+
   return (
     <div className="container mx-auto px-4 py-4">
       <div className="sticky top-0 bg-white z-10 py-4">
@@ -23,31 +169,35 @@ export default function CafeRoomDetails({ cafeRoom }: any) {
         {/* Main Content */}
         <div className="w-full lg:w-2/3 xl:w-3/4 order-2 lg:order-1">
           <section id="carousel" className="mb-8">
-            <Carousel className="gap-3">
-              <CarouselContent>
-                {cafeRoom.images.map((image: string, index: number) => (
-                  <CarouselItem
-                    key={index}
-                    className="md:basis-1/2 lg:basis-1/2"
-                  >
-                    <div className="p-1">
-                      <Card>
-                        <CardContent className="flex relative aspect-square items-center justify-center ">
-                          <Image
-                            src={image}
-                            alt={`${cafeRoom.name} - Image ${index + 1}`}
-                            layout="fill"
-                            objectFit="cover"
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
+            {cafeRoom.images?.length > 0 ? (
+              <Carousel className="gap-3">
+                <CarouselContent>
+                  {cafeRoom.images.map((image: string, index: number) => (
+                    <CarouselItem
+                      key={index}
+                      className="md:basis-1/2 lg:basis-1/2"
+                    >
+                      <div className="p-1">
+                        <Card>
+                          <CardContent className="flex relative aspect-square items-center justify-center ">
+                            <Image
+                              src={image}
+                              alt={`${cafeRoom.name} - Image ${index + 1}`}
+                              layout="fill"
+                              objectFit="cover"
+                            />
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            ) : (
+              <></>
+            )}
           </section>
 
           <section id="room-info" className="mb-8">
@@ -224,54 +374,243 @@ export default function CafeRoomDetails({ cafeRoom }: any) {
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2">
-          <div className="lg:sticky lg:top-24 space-y-4">
-            <Card>
-              <CardContent className="p-4">
-                <ul className="space-y-4">
-                  <li>
-                    <Link
-                      href="#room-info"
-                      className="flex items-center text-pink-600 hover:underline"
-                    >
-                      <HeartPulse className="mr-2 h-5 w-5" />
-                      Room Information
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#pet-info"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <Cat className="mr-2 h-5 w-5" />
-                      Pets
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#contact"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <Siren className="mr-2 h-5 w-5" />
-                      Rules
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#contact"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <MessageCircle className="mr-2 h-5 w-5" />
-                      Contact Us
-                    </Link>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+        <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2 space-y-4">
+          <Card>
+            <CardContent className="p-4">
+              <ul className="space-y-4">
+                <li>
+                  <Link
+                    href="#room-info"
+                    className="flex items-center text-pink-600 hover:underline"
+                  >
+                    <HeartPulse className="mr-2 h-5 w-5" />
+                    Room Information
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#pet-info"
+                    className="flex items-center text-gray-600 hover:underline"
+                  >
+                    <Cat className="mr-2 h-5 w-5" />
+                    Pets
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    className="flex items-center text-gray-600 hover:underline"
+                  >
+                    <Siren className="mr-2 h-5 w-5" />
+                    Rules
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="#contact"
+                    className="flex items-center text-gray-600 hover:underline"
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
 
-            <Button className="w-full bg-blue-900 hover:bg-blue-800">
-              Book now
-            </Button>
+          <div className="sticky top-20 space-y-4">
+            {auth !== undefined ? (
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="flex flex-col justify-between gap-5"
+                >
+                  <Card className="w-full max-w-sm">
+                    <CardContent className="p-6 space-y-4">
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Room Booking
+                      </h2>
+
+                      <div className="space-y-4">
+                        {/* Date Field */}
+                        <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="block text-sm font-medium text-gray-700">
+                                Date<span className="text-red-400"> *</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                          "w-full justify-start text-left font-normal",
+                                          !field.value &&
+                                            "text-muted-foreground"
+                                        )}
+                                      >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {field.value
+                                          ? format(field.value, "PPP")
+                                          : "Pick a date"}
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={handleDateChange}
+                                        initialFocus
+                                        disabled={(date) =>
+                                          date < today ||
+                                          date > addDays(today, 14)
+                                        }
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                              </FormControl>
+                              <FormMessage className="text-red-500 text-sm mt-1" />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Time Field */}
+                        <FormField
+                          control={form.control}
+                          name="startTime"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="block text-sm font-medium text-gray-700">
+                                Start Time
+                                <span className="text-red-400"> *</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={handleStartTimeChange}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select time" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {timeSlots.length > 0 ? (
+                                      timeSlots.map((slot) => (
+                                        <SelectItem key={slot} value={slot}>
+                                          {slot}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <p>No booking selected</p>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage className="text-red-500 text-sm mt-1" />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* End Time Field */}
+                        <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="block text-sm font-medium text-gray-700">
+                                End Time<span className="text-red-400"> *</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select time" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {endTimeSlots.length > 0 ? (
+                                      endTimeSlots.map((slot) => (
+                                        <SelectItem key={slot} value={slot}>
+                                          {slot}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <p>No booking selected</p>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage className="text-red-500 text-sm mt-1" />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Guests Field */}
+                        <FormField
+                          control={form.control}
+                          name="guests"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="block text-sm font-medium text-gray-700">
+                                Number of guests
+                                <span className="text-red-400"> *</span>
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    id="guests"
+                                    type="number"
+                                    placeholder="Number of guests"
+                                    min={1}
+                                    {...field}
+                                    className="pl-10"
+                                    onChange={(e) =>
+                                      field.onChange(e.target.valueAsNumber)
+                                    }
+                                  />
+                                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+                              </FormControl>
+                              <FormMessage className="text-red-500 text-sm mt-1" />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="pt-4 border-t border-gray-200">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium">Total</span>
+                          <span className="font-semibold">
+                            ${cafeRoom?.price}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-900 hover:bg-blue-800"
+                  >
+                    Book this room
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              <Button
+                className="w-full bg-blue-900 hover:bg-blue-800"
+                onClick={() => {
+                  router.push("/register");
+                }}
+              >
+                Register to book this room
+              </Button>
+            )}
           </div>
         </div>
       </div>

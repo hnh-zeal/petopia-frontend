@@ -61,25 +61,25 @@ export default function AboutUs() {
           </div>
         </div>
         <div className="flex-1 relative">
-          <div className="w-full h-[400px]">
+          <div className="flex flex-row gap-5 w-full h-[400px] justify-around">
             <Image
               src="/happyDog.png"
               alt="Happy dog"
               width={200}
-              height={300}
-              className="rounded-full object-cover absolute left-0 z-10"
+              height={100}
+              className="rounded-full self-end object-cover left-0 z-10 h-3/4"
             />
             <Image
               src="/curiousCat.png"
               alt="Curious cat"
               width={200}
               height={300}
-              className="rounded-full object-cover absolute right-0 bottom-0 z-20"
+              className="rounded-full object-cover right-36 bottom-0 z-20"
             />
           </div>
-          <div className="absolute top-4 left-40 w-8 h-8 bg-blue-500 rounded-full"></div>
-          <div className="absolute top-14 right-25 w-8 h-8 bg-teal-400 rounded-full"></div>
-          <div className="absolute bottom-16 left-16 w-8 h-8 bg-yellow-400 rounded-full"></div>
+          <div className="absolute top-[100px] left-[50%] z-10 w-8 h-8 bg-blue-500 rounded-full"></div>
+          <div className="absolute top-14 left-[30%] z-10 w-8 h-8 bg-teal-400 rounded-full"></div>
+          <div className="absolute bottom-16 left-[45%] z-10 w-8 h-8 bg-yellow-400 rounded-full"></div>
         </div>
       </section>
 

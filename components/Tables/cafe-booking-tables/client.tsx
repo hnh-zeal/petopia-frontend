@@ -7,17 +7,16 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { adminColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
-import { fetchClinicAppointments } from "@/pages/api/api";
+import { fetchRoomBooking } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 
-export const ClinicAppointmentClient = ({ isAdmin = false }) => {
+export const CafeBookingClient = ({ isAdmin = false }) => {
   const router = useRouter();
-
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
-  const [appointmentsData, setAppointmentsData] = useState({
-    clinicAppointments: [],
+  const [bookingData, setBookingData] = useState({
+    data: [],
     count: 0,
     totalPages: 0,
     page: 1,
@@ -33,16 +32,16 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
         const userId = userAuth?.user?.id || null; // Extract userId only once
         const userToken = userAuth?.accessToken;
         const adminToken = adminAuth?.accessToken;
-        const data = await fetchClinicAppointments(
+        const data = await fetchRoomBooking(
           {
             page: currentPage,
-            pageSize: appointmentsData.pageSize,
+            pageSize: bookingData.pageSize,
             userId,
           },
           userToken || (adminToken as string)
         );
 
-        setAppointmentsData((prevState) => ({
+        setBookingData((prevState) => ({
           ...prevState,
           ...data,
         }));
@@ -54,7 +53,7 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
     };
 
     getAppointments();
-  }, [userAuth, adminAuth, currentPage, appointmentsData.pageSize]);
+  }, [userAuth, adminAuth, currentPage, bookingData.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));
@@ -65,7 +64,7 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
       {isAdmin && (
         <>
           <div className="flex items-start justify-between">
-            <Heading title="Clinic Appointments" />
+            <Heading title="Cafe Room Booking" />
             <Button
               className="text-xs md:text-sm"
               onClick={() => router.push(`/admin/pet-clinic/create`)}
@@ -78,11 +77,11 @@ export const ClinicAppointmentClient = ({ isAdmin = false }) => {
       )}
       {!loading && (
         <DataTable
-          searchKey="name"
+          searchKey="room"
           columns={isAdmin ? adminColumns : userColumns}
-          data={appointmentsData.clinicAppointments}
+          data={bookingData.data}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={appointmentsData.totalPages}
+          totalPages={bookingData.totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />

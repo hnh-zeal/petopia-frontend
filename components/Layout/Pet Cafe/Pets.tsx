@@ -4,16 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
-import { Doctor } from "@/types/api";
+import { CafePet } from "@/types/api";
 import { CalendarIcon, ChevronDown, Info, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Pets({ petsData }: any) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [doctors, setDoctors] = useState(petsData.doctors || []);
+  const [pets, setPets] = useState(petsData.cafePets || []);
 
   useEffect(() => {
-    const filteredDoctors = petsData.doctors.filter((doctor: any) => {
+    const filteredPets = petsData.cafePets.filter((doctor: any) => {
       return (
         doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         "" ||
@@ -23,12 +23,12 @@ export default function Pets({ petsData }: any) {
         ""
       );
     });
-    setDoctors(filteredDoctors);
-  }, [searchTerm, petsData.doctors]);
+    setPets(filteredPets);
+  }, [searchTerm, petsData.cafePets]);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Find a doctor</h1>
+      <h1 className="text-3xl font-bold mb-6">Pets in our cafe</h1>
       <Separator />
       <div className="flex gap-4 my-6">
         <div className="relative flex-grow">
@@ -48,43 +48,29 @@ export default function Pets({ petsData }: any) {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {doctors.length > 0 ? (
-          doctors.map((doctor: Doctor) => (
-            <Card key={doctor.id} className="overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-10">
-                  <div className="relative w-24 h-24 rounded-full overflow-hidden">
-                    <Image
-                      src={doctor.profileUrl || ""}
-                      alt={doctor.name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-full"
-                    />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">{doctor.name}</h2>
-                    <p className="text-gray-600">{doctor.clinic.name}</p>
-                    {doctor.specialties?.map((specialty: string) => (
-                      <>
-                        <Badge variant="secondary" className="mt-2">
-                          {specialty}
-                        </Badge>
-                      </>
-                    ))}
-                  </div>
+        {pets.length > 0 ? (
+          pets.map((pet: CafePet) => (
+            <Card key={pet.id} className="overflow-hidden">
+              {pet.imageUrl && (
+                <div className="relative h-56 w-full">
+                  <Image
+                    src={pet.imageUrl}
+                    alt={pet.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-md"
+                  />
+                </div>
+              )}
+              <CardContent className="p-4">
+                <div className="px-6 py-4">
+                  <div className="font-bold text-xl mb-2">{pet.name}</div>
+                  <p className=" text-base">Pet Type & Breed: {pet.petType}</p>
+                  <p className="text-base">Age: {pet.age} years old</p>
+                  <p className="text-base">Sex: {pet.sex}</p>
+                  <p className="text-base">Description: {pet?.description}</p>
                 </div>
               </CardContent>
-              <CardFooter className="bg-gray-50 p-4 flex justify-between">
-                <Button variant="ghost" className="text-blue-600">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  make an appointment
-                </Button>
-                <Button variant="ghost" className="text-blue-600">
-                  <Info className="mr-2 h-4 w-4" />
-                  details
-                </Button>
-              </CardFooter>
             </Card>
           ))
         ) : (

@@ -26,7 +26,10 @@ export const CareServicesClient = () => {
     const getUsers = async () => {
       setLoading(true);
       try {
-        const data = await fetchServices(currentPage, servicesData.pageSize);
+        const data = await fetchServices({
+          page: currentPage,
+          pageSize: servicesData.pageSize,
+        });
         setServicesData((prevState) => ({
           ...prevState,
           ...data,

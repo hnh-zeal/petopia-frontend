@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   VisibilityState,
 } from "@tanstack/react-table";
+
 import {
   Table,
   TableBody,
@@ -22,7 +23,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { CalendarIcon, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Filter } from "lucide-react";
 import * as React from "react";
 import {
   DropdownMenu,
@@ -31,17 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Pagination from "../pagination";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { fetchAppointmentSlots } from "@/pages/api/api";
-import { useRouter } from "next/router";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -63,10 +54,6 @@ export function DataTable<TData, TValue>({
   currentPage,
   onPageChange,
 }: DataTableProps<TData, TValue>) {
-  const router = useRouter();
-  const { id } = router.query;
-  const [tableData, setTableData] = React.useState<TData[]>(data); // State to hold the filtered data
-  const [date, setDate] = React.useState<Date>();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -75,7 +62,7 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
 
   const table = useReactTable({
-    data: tableData, // Use the filtered data state
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -91,54 +78,17 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const filterDate = async (selectedDate: Date | null) => {
-    if (!selectedDate) return;
-
-    try {
-      const data = await fetchAppointmentSlots({
-        doctorId: Number(id),
-        date: selectedDate.toISOString(),
-        page: 1,
-        pageSize: 10,
-      });
-
-      const filteredData: any[] = data.slots;
-      setTableData(filteredData);
-    } catch (error) {
-      console.error("Error fetching filtered data:", error);
-    }
-  };
-
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
-        <div className="flex flex-row items-center justify-between gap-5">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Button onClick={() => filterDate(date as Date)}>Filter</Button>{" "}
-          {/* Filter the data based on the selected date */}
-        </div>
-
+        <Input
+          placeholder={`Search ${searchKey}...`}
+          value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn(searchKey)?.setFilterValue(event.target.value)
+          }
+          className="w-full md:max-w-sm"
+        />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="ml-auto">
@@ -168,12 +118,12 @@ export function DataTable<TData, TValue>({
       </div>
       <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
         <Table className="relative">
-          <TableHeader className="bg-zinc-300">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="text-black text-center">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-black">
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -193,7 +143,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:cursor-pointer"
+                  className="hover:cursor-pointer "
                   onClick={() =>
                     !!onClickRow && onClickRow((row.original as any).id)
                   }

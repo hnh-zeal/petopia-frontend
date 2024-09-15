@@ -13,8 +13,11 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Doctor } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/router";
 
 export default function ClinicDetails({ clinic }: any) {
+  const router = useRouter();
+
   return (
     <div className="container mx-auto p-4">
       <div className="sticky top-0 bg-white z-10 py-4">
@@ -71,10 +74,10 @@ export default function ClinicDetails({ clinic }: any) {
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-semibold text-pink-600 mb-2">
-                  {clinic.name}
+                  Opening Hours
                 </h3>
                 {clinic.operatingHours?.map((day: any, index: number) => (
-                  <p key={index}>{day.dow} from 7:00 AM to 4:00 PM.</p>
+                  <p key={index}>{day.dow}: 7:00 AM - 4:00 PM.</p>
                 ))}
                 <div className="mt-4">
                   <p>
@@ -140,7 +143,10 @@ export default function ClinicDetails({ clinic }: any) {
                 </ul>
               </CardContent>
             </Card>
-            <Button className="w-full bg-blue-900 hover:bg-blue-800">
+            <Button
+              className="w-full bg-blue-900 hover:bg-blue-800"
+              onClick={() => router.push("/pet-clinics/appointments")}
+            >
               Make an appointment
             </Button>
           </div>
