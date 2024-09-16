@@ -4,7 +4,7 @@ import type {
   GetStaticPaths,
 } from "next";
 import { fetchServiceByID, fetchServices } from "@/pages/api/api";
-import { CareServicesData, PetClinicData } from "@/types/api";
+import { CareServicesData } from "@/types/api";
 import ServiceDetails from "@/components/Layout/Pet Care/CareServiceDetails";
 
 export const getStaticProps = (async (context) => {

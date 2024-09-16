@@ -201,6 +201,8 @@ export interface CareService {
   id: number;
   name: string;
   description: string;
+  rating: number;
+  reviews: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

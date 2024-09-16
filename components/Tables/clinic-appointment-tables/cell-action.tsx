@@ -74,10 +74,8 @@ type CancelFormValues = z.infer<typeof cancelSchema>;
 export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
   const auth = useRecoilValue(userAuthState);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const router = useRouter();
-
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const router = useRouter();
 
   const cancelForm = useForm<CancelFormValues>({
     resolver: zodResolver(cancelSchema),
@@ -127,10 +125,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
-          <DropdownMenuItem
-            onClick={() => router.push(`/admin/doctors/${data.id}/edit`)}
-          >
+          <DropdownMenuItem onClick={() => setIsCancelDialogOpen(true)}>
             <Ban className="mr-2 h-4 w-4 hover:cursor-pointer" /> Cancel
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -161,7 +156,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
                     <Label htmlFor="reason">Reason for Cancellation</Label>
                     <FormControl>
                       <Textarea
-                        placeholder="Enter the reason for cancelion (minimum 10 characters)"
+                        placeholder="Enter the reason for cancellation (minimum 10 characters)"
                         className="mt-2"
                         {...field}
                       />
@@ -171,10 +166,14 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
                 )}
               />
               <AlertDialogFooter>
-                <Button type="button" onClick={() => cancelForm.reset()}>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => cancelForm.reset()}
+                >
                   Cancel
                 </Button>
-                <Button type="submit">Cancel</Button>
+                <Button type="submit">Submit</Button>
               </AlertDialogFooter>
             </form>
           </Form>

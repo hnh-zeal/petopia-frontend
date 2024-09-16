@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { truncate } from "@/utils/truncate";
-import { Cat, ChevronDown, Search, Star } from "lucide-react";
+import { ChevronDown, Search, Star } from "lucide-react";
 import { CareService } from "@/types/api";
 import Image from "next/image";
 
@@ -33,7 +33,7 @@ export default function CareServices({ servicesData }: any) {
           <div className="relative flex-grow">
             <Input
               type="text"
-              placeholder="Search by name, specialty ..."
+              placeholder="Search by service name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-10"

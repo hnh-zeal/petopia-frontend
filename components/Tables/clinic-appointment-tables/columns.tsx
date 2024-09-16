@@ -48,6 +48,8 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
           <Badge className="bg-green-500">Accepted</Badge>
         ) : row.original?.status === "PENDING" ? (
           <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
         ) : (
           <Badge variant="destructive">Rejected</Badge>
         )}
@@ -56,7 +58,15 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "PENDING" ? (
+          <UserCellAction data={row.original} />
+        ) : (
+          <></>
+        )}
+      </>
+    ),
   },
 ];
 
@@ -135,6 +145,8 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
           <Badge className="bg-green-500">Accepted</Badge>
         ) : row.original?.status === "PENDING" ? (
           <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
         ) : (
           <Badge variant="destructive">Rejected</Badge>
         )}
@@ -198,6 +210,8 @@ export const doctorColumns: ColumnDef<ClinicAppointment>[] = [
           <Badge className="bg-green-500">Accepted</Badge>
         ) : row.original?.status === "PENDING" ? (
           <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
         ) : (
           <Badge variant="destructive">Rejected</Badge>
         )}

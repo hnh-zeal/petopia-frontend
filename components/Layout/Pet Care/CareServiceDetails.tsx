@@ -23,7 +23,7 @@ export default function ServiceDetails({ service }: any) {
           <section id="carousel" className="mb-8">
             <Carousel className="gap-3">
               <CarouselContent>
-                {service.images.map((image: string, index: number) => (
+                {service.images?.map((image: string, index: number) => (
                   <CarouselItem
                     key={index}
                     className="md:basis-1/2 lg:basis-1/2"
@@ -56,10 +56,10 @@ export default function ServiceDetails({ service }: any) {
 
             <div className="mt-4">
               <span className="text-2xl font-bold">
-                Price: ${service.price.toFixed(2)}
+                Price: ${service?.price}
               </span>
               <span className="text-lg text-gray-500 line-through ml-2">
-                ${service.price.toFixed(2)}
+                ${service.price}
               </span>
               <span className="text-sm text-green-600">
                 {service.promotion}
@@ -90,25 +90,27 @@ export default function ServiceDetails({ service }: any) {
             </div>
           </section>
 
-          <section id="pet-info" className="mb-8">
+          <section id="pet-sitter-info" className="mb-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-blue-800">Pets</h2>
+              <h2 className="text-2xl font-semibold text-blue-800">
+                Pet Sitters
+              </h2>
               <Link
-                href="/pet-cafe/pets"
+                href="/pet-care/pet-sitters"
                 className="text-pink-600 hover:underline"
               >
-                SEE OTHER PETS →
+                SEE OTHER PET SITTERS →
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {service.pets.map((pet: any) => (
-                <Card key={pet.id} className="overflow-hidden">
+              {service.petSitters?.map((petSitter: any) => (
+                <Card key={petSitter.id} className="overflow-hidden">
                   <CardContent className="p-4">
-                    {pet.imageUrl && (
+                    {petSitter.imageUrl && (
                       <div className="relative h-40 w-full">
                         <Image
-                          src={pet.imageUrl}
-                          alt={pet.name}
+                          src={petSitter.imageUrl}
+                          alt={petSitter.name}
                           layout="fill"
                           objectFit="cover"
                           className="rounded-md"
@@ -116,14 +118,18 @@ export default function ServiceDetails({ service }: any) {
                       </div>
                     )}
                     <div className="px-6 py-4">
-                      <div className="font-bold text-xl mb-2">{pet.name}</div>
+                      <div className="font-bold text-xl mb-2">
+                        {petSitter.name}
+                      </div>
                       <p className=" text-base">
-                        Pet Type & Breed: {pet.petType}
+                        Pet Type & Breed: {petSitter.type}
                       </p>
-                      <p className="text-base">Age: {pet.age} years old</p>
-                      <p className="text-base">Sex: {pet.sex}</p>
                       <p className="text-base">
-                        Description: {pet.description}
+                        Age: {petSitter.age} years old
+                      </p>
+                      <p className="text-base">Sex: {petSitter.sex}</p>
+                      <p className="text-base">
+                        Description: {petSitter.description}
                       </p>
                     </div>
                   </CardContent>
@@ -142,53 +148,60 @@ export default function ServiceDetails({ service }: any) {
                 <div className="flex items-start">
                   <span className="text-xl mr-4">ℹ️</span>
                   <div>
-                    <h3 className="font-bold">Cancellation/ prepayment</h3>
+                    <h3 className="font-bold">Cancellation</h3>
                     <p>
-                      Cancellation and prepayment policies vary according to
-                      accommodation type. Please{" "}
-                      <a href="#" className="text-blue-600">
-                        enter the dates of your stay
-                      </a>{" "}
-                      and check the conditions of your required option.
+                      Cancellation must be made one or two days before the
+                      appointed date and time.
                     </p>
                   </div>
                 </div>
 
                 {/* Children and Beds */}
                 <div className="flex items-start">
-                  <span className="text-xl mr-4">🔞</span>
+                  <span className="text-xl mr-4">📅</span>
                   <div>
-                    <h3 className="font-bold">Age restriction</h3>
-                    <p>Children under 18 must be supervised by the parents.</p>
-                  </div>
-                </div>
-
-                {/* Pets */}
-                <div className="flex items-start">
-                  <span className="text-xl mr-4">🐾</span>
-                  <div>
-                    <h3 className="font-bold">Pets</h3>
-                    <p>No Outside Pets are allowed.</p>
+                    <h3 className="font-bold">Appointment Timing</h3>
+                    <p>
+                      Please arrive on time for your appointment. Late arrivals
+                      may result in reduced service time or rescheduling.
+                    </p>
                   </div>
                 </div>
 
                 {/* Foods or Drinks */}
                 <div className="flex items-start">
-                  <span className="text-xl mr-4">🍔</span>
+                  <span className="text-xl mr-4">💼</span>
                   <div>
-                    <h3 className="font-bold">Food and Drinks</h3>
-                    <p>No Outside Foods or Drinks are allowed.</p>
+                    <h3 className="font-bold">Drop-off and Pickup</h3>
+                    <p>
+                      Pets must be dropped off and picked up within the
+                      allocated time. A late fee may be applied for pickups
+                      beyond the scheduled time.
+                    </p>
                   </div>
                 </div>
 
                 {/* Sanitization */}
                 <div className="flex items-start">
-                  <span className="text-xl mr-4">💦</span>
+                  <span className="text-xl mr-4">🚫</span>
                   <div>
-                    <h3 className="font-bold">Sanitation Rules</h3>
+                    <h3 className="font-bold">No Outside Pet Items</h3>
                     <p>
-                      Customers are required to sanitize their hands before and
-                      after interacting with the pets.
+                      Only approved pet items (e.g., leashes, toys) are allowed
+                      during the care session. No outside food or treats are
+                      permitted unless medically necessary.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <span className="text-xl mr-4">📞</span>
+                  <div>
+                    <h3 className="font-bold">Emergency Contact</h3>
+                    <p>
+                      Owners must provide emergency contact details at the time
+                      of the appointment. In case of emergencies, the provided
+                      contact will be immediately notified.
                     </p>
                   </div>
                 </div>
@@ -203,7 +216,7 @@ export default function ServiceDetails({ service }: any) {
             <Card>
               <CardContent className="p-4">
                 <h3 className="font-semibold text-pink-600 mb-2">
-                  Pet Cafe Department
+                  Pet Care Services Department
                 </h3>
                 {service.operatingHours?.map((day: any, index: number) => (
                   <p key={index}>{day.dow} from 7:00 AM to 4:00 PM.</p>
@@ -233,7 +246,7 @@ export default function ServiceDetails({ service }: any) {
                       className="flex items-center text-pink-600 hover:underline"
                     >
                       <HeartPulse className="mr-2 h-5 w-5" />
-                      Room Information
+                      Service Information
                     </Link>
                   </li>
                   <li>
@@ -242,7 +255,7 @@ export default function ServiceDetails({ service }: any) {
                       className="flex items-center text-gray-600 hover:underline"
                     >
                       <Cat className="mr-2 h-5 w-5" />
-                      Pets
+                      Pet Sitters
                     </Link>
                   </li>
                   <li>
