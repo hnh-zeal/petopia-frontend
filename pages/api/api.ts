@@ -818,3 +818,33 @@ export async function submitAppointment(formValues: any, userToken: string) {
   const data = await response.json();
   return data;
 }
+
+export async function fetchPackages(queryData: any) {
+  const { type, page, pageSize } = queryData;
+
+  const query = {
+    ...(type && { type }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/packages${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch packages");
+  }
+
+  const data = await response.json();
+  return data;
+}

@@ -11,7 +11,7 @@ export default function Register() {
         <div className="w-full my-10 bg-white rounded-lg shadow dark:border sm:max-w-2xl dark:bg-gray-800 dark:border-gray-700">
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
             <div className="flex flex-row justify-center space-x-4">
-              <Image src="/mobile-logo.png" width={35} height={35} alt="Logo" />{" "}
+              <Image src="/logo.ico" width={35} height={35} alt="Logo" />{" "}
               <h1 className="text-2xl font-semibold tracking-tight text-center">
                 Start Your Petopia Journey
               </h1>

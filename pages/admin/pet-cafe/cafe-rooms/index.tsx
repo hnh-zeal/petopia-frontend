@@ -4,6 +4,7 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { fetchCafeRooms } from "@/pages/api/api";
+import { RoomsData } from "@/types/api";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 import type { InferGetStaticPropsType, GetStaticProps } from "next";

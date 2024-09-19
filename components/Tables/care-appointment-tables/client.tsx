@@ -11,7 +11,7 @@ import { fetchClinicAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 
-export const ClinicAppointmentClient = ({ isAdmin = false }) => {
+export const CareAppointmentClient = ({ isAdmin = false }) => {
   const router = useRouter();
 
   const userAuth = useRecoilValue(userAuthState);

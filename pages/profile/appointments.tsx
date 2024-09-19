@@ -1,4 +1,5 @@
 import { CafeBookingClient } from "@/components/Tables/cafe-booking-tables/client";
+import { CareAppointmentClient } from "@/components/Tables/care-appointment-tables/client";
 import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -22,7 +23,9 @@ export default function MyAppointments() {
 
         {/* Pet Care Tab Content */}
         <TabsContent value="care">
-          {/* <CareAppointmentClient isAdmin={false} /> */}
+          <div className="flex flex-col gap-5">
+            <CareAppointmentClient isAdmin={false} />
+          </div>
         </TabsContent>
 
         {/* Pet Cafe Tab Content */}

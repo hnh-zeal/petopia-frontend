@@ -1,53 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { EditProfileSchema } from "@/validations/formValidation";
-import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
 import EditProfileForm from "@/components/Forms/edit-profile-form";
 import UserPetForm from "@/components/Forms/edit-pet-profile-form";
-
-const petSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  age: z.number().min(0, "Age must be a positive number"),
-  petType: z.enum(["dog", "cat"]),
-  breed: z.string().min(1, "Breed is required"),
-  sex: z.enum(["male", "female", "unknown"]),
-  dateOfBirth: z.string().optional(),
-  image: z.string().optional(),
-});
-
-type Pet = z.infer<typeof petSchema>;
+import { User } from "@/types/api";
 
 export default function ProfilePage() {
   const auth = useRecoilValue(userAuthState);
   const user = auth?.user;
   const [activeTab, setActiveTab] = useState("profile");
+  const [mounted, setMounted] = useState(false);
 
-  const [pets, setPets] = useState<Pet[]>(user?.pets || []);
-  const [isAddingPet, setIsAddingPet] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const petForm = useForm<Pet>({
-    resolver: zodResolver(petSchema),
-    defaultValues: {
-      name: "",
-      age: 0,
-      petType: "dog",
-      breed: "",
-      sex: "unknown",
-      dateOfBirth: "",
-      image: "",
-    },
-  });
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -7,8 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { RecoilRoot } from "recoil";
 import Footer from "@/components/Layout/footer";
 import Head from "next/head";
-import Image from "next/image";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -19,7 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Reports", link: "/admin/reports" },
+  { title: "Packages", link: "/admin/packages" },
 ];
 
 export const getStaticProps = (async () => {
@@ -29,7 +29,7 @@ export const getStaticProps = (async () => {
   packagesData: PackagesData;
 }>;
 
-export default function ReportPage({
+export default function PackagesPage({
   packagesData,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const packages = packagesData.packages;

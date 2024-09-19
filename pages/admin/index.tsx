@@ -18,7 +18,7 @@ export default function Login() {
               className="object-cover h-full w-full"
             />
             {/* <div className="absolute top-0 left-0 m-12 flex items-center space-x-2">
-              <Image src="/mobile-logo.png" width={35} height={35} alt="Logo" />
+              <Image src="/logo.ico" width={35} height={35} alt="Logo" />
               <p className="text-lg text-black font-medium">Petopia</p>
             </div> */}
           </div>
@@ -28,7 +28,7 @@ export default function Login() {
         <div className="w-full m-10 flex flex-col justify-center space-y-6 sm:w-[450px]">
           <div className="flex flex-col space-y-2 text-center">
             <Image
-              src="/mobile-logo.png"
+              src="/logo.ico"
               width={45}
               height={45}
               alt="Logo"

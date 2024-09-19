@@ -15,7 +15,7 @@ export default function Footer() {
         <div className="text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start mb-4">
             <Image
-              src="/mobile-logo.png"
+              src="/logo.ico"
               width={50}
               height={50}
               alt="Petopia Logo"

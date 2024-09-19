@@ -157,6 +157,9 @@ export interface User {
   contactNumber: any;
   profileUrl: any;
   lastLoginDate: any;
+  pets?: Pet[];
+  packages?: Packages[];
+  clinicAppointments?: ClinicAppointment[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -245,4 +248,22 @@ export interface CafeBooking {
   status: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface PackagesData {
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  count: number;
+  packages: Packages[];
+}
+
+export interface Packages {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  durationType: "day" | "week" | "month" | "year";
+  discountPercent: number;
 }

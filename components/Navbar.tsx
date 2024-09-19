@@ -60,10 +60,6 @@ const petCareMenus: { title: string; href: string }[] = [
     title: "Make an appointment",
     href: "/pet-care/appointments",
   },
-  {
-    title: "Packages",
-    href: "/pet-care/packages",
-  },
 ];
 
 const petCafeMenus: { title: string; href: string }[] = [
@@ -99,6 +95,10 @@ const menuList: RouteProps[] = [
     label: "Pet Cafe",
     sub_menu: true,
     sub_menus: petCafeMenus,
+  },
+  {
+    href: "/packages",
+    label: "Packages",
   },
   {
     href: "/about-us",
@@ -159,7 +159,7 @@ export const Navbar = () => {
       <NavigationMenu className="mx-auto">
         <NavigationMenuList className="container h-14 px-4 w-screen flex justify-between ">
           <NavigationMenuItem className="font-bold flex">
-            <Image src="/mobile-logo.png" width="35" height="35" alt="Logo" />
+            <Image src="/logo.ico" width="35" height="35" alt="Logo" />
             <Link
               rel="noreferrer noopener"
               href="/"

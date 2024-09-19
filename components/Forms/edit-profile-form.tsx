@@ -9,7 +9,7 @@ import * as z from "zod";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import { useToast } from "../ui/use-toast";
 import { EditProfileSchema } from "@/validations/formValidation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PencilIcon } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -22,10 +22,15 @@ import { useRecoilValue } from "recoil";
 import Image from "next/image";
 import { Input } from "../ui/input";
 import { Password } from "../password";
+import { User } from "@/types/api";
 
 type ProfileFormValue = z.infer<typeof EditProfileSchema>;
 
-export default function EditProfileForm({ user }: { user: any }) {
+interface EditProfileProps {
+  user: User | any;
+}
+
+export default function EditProfileForm({ user }: EditProfileProps) {
   const { toast } = useToast();
   const router = useRouter();
   const auth = useRecoilValue(userAuthState);
@@ -66,7 +71,7 @@ export default function EditProfileForm({ user }: { user: any }) {
 
       if (profile instanceof File) {
         // Delete the file first
-        if (user.profileUrl) {
+        if (user?.profileUrl) {
           const key = user.profileUrl.split("/").pop();
           await deleteFile(key, auth?.accessToken as string);
         }
@@ -89,12 +94,12 @@ export default function EditProfileForm({ user }: { user: any }) {
       }
 
       // Prepare formData for API request
-      console.log("Phone", phone);
       const formData = {
-        ...(name && { name }),
-        ...(phone && { phone }),
+        name,
+        phone,
+        password,
+        address,
         ...(password && { password }),
-        ...(address && { address }),
         ...(profileUrl && { profileUrl }),
       };
 
@@ -209,7 +214,6 @@ export default function EditProfileForm({ user }: { user: any }) {
               onSubmit={form.handleSubmit(onSubmit)}
               className="w-full flex-1 space-y-5"
             >
-              {/* Name & Email */}
               <div className="flex flex-col gap-6 xl:flex-row">
                 <CustomFormField
                   fieldType={FormFieldType.INPUT}
@@ -229,7 +233,6 @@ export default function EditProfileForm({ user }: { user: any }) {
                 />
               </div>
 
-              {/* Phone Number & Password */}
               <div className="flex flex-col gap-6 xl:flex-row">
                 <CustomFormField
                   fieldType={FormFieldType.INPUT}
@@ -247,7 +250,6 @@ export default function EditProfileForm({ user }: { user: any }) {
                 />
               </div>
 
-              {/* Address */}
               <div className="flex flex-col gap-6 xl:flex-row">
                 <CustomFormField
                   fieldType={FormFieldType.TEXTAREA}
@@ -258,7 +260,6 @@ export default function EditProfileForm({ user }: { user: any }) {
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="flex justify-end space-x-4">
                 <Button
                   type="button"

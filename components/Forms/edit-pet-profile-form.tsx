@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecoilValue } from "recoil";
@@ -19,7 +19,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { Calendar, Info } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  CalendarDays,
+  HeartPulse,
+  Info,
+  PencilIcon,
+  Syringe,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -36,10 +44,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "../ui/scroll-area";
+import Image from "next/image";
+import CustomFormField, { FormFieldType } from "../custom-form-field";
+import { deleteFile } from "@/pages/api/api";
 
 const petSchema = z.object({
+  profile: z.any().optional(),
   name: z.string().min(1, "Name is required"),
-  age: z.number().min(0, "Age must be a positive number"),
+  age: z.number().min(0, "Year must be at least 0"),
+  month: z
+    .number()
+    .min(1, "Month must be at least 1")
+    .max(12, "Month must not be greater than 12."),
   petType: z.enum(["dog", "cat"]),
   breed: z.string().min(1, "Breed is required"),
   sex: z.enum(["male", "female", "unknown"]),
@@ -51,16 +68,44 @@ type Pet = z.infer<typeof petSchema>;
 
 export default function UserPetForm({ user }: any) {
   const auth = useRecoilValue(userAuthState);
-  const [activeTab, setActiveTab] = useState("profile");
   const [pets, setPets] = useState<Pet[]>(user?.pets || []);
-  const [isAddingPet, setIsAddingPet] = useState(false);
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
+
+  return (
+    <>
+      {pets.length === 0 ? (
+        <div className="text-center">
+          <p className="mb-4">No pets yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {user.pets.map((pet: Pet, index: number) => (
+            <PetProfile key={index} pet={pet} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+interface PetProfileProps {
+  pet: Pet | any;
+}
+
+const PetProfile = ({ pet }: PetProfileProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(
+    pet?.profileUrl || null
+  );
 
   const petForm = useForm<Pet>({
     resolver: zodResolver(petSchema),
     defaultValues: {
       name: "",
       age: 0,
+      month: 1,
       petType: "dog",
       breed: "",
       sex: "unknown",
@@ -69,300 +114,200 @@ export default function UserPetForm({ user }: any) {
     },
   });
 
-  const onSubmitPet = (data: Pet) => {
-    if (editingPet) {
-      setPets(pets.map((pet) => (pet === editingPet ? data : pet)));
-      setEditingPet(null);
-      toast({
-        title: "Pet updated",
-        description: "Your pet's information has been updated successfully.",
-      });
-    } else {
-      setPets([...pets, data]);
-      setIsAddingPet(false);
-      toast({
-        title: "Pet added",
-        description: "Your pet has been added successfully.",
-      });
-    }
-    petForm.reset();
-  };
-
-  const handleEditPet = (pet: Pet) => {
-    setEditingPet(pet);
-    petForm.reset(pet);
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        petForm.setValue("image", reader.result as string);
+        setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      petForm.setValue("profile", file);
     }
   };
 
-  const PetForm = () => (
-    <Form {...petForm}>
-      <form onSubmit={petForm.handleSubmit(onSubmitPet)} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={petForm.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={petForm.control}
-            name="age"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Age</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={petForm.control}
-            name="petType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pet Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pet type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="dog">Dog</SelectItem>
-                    <SelectItem value="cat">Cat</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={petForm.control}
-            name="breed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Breed</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={petForm.control}
-            name="sex"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sex</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex space-x-4"
-                  >
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <RadioGroupItem value="male" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Male</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <RadioGroupItem value="female" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Female</FormLabel>
-                    </FormItem>
-                    <FormItem className="flex items-center space-x-2">
-                      <FormControl>
-                        <RadioGroupItem value="unknown" />
-                      </FormControl>
-                      <FormLabel className="font-normal">Unknown</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={petForm.control}
-            name="dateOfBirth"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date of Birth</FormLabel>
-                <FormControl>
-                  <Input {...field} type="date" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={petForm.control}
-          name="image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Pet Image</FormLabel>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    handleFileUpload(e);
-                    field.onChange(e);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setIsAddingPet(false);
-              setEditingPet(null);
-              petForm.reset();
-            }}
-          >
-            Cancel
-          </Button>
-          <Button type="submit">{editingPet ? "Update Pet" : "Add Pet"}</Button>
-        </div>
-      </form>
-    </Form>
-  );
+  const handleEditClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onSubmit = async (formValues: any) => {
+    setLoading(true);
+  };
 
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">My Pets</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                setIsAddingPet(true);
-                setEditingPet(null);
-                petForm.reset();
-              }}
-            >
-              Add Another Pet
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>
-                {isAddingPet ? "Add a New Pet" : "Edit Pet"}
-              </DialogTitle>
-            </DialogHeader>
-            <PetForm />
-          </DialogContent>
-        </Dialog>
-      </div>
-      {pets.length === 0 ? (
-        <div className="text-center">
-          <p className="mb-4">You have not added any pets yet.</p>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => {
-                  setIsAddingPet(true);
-                  setEditingPet(null);
-                  petForm.reset();
-                }}
-              >
-                Add a Pet
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add a New Pet</DialogTitle>
-              </DialogHeader>
-              <PetForm />
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {pets.map((pet, index) => (
-            <Card key={index}>
-              <CardContent className="p-4">
-                <div className="flex items-start">
-                  <Avatar className="w-16 h-16 mr-4">
-                    <AvatarImage src={pet.image} alt={pet.name} />
-                    <AvatarFallback>{pet.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-semibold">{pet.name}</h3>
-                        <p className="text-sm text-gray-500">{pet.breed}</p>
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Pet Information</h2>
+            {!isEditing && (
+              <Button onClick={() => setIsEditing(true)}>Edit</Button>
+            )}
+          </div>
+          <div className="flex flex-row gap-4">
+            <div className="w-full md:w-1/3">
+              <div className="relative">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-secondary">
+                    {preview ? (
+                      <Image
+                        src={preview}
+                        alt="Profile picture"
+                        width={128}
+                        height={128}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        <Image
+                          src="/avatar.png"
+                          alt="Profile picture"
+                          width={128}
+                          height={128}
+                          className="object-cover w-full h-full"
+                        />
                       </div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditPet(pet)}
-                          >
-                            Edit
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>Edit Pet</DialogTitle>
-                          </DialogHeader>
-                          <PetForm />
-                        </DialogContent>
-                      </Dialog>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="absolute bottom-0 right-0 rounded-full"
+                      onClick={handleEditClick}
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  )}
+                  <Input
+                    id="profile"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="w-full md:w-2/3">
+              {isEditing ? (
+                <Form {...petForm}>
+                  <form
+                    onSubmit={petForm.handleSubmit(onSubmit)}
+                    className="w-full flex-1 space-y-5"
+                  >
+                    <div className="flex flex-col gap-6 xl:flex-row">
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        placeholder="Enter your name"
+                        control={petForm.control}
+                        name="name"
+                        label="Name"
+                      />
                     </div>
-                    <div className="mt-2 flex space-x-2">
-                      <Badge variant="secondary">{pet.petType}</Badge>
-                      <Badge variant="secondary">{pet.sex}</Badge>
+
+                    <div className="flex flex-col gap-6 xl:flex-row">
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        placeholder="Enter your phone number"
+                        control={petForm.control}
+                        name="phone"
+                        label="Phone Number"
+                      />
                     </div>
+
+                    <div className="flex flex-col gap-6 xl:flex-row">
+                      <CustomFormField
+                        fieldType={FormFieldType.TEXTAREA}
+                        placeholder="Enter Address"
+                        control={petForm.control}
+                        name="address"
+                        label="Address"
+                      />
+                    </div>
+
+                    <div className="flex justify-end space-x-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={loading}>
+                        {loading ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              ) : (
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="flex flex-col space-y-3">
+                    <p className="font-semibold">Name</p>
+                    <p>{pet?.name}</p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <p className="font-semibold">Email</p>
+                    <p>{pet?.age}</p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <p className="font-semibold">Phone Number</p>
+                    <p>{pet?.phone}</p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <p className="font-semibold">Password</p>
+                    <p>***************</p>
+                  </div>
+                  <div className="flex flex-col space-y-3">
+                    <p className="font-semibold">Address</p>
+                    <p>{pet?.address}</p>
                   </div>
                 </div>
-                <div className="mt-4 flex justify-between items-center">
-                  <Button variant="ghost" size="sm" className="text-gray-500">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    make an appointment
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500">
-                    <Info className="w-4 h-4 mr-2" />
-                    details
-                  </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Appointment History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[300px] pr-4">
+            {pet?.clinicAppointments?.length > 0 ? (
+              pet?.clinicAppointments?.map((appointment: any) => (
+                <div key={appointment.id} className="mb-4 p-3 border rounded">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-semibold">
+                      {appointment.date.toLocaleDateString()}
+                    </span>
+                    <Badge
+                      variant={
+                        appointment.status === "completed"
+                          ? "default"
+                          : appointment.status === "scheduled"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {appointment.status}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {appointment.reason}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              ))
+            ) : (
+              <p className="text-muted-foreground">
+                No appointments scheduled.
+              </p>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </>
   );
-}
+};
