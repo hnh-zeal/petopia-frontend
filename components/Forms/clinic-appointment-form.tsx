@@ -71,21 +71,6 @@ const UserRegisterForm = () => {
     } finally {
       setIsLoading(false);
     }
-
-    // Store file info in form data as
-    // let formData;
-    // if (
-    //   values.identificationDocument &&
-    //   values.identificationDocument?.length > 0
-    // ) {
-    //   const blobFile = new Blob([values.identificationDocument[0]], {
-    //     type: values.identificationDocument[0].type,
-    //   });
-
-    //   formData = new FormData();
-    //   formData.append("blobFile", blobFile);
-    //   formData.append("fileName", values.identificationDocument[0].name);
-    // }
   };
 
   const next = async () => {

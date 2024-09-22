@@ -13,11 +13,34 @@ import { format } from "date-fns";
 import DoctorSchedule from "./DoctorSchedule";
 import { AvailableSlotsClient } from "@/components/Tables/doctor-slots-tables/client";
 import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
+import { toast } from "@/components/ui/use-toast";
+import { updateDoctorByID } from "@/pages/api/api";
 
 export default function DoctorInfo({ doctor }: any) {
   const router = useRouter();
   const [isActive, setIsActive] = useState(doctor.isActive);
-  const handleStatusToggle = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleStatusToggle = async () => {
+    setLoading(true);
+    try {
+      const data = await updateDoctorByID(doctor.id, {
+        isActive: !doctor.isActive,
+      });
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
     setIsActive(!isActive);
   };
 
@@ -26,7 +49,11 @@ export default function DoctorInfo({ doctor }: any) {
       <div className="flex items-start justify-between">
         <Heading title="Doctor Profile" />
         <div className="flex items-center gap-10">
-          <Switch checked={isActive} onCheckedChange={handleStatusToggle} />
+          <Switch
+            checked={isActive}
+            disabled={loading}
+            onCheckedChange={handleStatusToggle}
+          />
           <Button
             onClick={() => router.push(`/admin/doctors/${doctor.id}/edit`)}
           >

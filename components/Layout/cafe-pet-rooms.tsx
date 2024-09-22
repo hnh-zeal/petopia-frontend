@@ -28,7 +28,7 @@ export default function CafeRoom({ roomData }: any) {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Cafe Pets" />
+        <Heading title="Cafe Rooms" />
         <Button
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/pet-cafe/cafe-rooms/create`)}
@@ -92,18 +92,14 @@ export default function CafeRoom({ roomData }: any) {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="p-4 flex justify-around items-center">
+                  <CardFooter className="p-4 flex justify-end items-center">
                     <Button
-                      className="w-1/4"
                       onClick={() =>
-                        router.push(
-                          `/admin/pet-cafe/cafe-rooms/${room.id}/edit`
-                        )
+                        router.push(`/admin/pet-cafe/cafe-rooms/${room.id}`)
                       }
                     >
-                      Edit{" "}
+                      View Details
                     </Button>
-                    <Button className="w-1/3">View Details</Button>
                   </CardFooter>
                 </Card>
               ))}

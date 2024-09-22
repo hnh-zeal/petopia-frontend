@@ -9,6 +9,7 @@ import {
   Siren,
   CalendarIcon,
   Users,
+  Clock,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -494,8 +495,15 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
                                   value={field.value}
                                   onValueChange={handleStartTimeChange}
                                 >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select time" />
+                                  <SelectTrigger
+                                    className={cn(
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <div className="flex flex-row items-center gap-3">
+                                      <Clock className="ml-1 w-4 h-4" />
+                                      <SelectValue placeholder="Select time" />
+                                    </div>
                                   </SelectTrigger>
                                   <SelectContent>
                                     {timeSlots.length > 0 ? (
@@ -505,7 +513,10 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
                                         </SelectItem>
                                       ))
                                     ) : (
-                                      <p>No booking selected</p>
+                                      <p className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                                        No Slots Available. Please choose other
+                                        date.
+                                      </p>
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -529,8 +540,15 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
                                   value={field.value}
                                   onValueChange={field.onChange}
                                 >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select time" />
+                                  <SelectTrigger
+                                    className={cn(
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <div className="flex flex-row items-center gap-3">
+                                      <Clock className="ml-1 w-4 h-4" />
+                                      <SelectValue placeholder="Select time" />
+                                    </div>
                                   </SelectTrigger>
                                   <SelectContent>
                                     {endTimeSlots.length > 0 ? (
@@ -540,7 +558,10 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
                                         </SelectItem>
                                       ))
                                     ) : (
-                                      <p>No booking selected</p>
+                                      <p className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                                        No Slots Available. Please choose other
+                                        date.
+                                      </p>
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -568,12 +589,18 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
                                     placeholder="Number of guests"
                                     min={1}
                                     {...field}
-                                    className="pl-10"
+                                    className="pl-11"
                                     onChange={(e) =>
                                       field.onChange(e.target.valueAsNumber)
                                     }
                                   />
-                                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+
+                                  <Users
+                                    className={cn(
+                                      "absolute ml-1 w-4 h-4 left-3 top-1/2 transform -translate-y-1/2",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  />
                                 </div>
                               </FormControl>
                               <FormMessage className="text-red-500 text-sm mt-1" />

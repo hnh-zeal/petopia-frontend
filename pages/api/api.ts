@@ -42,10 +42,6 @@ export async function userRegister(formValues: any) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch User");
-  }
-
   const data = await response.json();
   return data;
 }
@@ -143,10 +139,6 @@ export async function fetchUserByID(id: number) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch User");
-  }
-
   const data = await response.json();
   return data;
 }
@@ -165,10 +157,6 @@ export async function updateUserWithToken(token: string, formValues: any) {
   );
 
   const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`${data.message}`);
-  }
-
   return data;
 }
 
@@ -182,10 +170,6 @@ export async function toggleActiveUser(id: number) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to update User");
-  }
 
   const data = await response.json();
   return data;
@@ -209,10 +193,6 @@ export async function fetchDoctors(
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch doctors");
-  }
-
   const data = await response.json();
   return data;
 }
@@ -227,10 +207,6 @@ export async function fetchDoctorByID(id: number) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Doctor");
-  }
 
   const data = await response.json();
   return data;
@@ -247,9 +223,22 @@ export async function updateDoctorByID(id: number, formValues: any) {
       body: JSON.stringify(formValues),
     }
   );
-  if (!response.ok) {
-    throw new Error("Failed to update Doctor");
-  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function updateDoctorScheduleByID(id: number, values: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/doctor-schedules/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    }
+  );
 
   const data = await response.json();
   return data;
@@ -268,10 +257,6 @@ export async function fetchPetClinics(page?: number, pageSize?: number) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
   return await response.json();
 }
 
@@ -285,10 +270,6 @@ export async function fetchPetClinicByID(id: number) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinic");
-  }
 
   return await response.json();
 }
@@ -356,10 +337,6 @@ export async function fetchPetSitters(
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
   return await response.json();
 }
 
@@ -374,10 +351,6 @@ export async function createCareService(formValues: any) {
       body: JSON.stringify(formValues),
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch services");
-  }
 
   const data = await response.json();
   return data;
@@ -402,10 +375,6 @@ export async function fetchServices(queryData?: any) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch services");
-  }
-
   const data = await response.json();
   return data;
 }
@@ -420,10 +389,6 @@ export async function fetchServiceByID(id: number) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch service by ID");
-  }
 
   const data = await response.json();
   return data;
@@ -447,10 +412,6 @@ export async function fetchCafePets(queryData?: any) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Cafe Pets");
-  }
 
   return await response.json();
 }
@@ -532,10 +493,6 @@ export async function fetchCafePetByID(id: number) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch Cafe Pets");
-  }
-
   return await response.json();
 }
 
@@ -550,10 +507,6 @@ export async function updateCafePetByID(id: number, formValues: any) {
       body: JSON.stringify(formValues),
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to Update Pets");
-  }
 
   return await response.json();
 }
@@ -645,10 +598,6 @@ export async function fetchAdminWithToken(token: string) {
   );
 
   const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`${data.message}`);
-  }
-
   return data;
 }
 
@@ -665,10 +614,6 @@ export async function fetchUserWithToken(token: string) {
   );
 
   const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`${data.message}`);
-  }
-
   return data;
 }
 
@@ -692,9 +637,6 @@ export async function singleFileUpload(fileData: any, token: string) {
   const contentType = response.headers.get("Content-Type");
   if (contentType && contentType.includes("application/json")) {
     const data = await response.json();
-    if (!response.ok) {
-      throw new Error(`${data.message}`);
-    }
     return data;
   } else {
     // Handle non-JSON response
@@ -716,10 +658,6 @@ export async function deleteFile(key: string, token: string) {
   );
 
   const data = await response.json();
-  if (!response.ok) {
-    throw new Error(`${data.message}`);
-  }
-
   return data;
 }
 
@@ -748,10 +686,6 @@ export async function fetchClinicAppointments(queryData: any, token?: string) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch clinic appointments");
-  }
-
   const data = await response.json();
   return data;
 }
@@ -766,10 +700,6 @@ export async function fetchClinicAppointmentByID(id: number) {
       },
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Clinic Appointment By ID");
-  }
 
   return await response.json();
 }
@@ -790,9 +720,6 @@ export async function updateClinicAppointment(
       body: JSON.stringify(formValues),
     }
   );
-  if (!response.ok) {
-    throw new Error("Failed to update clinic appointment!");
-  }
 
   const data = await response.json();
   return data;
@@ -810,10 +737,6 @@ export async function submitAppointment(formValues: any, userToken: string) {
       body: JSON.stringify(formValues),
     }
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to submit clinic appointments");
-  }
 
   const data = await response.json();
   return data;
@@ -841,9 +764,51 @@ export async function fetchPackages(queryData: any) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch packages");
-  }
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchPackageByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/packages/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function createPackages(formValues: any, adminToken: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/packages`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify(formValues),
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+export async function purchasePackage(formValues: any, userToken: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/packages/${formValues.id}/purchase`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
 
   const data = await response.json();
   return data;

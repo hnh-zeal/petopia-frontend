@@ -114,6 +114,11 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
     }
   };
 
+  const onCancel = () => {
+    setIsCancelDialogOpen(false);
+    cancelForm.reset();
+  };
+
   return (
     <>
       <DropdownMenu modal={false}>
@@ -125,8 +130,11 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setIsCancelDialogOpen(true)}>
-            <Ban className="mr-2 h-4 w-4 hover:cursor-pointer" /> Cancel
+          <DropdownMenuItem
+            className="hover:cursor-pointer"
+            onClick={() => setIsCancelDialogOpen(true)}
+          >
+            <Ban className="mr-2 h-4 w-4" /> Cancel
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -166,11 +174,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
                 )}
               />
               <AlertDialogFooter>
-                <Button
-                  variant="ghost"
-                  type="button"
-                  onClick={() => cancelForm.reset()}
-                >
+                <Button variant="ghost" type="button" onClick={onCancel}>
                   Cancel
                 </Button>
                 <Button type="submit">Submit</Button>
@@ -202,7 +206,7 @@ export const AdminCellAction: React.FC<CellActionProps> = ({ data }) => {
           }}
         >
           <button className="flex flex-row items-center">
-            <Eye className="mr-2 h-4 w-4 " /> See Details
+            <Eye className="mr-2 h-4 w-4" /> See Details
           </button>
         </DropdownMenuItem>
       </DropdownMenuContent>

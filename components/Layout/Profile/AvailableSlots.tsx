@@ -1,8 +1,6 @@
 import { Calendar } from "@/components/ui/calendar";
 import React, { useState } from "react";
 
-import { AvailableSlotsClient } from "@/components/Tables/doctor-slots-tables/client";
-
 const AvailableSlots = () => {
   const [date, setDate] = useState<Date>();
 

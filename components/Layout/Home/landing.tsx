@@ -3,9 +3,11 @@ import { userAuthState } from "@/states/auth";
 import Image from "next/image";
 import { useRecoilValue } from "recoil";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function Landing() {
   const auth = useRecoilValue(userAuthState);
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,12 @@ export default function Landing() {
           </Button>
           {/* Conditionally render based on whether the component has mounted */}
           {mounted && auth && (
-            <Button className="w-full md:w-2/5 rounded-3xl">
+            <Button
+              className="w-full md:w-2/5 rounded-3xl"
+              onClick={() => {
+                router.push("/profile/appointments");
+              }}
+            >
               My Appointments ➔
             </Button>
           )}

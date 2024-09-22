@@ -11,11 +11,12 @@ import type {
   GetStaticProps,
   GetStaticPaths,
 } from "next";
+import { RoomsData } from "@/types/api";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Cafe Room", link: "/admin/cafe-rooms" },
-  { title: "Edit", link: "/admin/cafe-rooms/edit" },
+  { title: "Cafe Rooms", link: "/admin/pet-cafe/cafe-rooms" },
+  { title: "Edit", link: "/admin/pet-cafe/cafe-rooms/edit" },
 ];
 
 export const getStaticProps = (async (context) => {

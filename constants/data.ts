@@ -16,6 +16,7 @@ export type Schedule = {
   startTime: string;
   endTime: string;
   status: boolean;
+  isActive: boolean;
   doctor: Doctor;
 };
 
@@ -179,7 +180,7 @@ export const navItems: NavItem[] = [
         label: "centers",
       },
       {
-        title: "Cafe Pets",
+        title: "Pets",
         href: "/admin/pet-cafe/pets",
         icon: "cafePets",
         label: "pet-sitters",

@@ -1,6 +1,6 @@
 import { Switch } from "@/components/ui/switch";
 import { format, parse } from "date-fns";
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Schedule } from "@/constants/data";
+import { updateDoctorScheduleByID } from "@/pages/api/api";
+import { toast } from "@/components/ui/use-toast";
 
 export const getDayName = (dayOfWeek: number) => {
   const days = [
@@ -57,19 +59,7 @@ const DoctorSchedule = ({ schedules }: any) => {
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Switch
-                    checked={schedule.isActive}
-                    onChange={() => (schedule.isActive = !schedule.isActive)}
-                    className={`${
-                      schedule.isActive ? "bg-blue-600" : "bg-gray-200"
-                    } relative inline-flex h-6 w-11 items-center rounded-full`}
-                  >
-                    <span
-                      className={`${
-                        schedule.isActive ? "translate-x-6" : "translate-x-1"
-                      } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-                    />
-                  </Switch>
+                  <ScheduleSwitch schedule={schedule} />
                 </TableCell>
               </TableRow>
             ))}
@@ -77,6 +67,47 @@ const DoctorSchedule = ({ schedules }: any) => {
         </Table>
       </div>
     </div>
+  );
+};
+
+const ScheduleSwitch = ({ schedule }: { schedule: Schedule }) => {
+  const [loading, setLoading] = useState(false);
+  const [isActive, setIsActive] = useState(schedule.isActive);
+
+  const handleStatusToggle = async (schedule: Schedule) => {
+    setLoading(true);
+    try {
+      const data = await updateDoctorScheduleByID(schedule.id, {
+        isActive: !schedule.isActive,
+      });
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        setIsActive(!isActive);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Switch
+      checked={isActive}
+      disabled={loading}
+      onCheckedChange={() => handleStatusToggle(schedule)}
+      className={`${
+        schedule.isActive ? "bg-blue-600" : "bg-gray-200"
+      } relative inline-flex h-6 w-11 items-center rounded-full`}
+    >
+      <span
+        className={`${
+          schedule.isActive ? "translate-x-6" : "translate-x-1"
+        } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+      />
+    </Switch>
   );
 };
 

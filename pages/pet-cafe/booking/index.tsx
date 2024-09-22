@@ -2,13 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -28,7 +26,6 @@ import {
 import {
   AlertCircle,
   CalendarIcon,
-  Clock,
   MapPinIcon,
   StarIcon,
   Users,
@@ -38,7 +35,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   FormControl,
   Form,
@@ -590,7 +587,7 @@ export default function ReservationConfirmation() {
                   </Card>
 
                   <Button type="submit" disabled={isEditing}>
-                    Submit Booking
+                    {isLoading ? "Submitting" : "Submit Booking"}
                   </Button>
                 </>
               ) : (

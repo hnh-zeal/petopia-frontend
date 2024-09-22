@@ -9,7 +9,6 @@ import { DashboardCalendar } from "@/components/dashboard-calendar";
 import { DonutChart } from "@/components/charts/donut-chart";
 import { AreaGraph } from "@/components/charts/area-graph";
 import { BarGraph } from "@/components/charts/bar-graph";
-import { PieGraph } from "@/components/charts/pie-graph";
 import { Heading } from "@/components/ui/heading";
 
 const breadcrumbItems = [{ title: "Dashboard", link: "/admin/dashboard" }];
