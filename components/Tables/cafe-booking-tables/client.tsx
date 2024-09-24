@@ -5,13 +5,20 @@ import { Separator } from "@/components/ui/separator";
 import { Plus } from "lucide-react";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
-import { adminColumns, userColumns } from "./columns";
+import { adminColumns, roomColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchRoomBooking } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
+import { CafeRoom } from "@/types/api";
 
-export const CafeBookingClient = ({ isAdmin = false }) => {
+export const CafeBookingClient = ({
+  isAdmin = false,
+  cafeRoom,
+}: {
+  isAdmin: boolean;
+  cafeRoom?: CafeRoom;
+}) => {
   const router = useRouter();
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
@@ -26,20 +33,15 @@ export const CafeBookingClient = ({ isAdmin = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const getAppointments = async () => {
+    const getRoomBooking = async () => {
       setLoading(true);
       try {
         const userId = userAuth?.user?.id || null; // Extract userId only once
-        const userToken = userAuth?.accessToken;
-        const adminToken = adminAuth?.accessToken;
-        const data = await fetchRoomBooking(
-          {
-            page: currentPage,
-            pageSize: bookingData.pageSize,
-            userId,
-          },
-          userToken || (adminToken as string)
-        );
+        const data = await fetchRoomBooking({
+          page: currentPage,
+          pageSize: bookingData.pageSize,
+          userId,
+        });
 
         setBookingData((prevState) => ({
           ...prevState,
@@ -52,7 +54,7 @@ export const CafeBookingClient = ({ isAdmin = false }) => {
       }
     };
 
-    getAppointments();
+    getRoomBooking();
   }, [userAuth, adminAuth, currentPage, bookingData.pageSize]);
 
   const handlePageChange = (page: number) => {
@@ -60,17 +62,11 @@ export const CafeBookingClient = ({ isAdmin = false }) => {
   };
 
   return (
-    <>
-      {isAdmin && (
+    <div className="flex flex-col space-y-3">
+      {isAdmin && !cafeRoom && (
         <>
           <div className="flex items-start justify-between">
             <Heading title="Cafe Room Booking" />
-            <Button
-              className="text-xs md:text-sm"
-              onClick={() => router.push(`/admin/pet-clinic/create`)}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add New
-            </Button>
           </div>
           <Separator />
         </>
@@ -78,7 +74,9 @@ export const CafeBookingClient = ({ isAdmin = false }) => {
       {!loading && (
         <DataTable
           searchKey="room"
-          columns={isAdmin ? adminColumns : userColumns}
+          columns={
+            cafeRoom ? roomColumns : isAdmin ? adminColumns : userColumns
+          }
           data={bookingData.data}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
           totalPages={bookingData.totalPages}
@@ -87,6 +85,6 @@ export const CafeBookingClient = ({ isAdmin = false }) => {
         />
       )}
       {loading && <div>Loading...</div>}
-    </>
+    </div>
   );
 };

@@ -43,15 +43,12 @@ export const getServerSideProps: GetServerSideProps<{
 const formSchema = z.object({
   name: z.string().optional(),
   email: z.string().optional(),
-  date: z.date({
-    required_error: "A date is required",
-  }),
   card: z.string().min(1, "Card information is required").optional(),
   cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV").optional(),
   billingAddress: z.string().optional(),
-  billingCity: z.string().min(1, "City is required"),
-  billingState: z.string().min(1, "State is required"),
-  billingZip: z.string().min(1, "ZIP code is required"),
+  billingCity: z.string().optional(),
+  billingState: z.string().optional(),
+  billingZip: z.string().optional(),
 });
 
 export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
@@ -69,11 +66,11 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
   const onSubmit = async (formValues: any) => {
     setLoading(true);
     try {
-      const { date, ...otherValues } = formValues;
       const formData = {
-        ...otherValues,
+        ...formValues,
         packageId: pkg.id,
       };
+      console.log(formData);
 
       const data = await purchasePackage(formData, auth?.accessToken as string);
       if (data.error) {

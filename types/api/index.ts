@@ -262,8 +262,18 @@ export interface Packages {
   id: number;
   name: string;
   description: string;
+  type: string;
   price: number;
   duration: number;
   durationType: "day" | "week" | "month" | "year";
   discountPercent: number;
+}
+
+export interface PetSitter {
+  id: number;
+  name: string;
+  about: string;
+  email: string;
+  phoneNumber: string;
+  services: any;
 }

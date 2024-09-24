@@ -135,8 +135,7 @@ export function DataTable<TData, TValue>({
               />
             </PopoverContent>
           </Popover>
-          <Button onClick={() => filterDate(date as Date)}>Filter</Button>{" "}
-          {/* Filter the data based on the selected date */}
+          <Button onClick={() => filterDate(date as Date)}>Filter</Button>
         </div>
 
         <DropdownMenu>

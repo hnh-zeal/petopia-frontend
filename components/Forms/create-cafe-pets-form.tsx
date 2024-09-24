@@ -19,16 +19,49 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { useState } from "react";
 import { createPackages } from "@/pages/api/api";
-import { SelectItem } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { Input } from "../ui/input";
+import { cn } from "@/lib/utils";
 
-export const packagesType = [
-  { name: "Pet Clinic", value: "CLINIC" },
-  { name: "Pet Care", value: "CARE" },
-  { name: "Pet Cafe", value: "CAFE" },
+export const petType = [
+  { name: "Cat", value: "cat" },
+  { name: "Dog", value: "dog" },
+  { name: "Rabbit", value: "rabbit" },
+  { name: "Bird", value: "bird" },
 ];
+
+export const breeds: any = {
+  cat: [
+    { name: "Siamese", value: "siamese" },
+    { name: "Persian", value: "persian" },
+    { name: "Maine Coon", value: "maine_coon" },
+    // Add more cat breeds
+  ],
+  dog: [
+    { name: "Labrador Retriever", value: "labrador" },
+    { name: "German Shepherd", value: "german_shepherd" },
+    { name: "Golden Retriever", value: "golden_retriever" },
+    // Add more dog breeds
+  ],
+  rabbit: [
+    { name: "Holland Lop", value: "holland_lop" },
+    { name: "Netherland Dwarf", value: "netherland_dwarf" },
+    // Add more rabbit breeds
+  ],
+  bird: [
+    { name: "Parakeet", value: "parakeet" },
+    { name: "Canary", value: "canary" },
+    // Add more bird breeds
+  ],
+};
 
 export const durationType = [
   { name: "Days", value: "days" },
@@ -49,27 +82,44 @@ export const discountPercents = [
   { name: "80 %", value: 80 },
 ];
 
-const CreatePackageSchema = z.object({
+const CreatePetSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
+  petType: z.string().min(1, { message: "Pet Type is required." }),
+  breed: z.string().min(1, { message: "Breed is required." }),
   description: z.string().min(1, { message: "Description is required." }),
-  type: z.string().min(1, { message: "Type is required." }),
-  duration: z.number(),
-  durationType: z.string().min(1, { message: "Duration Type is required." }),
-  price: z.number(),
-  discountPercent: z
-    .string()
-    .min(1, { message: "Discount Percent is required." }),
+  year: z.number(),
+  month: z.number(),
+  sex: z.string(),
+  roomId: z.string(),
 });
 
-type PackagesFormValue = z.infer<typeof CreatePackageSchema>;
+type PackagesFormValue = z.infer<typeof CreatePetSchema>;
 
-export default function CreatePackagesForm() {
+export default function CreateCafePetsForm() {
   const auth = useRecoilValue(adminAuthState);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [selectedPetType, setSelectedPetType] = useState("");
+
+  const handlePetTypeChange = (value: string) => {
+    setSelectedPetType(value);
+    form.setValue("petType", value);
+    form.setValue("breed", "");
+  };
+
   const form = useForm<PackagesFormValue>({
-    resolver: zodResolver(CreatePackageSchema),
+    resolver: zodResolver(CreatePetSchema),
+    defaultValues: {
+      name: "",
+      petType: "",
+      breed: "",
+      description: "",
+      year: undefined,
+      month: undefined,
+      sex: "",
+      roomId: "",
+    },
   });
 
   const onSubmit = async (formValues: PackagesFormValue) => {
@@ -103,7 +153,7 @@ export default function CreatePackagesForm() {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Create Package" />
+        <Heading title="Create Pet" />
       </div>
       <Separator />
       <Form {...form}>
@@ -111,24 +161,25 @@ export default function CreatePackagesForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full space-y-5 px-2"
         >
-          <div className="flex flex-col gap-6 xl:flex-row">
+          <div className="grid grid-cols-2 gap-6">
             <CustomFormField
               fieldType={FormFieldType.INPUT}
-              placeholder="Enter package's name"
+              placeholder="Enter pet's name"
               control={form.control}
               name="name"
               label="Name"
               required={true}
             />
+
             <CustomFormField
               fieldType={FormFieldType.SELECT}
               control={form.control}
-              name="type"
-              label="Package Type"
+              name="petType"
+              label="Pet Type"
               placeholder="Select Type"
               required={true}
             >
-              {packagesType.map((type, i) => (
+              {petType.map((type, i) => (
                 <SelectItem key={i} value={`${type.value}`}>
                   <div className="flex cursor-pointer items-center gap-2">
                     <p>{type.name}</p>
@@ -142,46 +193,65 @@ export default function CreatePackagesForm() {
             <div className="grid grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="duration"
+                name="petType"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel className="shad-input-label">
-                      Duration <span className="text-red-400">*</span>
+                    <FormLabel className="block text-sm font-medium text-gray-700">
+                      End Time<span className="text-red-400"> *</span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter Duration"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                        min={0}
-                      />
+                      <Select
+                        value={field.value}
+                        onValueChange={handlePetTypeChange}
+                      >
+                        <SelectTrigger
+                          className={cn(
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          <div className="flex flex-row items-center gap-3">
+                            <SelectValue placeholder="Select Pet Type" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {petType.map((type, i) => (
+                            <SelectItem key={i} value={`${type.value}`}>
+                              <div className="flex cursor-pointer items-center gap-2">
+                                <p>{type.name}</p>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
-                    <FormMessage className="shad-error" />
+                    <FormMessage className="text-red-500 text-sm mt-1" />
                   </FormItem>
                 )}
               />
+
               <CustomFormField
                 fieldType={FormFieldType.SELECT}
-                placeholder="Duration Type"
                 control={form.control}
-                name="durationType"
-                label="Duration Type"
+                name="breed"
+                label="Breed"
+                placeholder="Select Breed"
                 required={true}
               >
-                {durationType.map((type, i) => (
-                  <SelectItem key={i} value={`${type.value}`}>
-                    <div className="flex cursor-pointer items-center gap-2">
-                      <p>{type.name}</p>
-                    </div>
-                  </SelectItem>
-                ))}
+                {(breeds[selectedPetType] || []).map(
+                  (breed: any, i: number) => (
+                    <SelectItem key={i} value={breed.value}>
+                      <div className="flex cursor-pointer items-center gap-2">
+                        <p>{breed.name}</p>
+                      </div>
+                    </SelectItem>
+                  )
+                )}
               </CustomFormField>
             </div>
             <div className="grid grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="price"
+                name="year"
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel className="shad-input-label">

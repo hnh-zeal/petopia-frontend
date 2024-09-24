@@ -20,9 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronDown } from "lucide-react";
 import * as React from "react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Pagination from "../pagination";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -32,6 +39,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { fetchRoomSlots } from "@/pages/api/api";
+import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import CreateScheduleForm from "@/components/Forms/create-slot-form";
 import {
@@ -41,11 +50,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { fetchRoomBooking } from "@/pages/api/api";
-import { useRecoilState } from "recoil";
-import { userAuthState } from "@/states/auth";
-import { useRouter } from "next/router";
-import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -68,13 +72,14 @@ export function DataTable<TData, TValue>({
   onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [tableData, setTableData] = React.useState<TData[]>(data);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [tableData, setTableData] = React.useState<TData[]>(data);
-  const [loading, setLoading] = React.useState(false);
   const [date, setDate] = React.useState<Date>();
-
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -95,20 +100,28 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleOpenChange = (open: any) => {
+    setIsOpen(open);
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
+
   const router = useRouter();
-  const id = router.query;
+  const { id } = router.query;
   const filterDate = async (selectedDate: Date | null) => {
     if (!selectedDate) return;
     setLoading(true);
     try {
-      const data = await fetchRoomBooking({
-        ...(router.query.id && { roomId: Number(id) }),
+      const data = await fetchRoomSlots({
+        roomId: Number(id),
         date: selectedDate,
         page: 1,
         pageSize: 10,
       });
 
-      const filteredData: any[] = data.data;
+      const filteredData: any[] = data.slots;
       setTableData(filteredData);
       setLoading(false);
     } catch (error) {
@@ -119,7 +132,7 @@ export function DataTable<TData, TValue>({
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
-        <div className="flex flex-row items-center justify-between mx-1 gap-5">
+        <div className="flex flex-row items-center justify-between gap-5">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -144,16 +157,35 @@ export function DataTable<TData, TValue>({
           </Popover>
           <Button onClick={() => filterDate(date as Date)}>Filter</Button>
         </div>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+          <DialogTrigger asChild>
+            <Button
+              className="text-xs md:text-sm"
+              onClick={() => setIsOpen(true)}
+            >
+              Create Room Slots
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Room Slots</DialogTitle>
+            </DialogHeader>
+            <CreateScheduleForm onCancel={handleCancel} />
+          </DialogContent>
+        </Dialog>
       </div>
       {!loading && (
         <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
           <Table className="relative">
-            <TableHeader className="bg-zinc-300">
+            <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow
+                  key={headerGroup.id}
+                  className="text-black text-center"
+                >
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id} className="text-black">
+                      <TableHead key={header.id}>
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -173,7 +205,7 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="hover:cursor-pointer"
+                    className="hover:cursor-pointer "
                     onClick={() =>
                       !!onClickRow && onClickRow((row.original as any).id)
                     }

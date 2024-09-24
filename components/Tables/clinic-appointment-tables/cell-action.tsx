@@ -1,15 +1,7 @@
 "use client";
-import { AlertModal } from "@/components/modal/alert-modal";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  MoreHorizontal,
-  CheckCircle,
-  XCircle,
-  Edit,
-  Eye,
-  Ban,
-} from "lucide-react";
+import { MoreHorizontal, Eye, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import {
@@ -21,31 +13,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ClinicAppointment, Doctor } from "@/types/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
+import { ClinicAppointment } from "@/types/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fetchDoctors, updateClinicAppointment } from "@/pages/api/api";
-import { SelectItem } from "@/components/ui/select";
-import Image from "next/image";
+import { updateClinicAppointment } from "@/pages/api/api";
 import {
   Form,
   FormControl,

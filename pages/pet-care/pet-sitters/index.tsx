@@ -2,21 +2,21 @@ import { fetchServices } from "../../api/api";
 
 import type { InferGetStaticPropsType, GetStaticProps } from "next";
 import { PetClinicData } from "@/types/api";
-import PetCareServices from "@/components/Layout/Pet Care/CareServices";
+import PetSitters from "@/components/Layout/Pet Care/PetSitters";
 
 export const getStaticProps = (async () => {
-  const servicesData = await fetchServices({});
-  return { props: { servicesData } };
+  const petSittersData = await fetchServices({});
+  return { props: { petSittersData } };
 }) satisfies GetStaticProps<{
-  servicesData: PetClinicData;
+  petSittersData: PetClinicData;
 }>;
 
-export default function PetClinicPage({
-  servicesData,
+export default function PetSittersPage({
+  petSittersData,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <>
-      <PetCareServices servicesData={servicesData} />
+      <PetSitters doctorsData={petSittersData} />
     </>
   );
 }

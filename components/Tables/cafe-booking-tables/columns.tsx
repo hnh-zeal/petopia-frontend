@@ -4,11 +4,8 @@ import { AdminCellAction, UserCellAction } from "./cell-action";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
-import DoctorRow from "../doctorRow";
-import UserRow from "../userRow";
 import { format } from "date-fns";
 import { CafeBooking } from "@/types/api";
-import PetRow from "../petRow";
 
 export const userColumns: ColumnDef<CafeBooking>[] = [
   {

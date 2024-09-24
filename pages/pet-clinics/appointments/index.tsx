@@ -172,7 +172,7 @@ export const getStaticProps = (async (context) => {
   petClinicsData: PetClinicData;
 }>;
 
-export default function AppointmentPage({
+export default function ClinicAppointmentPage({
   doctorsData,
   petClinicsData,
 }: InferGetStaticPropsType<typeof getStaticProps>) {

@@ -18,13 +18,13 @@ import { useRouter } from "next/navigation";
 import { fetchCafePets } from "@/pages/api/api";
 import { ScrollArea } from "../ui/scroll-area";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import EditCafePetForm from "../Forms/edit-cafe-pets-form";
 
 export default function CafePetsCards() {
@@ -55,7 +55,7 @@ export default function CafePetsCards() {
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Cafe Pets" />
+        <Heading title="Pets" />
         <Button
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/pet-cafe/pets/create`)}
@@ -88,25 +88,21 @@ export default function CafePetsCards() {
                     </CardDescription>
                   </CardContent>
                   <CardFooter className="justify-end mt-5 space-x-4">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    <Dialog>
+                      <DialogTrigger asChild>
                         <Button>Edit</Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Update Cat Details
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Update Cat Details</DialogTitle>
+                          <DialogDescription>
                             Update the cats information below.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
+                          </DialogDescription>
+                        </DialogHeader>
 
                         <EditCafePetForm id={Number(pet.id)} />
-                      </AlertDialogContent>
-                    </AlertDialog>
-
-                    <Button>View Details</Button>
+                      </DialogContent>
+                    </Dialog>
                   </CardFooter>
                 </Card>
               ))}

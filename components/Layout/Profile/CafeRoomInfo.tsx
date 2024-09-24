@@ -2,15 +2,14 @@
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/router";
-import { AvailableSlotsClient } from "@/components/Tables/doctor-slots-tables/client";
-import { ClinicAppointmentClient } from "@/components/Tables/clinic-appointment-tables/client";
-import { CafeRoom } from "@/types/api";
+import { RoomSlotsClient } from "@/components/Tables/room-slots-tables/client";
+import { CafeBookingClient } from "@/components/Tables/cafe-booking-tables/client";
 
 export default function CafeRoomInfo({ cafeRoom }: any) {
   const router = useRouter();
@@ -57,16 +56,16 @@ export default function CafeRoomInfo({ cafeRoom }: any) {
 
           {/* Available Slots Tab */}
           <TabsContent value="slots">
-            <Card className="p-5 my-6">
-              {/* <AvailableSlotsClient doctor={doctor} /> */}
-            </Card>
+            <div className="py-2 my-6">
+              <RoomSlotsClient cafeRoom={cafeRoom} />
+            </div>
           </TabsContent>
 
           {/* Appointments Tab */}
           <TabsContent value="appointments">
-            <Card className="p-6 my-6">
-              {/* <RoomBooking isAdmin={true} doctor={doctor} /> */}
-            </Card>
+            <div className="py-2 my-6">
+              <CafeBookingClient isAdmin={true} cafeRoom={cafeRoom} />
+            </div>
           </TabsContent>
         </ScrollArea>
       </Tabs>

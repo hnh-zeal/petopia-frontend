@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,143 +9,90 @@ import { Separator } from "@/components/ui/separator";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
-import { CreatePetSitterSchema } from "@/validations/formValidation";
-import { SelectItem } from "../ui/select";
 import { useEffect, useState } from "react";
-import { CareService } from "@/constants/data";
+import MultiSelect from "../multiple-selector";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { ScrollArea } from "../ui/scroll-area";
+import { PetSitter } from "@/types/api";
+import { fetchServices, updatePetSitterByID } from "@/pages/api/api";
 
-async function fetchCareServices() {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/care-services`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
-  const data = await response.json();
-  return data;
-}
-
-async function fetchPetSitterByID(id: string) {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters/${id}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
-  const data = await response.json();
-  return data;
-}
+const CreatePetSitterSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  email: z.string().email({ message: "Enter a valid email address" }),
+  phoneNumber: z.string(),
+  serviceIds: z.array(z.any()).nonempty("Please select at least one person"),
+  about: z.string(),
+});
 
 type PetSitterFormValue = z.infer<typeof CreatePetSitterSchema>;
 interface EditPetSitterFormProps {
-  id: string;
+  petSitter: PetSitter;
 }
 
-export default function EditSitterForm({ id }: EditPetSitterFormProps) {
+export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [petSitterData, setPetSitterData] = useState({});
-  const [servicesData, setServicesData] = useState({
-    careServices: [],
-    count: 0,
-  });
-
+  const [services, setServices] = useState([]);
+  const [mounted, setMounted] = useState(false);
+  const petServices = petSitter.services.map((service: any) => service.id);
   const router = useRouter();
 
   const form = useForm<PetSitterFormValue>({
     resolver: zodResolver(CreatePetSitterSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      careServiceId: "",
-      phoneNumber: "",
-      about: "",
+      name: petSitter.name,
+      email: petSitter.email,
+      serviceIds: petServices,
+      phoneNumber: petSitter.phoneNumber,
+      about: petSitter.about,
     },
   });
 
   useEffect(() => {
-    const getPetClinics = async () => {
+    const getServices = async () => {
       setLoading(true);
       try {
-        const data = await fetchCareServices();
-        setServicesData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
+        const data = await fetchServices({});
+        const services = data.careServices;
+        setServices(services);
       } catch (error) {
-        console.error("Failed to fetch Pet Care Services", error);
+        console.error("Failed to fetch Care Services", error);
       } finally {
         setLoading(false);
       }
     };
 
-    const getPetSitter = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPetSitterByID(id);
-        setPetSitterData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-        form.reset(data);
-      } catch (error) {
-        console.error("Failed to fetch PetSitter", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setMounted(true);
+    getServices();
+  }, []);
 
-    getPetSitter();
-    getPetClinics();
-  }, [id, form]);
+  if (!mounted) {
+    return null;
+  }
 
   const onSubmit = async (formValues: PetSitterFormValue) => {
     setLoading(true);
     try {
-      // Call API
-      const formData = {
-        ...formValues,
-        ...{ careServiceId: Number(formValues.careServiceId) },
-      };
-      console.log(formData);
+      const data = await updatePetSitterByID(petSitter.id, formValues);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      const data = await response.json();
       if (data.error) {
         toast({
           variant: "destructive",
           description: `${data.message}`,
         });
       } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
         router.push("/admin/pet-sitters");
       }
     } finally {
@@ -168,7 +114,7 @@ export default function EditSitterForm({ id }: EditPetSitterFormProps) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="w-full space-y-5"
+            className="w-full space-y-5 px-2"
           >
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
@@ -187,22 +133,27 @@ export default function EditSitterForm({ id }: EditPetSitterFormProps) {
               />
             </div>
 
-            <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.SELECT}
+            <div className="grid grid-cols-2 gap-6 w-full">
+              <FormField
                 control={form.control}
-                name="careServiceId"
-                label="Pet Care Services"
-                placeholder="Select Pet Care Services"
-              >
-                {servicesData.careServices.map((service: CareService, i) => (
-                  <SelectItem key={service.name + i} value={`${service.id}`}>
-                    <div className="flex cursor-pointer items-center gap-2">
-                      <p>{service.name}</p>
-                    </div>
-                  </SelectItem>
-                ))}
-              </CustomFormField>
+                name="serviceIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Select Services <span className="text-red-400">*</span>{" "}
+                      <></>
+                    </FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        values={services}
+                        onChange={field.onChange}
+                        value={field.value || []}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -228,6 +179,7 @@ export default function EditSitterForm({ id }: EditPetSitterFormProps) {
               <div className="flex items-center justify-between space-x-4">
                 <Button
                   disabled={loading}
+                  type="button"
                   variant="outline"
                   className="ml-auto w-full"
                   onClick={onCancel}

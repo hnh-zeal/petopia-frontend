@@ -17,12 +17,10 @@ export default function CreatePetSitter() {
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-hidden pt-16">
-          <ScrollArea className="h-[calc(80vh-220px)]">
-            <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
-              <Breadcrumbs items={breadcrumbItems} />
-              <CreatePetSitterForm />
-            </div>
-          </ScrollArea>
+          <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
+            <Breadcrumbs items={breadcrumbItems} />
+            <CreatePetSitterForm />
+          </div>
         </main>
       </div>
     </>

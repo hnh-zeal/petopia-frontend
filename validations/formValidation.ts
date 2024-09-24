@@ -89,14 +89,6 @@ export const UpdateCafePetSchema = z.object({
   age: z.number(),
 });
 
-export const CreatePetSitterSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  email: z.string().email({ message: "Enter a valid email address" }),
-  phoneNumber: z.string(),
-  careServiceId: z.string().min(1, { message: "Care Service is required" }),
-  about: z.string(),
-});
-
 export const CreateAppointmentSchema = z.object({
   primaryPhysician: z.string().min(2, "Select at least one doctor"),
   schedule: z.coerce.date(),

@@ -291,6 +291,23 @@ export async function createDateSchedule(formValues: any) {
   return data;
 }
 
+export async function createRoomSlots(formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/room-slots`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function fetchAppointmentSlots(queryData: any, token?: string) {
   const { doctorId, date, time, status, page, pageSize } = queryData;
   const query = {
@@ -338,6 +355,51 @@ export async function fetchPetSitters(
   );
 
   return await response.json();
+}
+
+export async function createPetSitter(formValues: any, adminToken: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  return await response.json();
+}
+
+export async function fetchPetSitterByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return await response.json();
+}
+
+export async function updatePetSitterByID(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+  const data = await response.json();
+  return data;
 }
 
 export async function createCareService(formValues: any) {
@@ -512,6 +574,7 @@ export async function updateCafePetByID(id: number, formValues: any) {
 }
 
 export async function fetchRoomSlots(queryData: any) {
+  console.log(queryData);
   const { roomId, status, date, page, pageSize } = queryData;
   const query = {
     ...(roomId && { roomId }),
@@ -556,7 +619,7 @@ export async function submitBooking(formValues: any, token: string) {
   return data;
 }
 
-export async function fetchRoomBooking(queryData: any, token: string) {
+export async function fetchRoomBooking(queryData: any, token?: string) {
   const { userId, roomId, status, date, page, pageSize } = queryData;
 
   const query = {
@@ -576,7 +639,7 @@ export async function fetchRoomBooking(queryData: any, token: string) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        // Authorization: `Bearer ${token}`,
       },
     }
   );
@@ -797,9 +860,30 @@ export async function createPackages(formValues: any, adminToken: string) {
   return data;
 }
 
+export async function editPackageByID(
+  id: number,
+  formValues: any,
+  adminToken: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/packages/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function purchasePackage(formValues: any, userToken: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/packages/${formValues.id}/purchase`,
+    `${process.env.NEXT_PUBLIC_API_URL}/packages/${formValues.packageId}/purchase`,
     {
       method: "POST",
       headers: {

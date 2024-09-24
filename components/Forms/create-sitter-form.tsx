@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,60 +9,61 @@ import { Separator } from "@/components/ui/separator";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
-import { CreateDoctorSchema } from "@/validations/formValidation";
-import { SelectItem } from "../ui/select";
 import { useEffect, useState } from "react";
-import { PetClinic } from "@/constants/data";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { ScrollArea } from "../ui/scroll-area";
+import React from "react";
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
+} from "@/components/multi-selecting";
+import { createPetSitter, fetchServices } from "@/pages/api/api";
+import MultiSelect from "../multiple-selector";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
 
-async function fetchPetClinics() {
-  // Call API
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/care-services`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+const CreatePetSitterSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  email: z.string().email({ message: "Enter a valid email address" }),
+  phoneNumber: z.string(),
+  serviceIds: z.array(z.any()).nonempty("Please select at least one person"),
+  about: z.string(),
+});
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch Pet Clinics");
-  }
-
-  const data = await response.json();
-  return data;
-}
-
-type DoctorFormValue = z.infer<typeof CreateDoctorSchema>;
+type DoctorFormValue = z.infer<typeof CreatePetSitterSchema>;
 
 export default function CreatePetSitterForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [servicesData, setServicesData] = useState({
-    careServices: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
+  const [services, setServices] = useState([]);
 
   const router = useRouter();
+  const auth = useRecoilValue(userAuthState);
   const form = useForm<DoctorFormValue>({
-    resolver: zodResolver(CreateDoctorSchema),
+    resolver: zodResolver(CreatePetSitterSchema),
   });
 
   useEffect(() => {
     const getServices = async () => {
       setLoading(true);
       try {
-        const data = await fetchPetClinics();
-        setServicesData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
+        const data = await fetchServices({});
+        const services = data.careServices;
+        setServices(services);
       } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
+        console.error("Failed to fetch Care Services", error);
       } finally {
         setLoading(false);
       }
@@ -75,23 +75,10 @@ export default function CreatePetSitterForm() {
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
     try {
-      const formData = {
-        ...formValues,
-        ...{ clinicId: Number(formValues.clinicId) },
-      };
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/doctors`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
+      const data = await createPetSitter(
+        formValues,
+        auth?.accessToken as string
       );
-
-      const data = await response.json();
       if (data.error) {
         toast({
           variant: "destructive",
@@ -100,9 +87,9 @@ export default function CreatePetSitterForm() {
       } else {
         toast({
           variant: "success",
-          description: "Doctor created.",
+          description: "Pet Sitter created.",
         });
-        router.push("/admin/doctors");
+        router.push("/admin/pet-sitters");
       }
     } finally {
       setLoading(false);
@@ -119,156 +106,127 @@ export default function CreatePetSitterForm() {
         <Heading title="Create Pet Sitter" />
       </div>
       <Separator />
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full space-y-5 px-2"
-        >
-          <div className="flex flex-col gap-6 xl:flex-row">
-            <CustomFormField
-              fieldType={FormFieldType.INPUT}
-              placeholder="Enter doctor's name"
-              control={form.control}
-              name="name"
-              label="Name"
-            />
+      <ScrollArea className="h-[calc(100vh-220px)] px-4">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-full space-y-5 px-2"
+          >
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                placeholder="Enter name"
+                control={form.control}
+                name="name"
+                label="Name"
+                required={true}
+              />
 
-            <CustomFormField
-              fieldType={FormFieldType.EMAIL}
-              placeholder="Enter doctor's email"
-              control={form.control}
-              name="email"
-              label="Email"
-            />
-          </div>
-
-          <div className="flex flex-col gap-6 xl:flex-row">
-            <CustomFormField
-              fieldType={FormFieldType.SELECT}
-              control={form.control}
-              name="clinicId"
-              label="Pet Center"
-              placeholder="Select Pet Center"
-            >
-              {servicesData.careServices.map((center: PetClinic, i) => (
-                <SelectItem key={center.name + i} value={`${center.id}`}>
-                  <div className="flex cursor-pointer items-center gap-2">
-                    <p>{center.name}</p>
-                  </div>
-                </SelectItem>
-              ))}
-            </CustomFormField>
-
-            <CustomFormField
-              fieldType={FormFieldType.INPUT}
-              placeholder="Phone Number"
-              control={form.control}
-              name="phoneNumber"
-              label="Phone Number"
-            />
-          </div>
-
-          <div className="flex flex-col gap-6 xl:flex-row">
-            <CustomFormField
-              fieldType={FormFieldType.TEXTAREA}
-              placeholder="About"
-              control={form.control}
-              name="about"
-              label="About"
-            />
-          </div>
-
-          {/* <h3 className="font-bold">Specialty</h3>
-          <div className="flex flex-col gap-6">
-            {sections.map((_, index) => (
-              <div
-                key={index}
-                className="flex md:flex-row xl:flex-row gap-6 items-center"
-              >
-                <Controller
-                  control={form.control}
-                  name={`sections.${index}.dow`}
-                  render={({ field }) => (
-                    <CustomFormField
-                      fieldType={FormFieldType.SELECT}
-                      control={form.control}
-                      placeholder="Choose days of week"
-                      label="Days of week"
-                      {...field}
-                    >
-                      {daysOfWeek.map((day, i) => (
-                        <SelectItem key={day + i} value={day}>
-                          <div className="flex cursor-pointer items-center gap-2">
-                            <p>{day}</p>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </CustomFormField>
-                  )}
-                />
-
-                <Controller
-                  control={form.control}
-                  name={`sections.${index}.startTime`}
-                  render={({ field }) => (
-                    <CustomFormField
-                      control={form.control}
-                      fieldType={FormFieldType.TIME}
-                      placeholder="Start Time"
-                      label="Start Time"
-                      {...field}
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={form.control}
-                  name={`sections.${index}.endTime`}
-                  render={({ field }) => (
-                    <CustomFormField
-                      control={form.control}
-                      fieldType={FormFieldType.TIME}
-                      placeholder="End Time"
-                      label="End Time"
-                      {...field}
-                    />
-                  )}
-                />
-
-                {sections.length > 1 && (
-                  <Trash2
-                    type="button"
-                    className="h-5 w-5 mt-7 hover:cursor-pointer"
-                    onClick={() => removeSection(index)}
-                  />
-                )}
-                <CirclePlus
-                  type="button"
-                  className="h-5 w-5 mt-7 hover:cursor-pointer"
-                  onClick={addSection}
-                />
-              </div>
-            ))}
-          </div> */}
-
-          <div className="flex mt-10 items-center justify-between space-x-4">
-            <div></div>
-            <div className="flex items-center justify-between space-x-4">
-              <Button
-                disabled={loading}
-                variant="outline"
-                className="ml-auto w-full"
-                onClick={onReset}
-              >
-                Reset
-              </Button>
-              <SubmitButton isLoading={loading} className="ml-auto w-full">
-                Create
-              </SubmitButton>
+              <CustomFormField
+                fieldType={FormFieldType.EMAIL}
+                placeholder="Enter email"
+                control={form.control}
+                name="email"
+                label="Email"
+                required={true}
+              />
             </div>
-          </div>
-        </form>
-      </Form>
+
+            <div className="grid grid-cols-2 gap-6 w-full">
+              <FormField
+                control={form.control}
+                name="serviceIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Select Services <span className="text-red-400">*</span>{" "}
+                      <></>
+                    </FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        values={services}
+                        onChange={field.onChange}
+                        value={field.value || []}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                placeholder="Phone Number"
+                control={form.control}
+                name="phoneNumber"
+                label="Phone Number"
+                required={true}
+              />
+            </div>
+
+            <div className="w-full">
+              <CustomFormField
+                fieldType={FormFieldType.TEXTAREA}
+                placeholder="About"
+                control={form.control}
+                name="about"
+                label="About"
+                required={true}
+              />
+            </div>
+
+            <div className="flex mt-10 items-center justify-between space-x-4">
+              <div></div>
+              <div className="flex items-center justify-between space-x-4">
+                <Button
+                  disabled={loading}
+                  variant="outline"
+                  className="ml-auto w-full"
+                  onClick={onReset}
+                >
+                  Reset
+                </Button>
+                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                  Create
+                </SubmitButton>
+              </div>
+            </div>
+          </form>
+        </Form>
+
+        {/* <FormField
+              control={form.control}
+              name="serviceIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel></FormLabel>
+                  <MultiSelector
+                    onValuesChange={field.onChange}
+                    values={field.value}
+                  >
+                    <MultiSelectorTrigger>
+                      <MultiSelectorInput placeholder="Select services" />
+                    </MultiSelectorTrigger>
+                    <MultiSelectorContent>
+                      <MultiSelectorList>
+                        {servicesData.careServices?.map(
+                          (service: CareService) => (
+                            <MultiSelectorItem
+                              key={service.name}
+                              value={service.name}
+                            >
+                              <span>{service.name}</span>
+                            </MultiSelectorItem>
+                          )
+                        )}
+                      </MultiSelectorList>
+                    </MultiSelectorContent>
+                  </MultiSelector>
+                  <FormDescription>Select Services</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+      </ScrollArea>
     </>
   );
 }

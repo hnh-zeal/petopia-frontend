@@ -186,8 +186,8 @@ export const navItems: NavItem[] = [
         label: "pet-sitters",
       },
       {
-        title: "Appointments",
-        href: "/admin/pet-cafe/appointments",
+        title: "Room Booking",
+        href: "/admin/pet-cafe/room-booking",
         icon: "appointments",
         label: "appointments",
       },

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Packages, PackagesData } from "@/types/api";
+import { Packages } from "@/types/api";
 import { GetServerSideProps } from "next";
 import { fetchPackages } from "../api/api";
 import { useRouter } from "next/router";
@@ -33,6 +33,7 @@ export const getDurationText = (duration: number, type: string) => {
 
 export default function PackagesPage({ packages }: { packages: Packages[] }) {
   const router = useRouter();
+  console.log(packages);
 
   const getDiscountedPrice = (price: number, discountPercent: number) => {
     return price - (price * discountPercent) / 100;
