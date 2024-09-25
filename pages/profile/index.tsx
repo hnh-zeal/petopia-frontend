@@ -7,7 +7,6 @@ import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 import EditProfileForm from "@/components/Forms/edit-profile-form";
 import UserPetForm from "@/components/Forms/edit-pet-profile-form";
-import { User } from "@/types/api";
 
 export default function ProfilePage() {
   const auth = useRecoilValue(userAuthState);

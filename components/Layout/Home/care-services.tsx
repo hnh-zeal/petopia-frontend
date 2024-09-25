@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function PetCareServices() {
   return (
-    <section className="container mx-auto p-10 px-4 grid lg:grid-cols-2 gap-10 items-center">
+    <section className="container mx-auto p-10 px-12 grid lg:grid-cols-2 gap-10 items-center">
       {/* Left Section: Heading and Button */}
       <div className="flex flex-col space-y-10">
         <h3 className="inline text-4xl md:text-5xl font-bold leading-tight">

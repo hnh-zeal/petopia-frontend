@@ -20,7 +20,6 @@ import { useRouter } from "next/router";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 import { useState } from "react";
-import { AlertCircle } from "lucide-react";
 import { getDurationText } from "..";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
 import { Badge } from "@/components/ui/badge";

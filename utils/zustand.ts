@@ -1,4 +1,5 @@
 import { CafeRoom } from "@/types/api";
+import { CareService } from "@/types/api";
 import { create } from "zustand";
 
 interface BookingState {
@@ -29,4 +30,14 @@ export const useBookingStore = create<BookingState>((set) => ({
   setDuration: (duration) => set({ duration }),
   setGuests: (guests) => set({ guests }),
   setCafeRoom: (cafeRoom) => set({ cafeRoom }),
+}));
+
+interface ServiceAppointmentStore {
+  service: CareService | null;
+  setService: (service: CareService) => void;
+}
+
+export const useAppointmentStore = create<ServiceAppointmentStore>((set) => ({
+  service: null,
+  setService: (service) => set({ service }),
 }));

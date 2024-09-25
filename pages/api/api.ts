@@ -805,6 +805,26 @@ export async function submitAppointment(formValues: any, userToken: string) {
   return data;
 }
 
+export async function submitCareAppointment(
+  formValues: any,
+  userToken: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-appointments`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function fetchPackages(queryData: any) {
   const { type, page, pageSize } = queryData;
 
@@ -897,3 +917,22 @@ export async function purchasePackage(formValues: any, userToken: string) {
   const data = await response.json();
   return data;
 }
+
+export async function fetchCategories() {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/categories`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  console.log(response, ".................................................");
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchCategoriesByService() {}

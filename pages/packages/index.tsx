@@ -31,13 +31,12 @@ export const getDurationText = (duration: number, type: string) => {
   return `${duration} ${type}${duration > 1 ? "s" : ""}`;
 };
 
+export const getDiscountedPrice = (price: number, discountPercent: number) => {
+  return price - (price * discountPercent) / 100;
+};
+
 export default function PackagesPage({ packages }: { packages: Packages[] }) {
   const router = useRouter();
-  console.log(packages);
-
-  const getDiscountedPrice = (price: number, discountPercent: number) => {
-    return price - (price * discountPercent) / 100;
-  };
 
   return (
     <div className="container mx-auto py-12">

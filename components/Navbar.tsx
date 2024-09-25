@@ -110,15 +110,14 @@ export const Navbar = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [userData, setUserData] = useState<User>();
   const [auth, setAuth] = useRecoilState(userAuthState);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const fetchUser = async (token: string) => {
       try {
         const data = await fetchUserWithToken(token);
         setAuth({ user: data, accessToken: token });
-        setUserData((prevState) => ({ ...prevState, ...data }));
       } catch (error) {
         console.error("Failed to fetch user", error);
       }
@@ -131,16 +130,20 @@ export const Navbar = () => {
         localStorage.setItem("token", token);
         router.replace(window.location.pathname); // Clear the token from the URL
       }
+      setMounted(true);
       fetchUser(token);
     }
-  }, [router, searchParams, setAuth, setUserData]);
+  }, [router, searchParams, setAuth]);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleLogin = () => {
     router.push("/login");
   };
 
   const handleLogOut = () => {
-    setUserData(undefined);
     setAuth(undefined);
     localStorage.removeItem("token");
 
@@ -195,7 +198,7 @@ export const Navbar = () => {
                 </nav>
 
                 <>
-                  {userData ? (
+                  {auth ? (
                     <Button variant="ghost" onClick={handleLogOut}>
                       Logout
                     </Button>
@@ -223,7 +226,7 @@ export const Navbar = () => {
 
           <div className="hidden lg:flex gap-2">
             <>
-              {userData ? (
+              {auth ? (
                 <UserAvatar />
               ) : (
                 <>

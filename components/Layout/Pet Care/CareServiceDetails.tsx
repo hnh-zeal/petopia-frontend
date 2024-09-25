@@ -10,8 +10,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useRouter } from "next/router";
 
 export default function ServiceDetails({ service }: any) {
+  const router = useRouter();
   return (
     <div className="container mx-auto px-4 py-4">
       <div className="sticky top-0 bg-white z-10 py-4">
@@ -280,8 +282,13 @@ export default function ServiceDetails({ service }: any) {
               </CardContent>
             </Card>
 
-            <Button className="w-full bg-blue-900 hover:bg-blue-800">
-              Book now
+            <Button
+              className="w-full bg-blue-900 hover:bg-blue-800"
+              onClick={() =>
+                router.push(`/pet-care/services/${service.id}/appointment`)
+              }
+            >
+              Make an appointment
             </Button>
           </div>
         </div>

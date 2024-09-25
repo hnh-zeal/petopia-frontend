@@ -203,7 +203,9 @@ export interface CafePet {
 export interface CareService {
   id: number;
   name: string;
+  type: string;
   description: string;
+  price: number;
   rating: number;
   reviews: number;
   isActive: boolean;
@@ -276,4 +278,15 @@ export interface PetSitter {
   email: string;
   phoneNumber: string;
   services: any;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface CategoriesData {
+  count: number;
+  categories: Category[];
 }
