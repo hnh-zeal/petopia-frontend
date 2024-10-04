@@ -47,7 +47,13 @@ import {
   fetchPetClinics,
   submitAppointment,
 } from "@/pages/api/api";
-import { Doctor, GenderOptions, PetClinic, petTypes } from "@/constants/data";
+import {
+  breeds,
+  Doctor,
+  GenderOptions,
+  PetClinic,
+  petTypes,
+} from "@/constants/data";
 import {
   Card,
   CardContent,
@@ -374,7 +380,7 @@ export default function ClinicAppointmentPage({
                       required={true}
                     >
                       {petTypes.map((pet, i) => (
-                        <SelectItem key={pet.name + i} value={pet.name}>
+                        <SelectItem key={i} value={pet.value}>
                           <div className="flex cursor-pointer items-center gap-2">
                             <p>{pet.label}</p>
                           </div>
@@ -389,11 +395,11 @@ export default function ClinicAppointmentPage({
                       label="Breed"
                       placeholder="Select Breed"
                     >
-                      {petTypes.map((pet, i) => (
-                        <SelectItem key={pet.name + i} value={pet.name}>
-                          <div className="flex cursor-pointer items-center gap-2">
-                            <p>{pet.label}</p>
-                          </div>
+                      {breeds[
+                        petForm.watch("petType") as keyof typeof breeds
+                      ]?.map((breed: any, i: number) => (
+                        <SelectItem key={breed} value={breed.value}>
+                          {breed.label}
                         </SelectItem>
                       ))}
                     </CustomFormField>

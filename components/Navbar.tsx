@@ -114,6 +114,8 @@ export const Navbar = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+
     const fetchUser = async (token: string) => {
       try {
         const data = await fetchUserWithToken(token);
@@ -130,7 +132,6 @@ export const Navbar = () => {
         localStorage.setItem("token", token);
         router.replace(window.location.pathname); // Clear the token from the URL
       }
-      setMounted(true);
       fetchUser(token);
     }
   }, [router, searchParams, setAuth]);
@@ -174,7 +175,8 @@ export const Navbar = () => {
 
           {/* mobile */}
           <span className="flex lg:hidden">
-            <ModeToggle />
+            {auth && <UserAvatar />}
+            {/* <ModeToggle /> */}
 
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger className="px-2">
@@ -239,7 +241,7 @@ export const Navbar = () => {
                 </>
               )}
             </>
-            <ModeToggle />
+            {/* <ModeToggle /> */}
           </div>
         </NavigationMenuList>
       </NavigationMenu>

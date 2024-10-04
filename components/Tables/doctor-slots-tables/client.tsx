@@ -3,15 +3,7 @@ import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchAppointmentSlots } from "@/pages/api/api";
-import { Button } from "@/components/ui/button";
-import CreateScheduleForm from "@/components/Forms/create-slot-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { Separator } from "@/components/ui/separator";
 
 export const AvailableSlotsClient = ({ doctor }: any) => {
@@ -24,15 +16,6 @@ export const AvailableSlotsClient = ({ doctor }: any) => {
     page: 1,
     pageSize: 10,
   });
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleOpenChange = (open: any) => {
-    setIsOpen(open);
-  };
-
-  const handleCancel = () => {
-    setIsOpen(false);
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));
@@ -63,29 +46,6 @@ export const AvailableSlotsClient = ({ doctor }: any) => {
 
   return (
     <div className="flex flex-col space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-lg font-bold">Available Slots</h2>
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-          <DialogTrigger asChild>
-            <Button
-              className="text-xs md:text-sm"
-              onClick={() => setIsOpen(true)}
-            >
-              Create Schedule
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Available Slots</DialogTitle>
-              {/* <DialogDescription>
-                Choose Start Date and End Date
-              </DialogDescription> */}
-            </DialogHeader>
-            <CreateScheduleForm onCancel={handleCancel} />
-          </DialogContent>
-        </Dialog>
-      </div>
-      <Separator />
       {!loading && (
         <DataTable
           searchKey="name"

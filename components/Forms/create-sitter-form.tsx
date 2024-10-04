@@ -147,6 +147,7 @@ export default function CreatePetSitterForm() {
                         values={services}
                         onChange={field.onChange}
                         value={field.value || []}
+                        placeholder="Select Services"
                       />
                     </FormControl>
                     <FormMessage />

@@ -305,21 +305,46 @@ export const StatusIcon = {
 
 export const petTypes = [
   {
-    name: "dog",
     label: "Dog",
+    value: "dog",
   },
   {
-    name: "cat",
     label: "Cat",
+    value: "cat",
   },
   {
-    name: "bird",
     label: "Bird",
+    value: "bird",
   },
   {
-    name: "rabbit",
     label: "Rabbit",
+    value: "rabbit",
   },
 ];
+
+export const breeds: any = {
+  cat: [
+    { label: "Siamese", value: "siamese" },
+    { label: "Persian", value: "persian" },
+    { label: "Maine Coon", value: "maine_coon" },
+    // Add more cat breeds
+  ],
+  dog: [
+    { label: "Labrador Retriever", value: "labrador" },
+    { label: "German Shepherd", value: "german_shepherd" },
+    { label: "Golden Retriever", value: "golden_retriever" },
+    // Add more dog breeds
+  ],
+  rabbit: [
+    { label: "Holland Lop", value: "holland_lop" },
+    { label: "Netherland Dwarf", value: "netherland_dwarf" },
+    // Add more rabbit breeds
+  ],
+  bird: [
+    { label: "Parakeet", value: "parakeet" },
+    { label: "Canary", value: "canary" },
+    // Add more bird breeds
+  ],
+};
 
 export const GenderOptions = ["male", "female", "other"];

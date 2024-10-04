@@ -61,12 +61,19 @@ export const CreatePetClinicSchema = z.object({
   sections: z.array(sectionSchema),
 });
 
+const addOnSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  price: z.number(),
+});
+
 export const CreateServiceSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   type: z.enum(["SITTING", "GROOMING", "TRAINING"]),
   description: z.string(),
   price: z.number(),
   categoryIds: z.any(),
+  addOns: z.array(addOnSchema).optional(),
 });
 
 export const CreateCafeRoomSchema = z.object({

@@ -20,16 +20,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { CalendarIcon, ChevronDown } from "lucide-react";
 import * as React from "react";
+import CreateScheduleForm from "@/components/Forms/create-slot-form";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Pagination from "../pagination";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -109,6 +110,15 @@ export function DataTable<TData, TValue>({
     }
   };
 
+  const [isOpen, setIsOpen] = React.useState(false);
+  const handleOpenChange = (open: any) => {
+    setIsOpen(open);
+  };
+
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
+
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
@@ -137,33 +147,25 @@ export function DataTable<TData, TValue>({
           </Popover>
           <Button onClick={() => filterDate(date as Date)}>Filter</Button>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+          <DialogTrigger asChild>
+            <Button
+              className="text-xs md:text-sm"
+              onClick={() => setIsOpen(true)}
+            >
+              Create Schedule
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Available Slots</DialogTitle>
+              {/* <DialogDescription>
+                Choose Start Date and End Date
+              </DialogDescription> */}
+            </DialogHeader>
+            <CreateScheduleForm onCancel={handleCancel} />
+          </DialogContent>
+        </Dialog>
       </div>
       <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
         <Table className="relative">

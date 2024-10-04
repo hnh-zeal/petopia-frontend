@@ -12,7 +12,7 @@ import { useToast } from "../ui/use-toast";
 import { CreateServiceSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
 import { useEffect, useState } from "react";
-import { createCareService, fetchCategories } from "@/pages/api/api";
+import { updateCareService } from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import {
   Form,
@@ -23,10 +23,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "../ui/input";
-import { Category } from "@/types/api";
-import { CirclePlus, Trash2 } from "lucide-react";
-import { Card } from "../ui/card";
+import { CareService } from "@/types/api";
 import { Label } from "../ui/label";
+import { CirclePlus, Trash2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 
 export const serviceType = [
@@ -37,17 +36,26 @@ export const serviceType = [
 
 type ServiceFormValue = z.infer<typeof CreateServiceSchema>;
 
-export default function CreateServiceForm({
-  categories,
-}: {
-  categories: Category[];
-}) {
-  const router = useRouter();
+export default function EditServiceForm({ service }: { service: CareService }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [addOns, setAddOns] = useState([
-    { name: "", description: "", price: 0 },
-  ]);
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const form = useForm<ServiceFormValue>({
+    resolver: zodResolver(CreateServiceSchema),
+    defaultValues: {
+      name: service.name,
+      type: service.type as any,
+      description: service.description,
+      categoryIds: service.categories.map((category) => category.id),
+      price: service.price,
+      addOns: service.addOns,
+    },
+  });
+
+  const [addOns, setAddOns] = useState(
+    service.addOns || [{ name: "", description: "", price: 0 }]
+  );
   const addAddOn = () => {
     setAddOns([...addOns, { name: "", description: "", price: 0 }]);
   };
@@ -56,14 +64,10 @@ export default function CreateServiceForm({
     setAddOns(addOns.filter((_, i) => i !== index));
   };
 
-  const form = useForm<ServiceFormValue>({
-    resolver: zodResolver(CreateServiceSchema),
-  });
-
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await createCareService(formValues);
+      const data = await updateCareService(service.id, formValues);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -72,7 +76,7 @@ export default function CreateServiceForm({
       } else {
         toast({
           variant: "success",
-          description: "Service created.",
+          description: "Service updated successfully.",
         });
         router.push("/admin/pet-care/services");
       }
@@ -81,14 +85,18 @@ export default function CreateServiceForm({
     }
   };
 
-  const onReset = () => {
-    form.reset();
-  };
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Create Pet Care Service" />
+        <Heading title="Edit Pet Care Service" />
       </div>
       <Separator />
       <ScrollArea className="h-[calc(100vh-220px)] px-4">
@@ -137,7 +145,7 @@ export default function CreateServiceForm({
                     <FormControl>
                       <>
                         <MultiSelect
-                          values={categories}
+                          values={service.categories}
                           onChange={field.onChange}
                           value={field.value || []}
                           placeholder="Select Categories"
@@ -192,7 +200,7 @@ export default function CreateServiceForm({
                   onClick={addAddOn}
                 />
               </div>
-              {addOns.map((_, index) => (
+              {addOns?.map((_, index) => (
                 <div key={index} className="flex flex-col gap-6">
                   <div className="flex md:flex-row xl:flex-row gap-6 items-center">
                     <Controller
@@ -262,15 +270,16 @@ export default function CreateServiceForm({
               <div></div>
               <div className="flex items-center justify-between space-x-4">
                 <Button
+                  type="button"
                   disabled={loading}
                   variant="outline"
                   className="ml-auto w-full"
-                  onClick={onReset}
+                  onClick={() => router.push(`/admin/pet-care/services`)}
                 >
-                  Reset
+                  Cancel
                 </Button>
                 <SubmitButton isLoading={loading} className="ml-auto w-full">
-                  Create
+                  Update
                 </SubmitButton>
               </div>
             </div>

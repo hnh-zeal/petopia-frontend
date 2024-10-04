@@ -55,6 +55,7 @@ export default function CreateScheduleForm({ onCancel }: any) {
           variant: "success",
           description: "Appointment Schedule created.",
         });
+        window.location.reload();
         onCancel();
       }
     } finally {

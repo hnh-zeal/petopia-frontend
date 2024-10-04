@@ -56,14 +56,14 @@ export default function CafeRoomInfo({ cafeRoom }: any) {
 
           {/* Available Slots Tab */}
           <TabsContent value="slots">
-            <div className="py-2 my-6">
+            <div className="py-2 my-4">
               <RoomSlotsClient cafeRoom={cafeRoom} />
             </div>
           </TabsContent>
 
           {/* Appointments Tab */}
           <TabsContent value="appointments">
-            <div className="py-2 my-6">
+            <div className="py-2 my-4">
               <CafeBookingClient isAdmin={true} cafeRoom={cafeRoom} />
             </div>
           </TabsContent>

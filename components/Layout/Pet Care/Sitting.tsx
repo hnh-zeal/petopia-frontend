@@ -56,62 +56,37 @@ import {
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CareService } from "@/types/api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { breeds, petTypes } from "@/constants/data";
+import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
+import { petType } from "@/components/Forms/create-cafe-pets-form";
+import { createCareAppointment } from "@/pages/api/api";
+
+const breadcrumbItems = (service: CareService) => [
+  { title: "Pet Care Services", link: "/pet-care/services" },
+  { title: `${service.name}`, link: `/pet-care/services/${service.id}` },
+  {
+    title: `Confirm Appointment`,
+    link: `/pet-care/services/${service.id}/appointment`,
+  },
+];
 
 const formSchema = z.object({
-  serviceCategory: z.enum([
-    "Standard Sitting",
-    "Overnight Sitting",
-    "In-home Sitting",
-    "Daytime Sitting",
-  ]),
-  startDate: z.date(),
-  startTime: z.string(),
-  duration: z.number().min(1),
-  isOvernight: z.boolean(),
-  petType: z.enum(["Dog", "Cat", "Bird", "Other"]),
-  petSize: z.enum(["Small", "Medium", "Large"]),
-  petName: z.string().min(1, "Pet name is required"),
-  specialInstructions: z.string().optional(),
-  location: z.enum(["Client's Home", "Sitter's Home"]),
-  address: z.string().min(1, "Address is required"),
+  categoryId: z.number(),
   sitterId: z.string().min(1, "Pet sitter selection is required"),
-  addOns: z.array(z.string()).optional(),
-  recurringSchedule: z.enum(["None", "Daily", "Weekly", "Custom"]).optional(),
+  date: z.date(),
+  time: z.string(),
+  duration: z.number().min(1).optional(),
+  petName: z.string().min(1, "Pet name is required"),
+  petType: z.string(),
+  breed: z.string(),
+  description: z.string().optional(),
+  location: z.enum(["Client's Home", "Sitter's Home"]).optional(),
+  address: z.string().optional(),
+  addOns: z.any().optional(),
 });
 
-const petSitters = [
-  {
-    id: "1",
-    name: "Alice Johnson",
-    rating: 4.9,
-    hourlyRate: 25,
-    specialties: ["Anxious pets", "Medication administration"],
-    image: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: "2",
-    name: "Bob Smith",
-    rating: 4.7,
-    hourlyRate: 22,
-    specialties: ["Elderly pets", "Multiple pets"],
-    image: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: "3",
-    name: "Carol Williams",
-    rating: 4.8,
-    hourlyRate: 23,
-    specialties: ["Puppies", "Training"],
-    image: "/placeholder.svg?height=100&width=100",
-  },
-];
-
-const addOns = [
-  { id: "bathing", name: "Bathing", price: 15 },
-  { id: "walking", name: "Extra Walking", price: 10 },
-  { id: "feeding", name: "Special Feeding", price: 5 },
-  { id: "medication", name: "Medication Administration", price: 10 },
-];
+type CreateCareFormValue = z.infer<typeof formSchema>;
 
 export default function SittingAppointment({
   service,
@@ -119,61 +94,71 @@ export default function SittingAppointment({
   service: CareService;
 }) {
   const router = useRouter();
+  const today = startOfDay(new Date());
   const auth = useRecoilValue(userAuthState);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(service.price);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      serviceCategory: "Standard Sitting",
-      isOvernight: false,
+      duration: 1,
       addOns: [],
-      recurringSchedule: "None",
     },
   });
 
   const watchFields = form.watch();
-
   useEffect(() => {
+    const calculateTotalPrice = () => {
+      const basePrice = service.price;
+      const addOnPrice =
+        watchFields.addOns?.reduce((total: number, addOnId: any) => {
+          const addOn = service.addOns?.find((a) => a.id === addOnId);
+          return total + (addOn?.price || 0);
+        }, 0) || 0;
+      setTotalPrice(basePrice + addOnPrice);
+    };
+
     calculateTotalPrice();
-  }, [watchFields]);
+  }, [service, watchFields]);
 
-  const calculateTotalPrice = () => {
-    const selectedSitter = petSitters.find(
-      (sitter) => sitter.id === watchFields.sitterId
-    );
-    const basePrice = selectedSitter
-      ? selectedSitter.hourlyRate * watchFields.duration
-      : 0;
-    const addOnPrice =
-      watchFields.addOns?.reduce((total, addOnId) => {
-        const addOn = addOns.find((a) => a.id === addOnId);
-        return total + (addOn?.price || 0);
-      }, 0) || 0;
-    const overnightFee = watchFields.isOvernight ? 50 : 0;
-    setTotalPrice(basePrice + addOnPrice + overnightFee);
-  };
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (formValues: CreateCareFormValue) => {
     setIsLoading(true);
     try {
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Booking submitted:", data);
-      toast({
-        title: "Booking Confirmed",
-        description:
-          "Your pet sitting appointment has been booked successfully.",
-      });
-      router.push("/bookings");
-    } catch (error) {
-      console.error("Booking submission error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An error occurred while submitting your booking.",
-      });
+      const { petType, petName, breed, date, time, ...other } = formValues;
+
+      const formData = {
+        petData: {
+          option: "new",
+          name: petName,
+          petType,
+        },
+        appointmentData: {
+          serviceId: service.id,
+          date: format(date, "yyyy-MM-dd"),
+          time,
+          totalPrice,
+          ...other,
+        },
+      };
+
+      const data = await createCareAppointment(
+        formData,
+        auth?.accessToken as string
+      );
+
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: "Care Appointment submitted successfully.",
+        });
+        router.push(`/`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +166,10 @@ export default function SittingAppointment({
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-6">Book Your Pet Sitting Service</h1>
+      <div className="mb-6">
+        <Breadcrumbs items={breadcrumbItems(service)} />
+      </div>
+      {/* <h1 className="text-3xl font-bold mb-6">Book Your Pet Sitting Service</h1> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -194,81 +182,82 @@ export default function SittingAppointment({
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="serviceCategory"
+                    name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Service Category</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select service category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Standard Sitting">
-                              Standard Sitting
-                            </SelectItem>
-                            <SelectItem value="Overnight Sitting">
-                              Overnight Sitting
-                            </SelectItem>
-                            <SelectItem value="In-home Sitting">
-                              In-home Sitting
-                            </SelectItem>
-                            <SelectItem value="Daytime Sitting">
-                              Daytime Sitting
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Choose Service Category</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            className="grid grid-cols-3 gap-4"
+                          >
+                            {service.categories?.map((category) => (
+                              <div key={category.id} className="relative">
+                                <RadioGroupItem
+                                  value={category.id}
+                                  id={category.id}
+                                  className="peer sr-only"
+                                />
+                                <Label
+                                  htmlFor={category.id}
+                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                >
+                                  {category.icon || (
+                                    <PawPrint className="h-4 w-4" />
+                                  )}
+                                  <span className="mt-2 font-semibold">
+                                    {category.name}
+                                  </span>
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 place-content-center gap-6 xl:flex-row">
                     <FormField
                       control={form.control}
-                      name="startDate"
+                      name="date"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Start Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date < new Date() ||
-                                  date > addDays(new Date(), 30)
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <FormLabel className="block text-sm font-medium text-gray-700">
+                            Date<span className="text-red-400"> *</span>
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {field.value
+                                      ? format(field.value, "PPP")
+                                      : "Pick a date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                    disabled={(date) =>
+                                      date < today || date > addDays(today, 14)
+                                    }
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -276,7 +265,7 @@ export default function SittingAppointment({
 
                     <FormField
                       control={form.control}
-                      name="startTime"
+                      name="time"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Start Time</FormLabel>
@@ -290,7 +279,7 @@ export default function SittingAppointment({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => i).map(
+                              {Array.from({ length: 9 }, (_, i) => i + 9).map(
                                 (hour) => (
                                   <SelectItem key={hour} value={`${hour}:00`}>
                                     {format(
@@ -308,77 +297,22 @@ export default function SittingAppointment({
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="duration"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Duration (hours)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="isOvernight"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>Overnight Stay</FormLabel>
-                          <FormDescription>
-                            Check if the sitting extends overnight
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pet Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 place-content-center gap-6 xl:flex-row">
                     <FormField
                       control={form.control}
-                      name="petType"
+                      name="duration"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Pet Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select pet type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Dog">Dog</SelectItem>
-                              <SelectItem value="Cat">Cat</SelectItem>
-                              <SelectItem value="Bird">Bird</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>Duration (hours)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -386,23 +320,32 @@ export default function SittingAppointment({
 
                     <FormField
                       control={form.control}
-                      name="petSize"
+                      name="location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Pet Size</FormLabel>
+                          <FormLabel>Sitting Location</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select pet size" />
+                                <SelectValue placeholder="Select sitting location" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Small">Small</SelectItem>
-                              <SelectItem value="Medium">Medium</SelectItem>
-                              <SelectItem value="Large">Large</SelectItem>
+                              <SelectItem value="Client's Home">
+                                <div className="flex items-center">
+                                  <Home className="mr-2 h-4 w-4" />
+                                  Client&apos;s Home
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="Sitter's Home">
+                                <div className="flex items-center">
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  Sitter&apos;s Home
+                                </div>
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -411,104 +354,27 @@ export default function SittingAppointment({
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="petName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pet Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter your pet's name"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="specialInstructions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Special Instructions</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Any special care instructions, dietary needs, or health concerns"
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Location</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sitting Location</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                  {form.getValues("location") === "Client's Home" && (
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Address</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select sitting location" />
-                            </SelectTrigger>
+                            <Input
+                              placeholder="Enter the address for pet sitting"
+                              {...field}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Client's Home">
-                              <div className="flex items-center">
-                                <Home className="mr-2 h-4 w-4" />
-                                Client's Home
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="Sitter's Home">
-                              <div className="flex items-center">
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Sitter's Home
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter the address for pet sitting"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </CardContent>
               </Card>
-            </div>
 
-            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Pet Sitter Selection</CardTitle>
@@ -526,21 +392,21 @@ export default function SittingAppointment({
                             defaultValue={field.value}
                             className="grid gap-4 pt-2"
                           >
-                            {petSitters.map((sitter) => (
+                            {service.petSitters?.map((sitter) => (
                               <div key={sitter.id}>
                                 <RadioGroupItem
-                                  value={sitter.id}
-                                  id={sitter.id}
+                                  value={`${sitter.id}`}
+                                  id={`${sitter.id}`}
                                   className="peer sr-only"
                                 />
                                 <Label
-                                  htmlFor={sitter.id}
+                                  htmlFor={`${sitter.id}`}
                                   className="flex items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                   <div className="flex items-center space-x-4">
                                     <Avatar>
                                       <AvatarImage
-                                        src={sitter.image}
+                                        src={sitter?.profileUrl || ""}
                                         alt={sitter.name}
                                       />
                                       <AvatarFallback>
@@ -555,7 +421,7 @@ export default function SittingAppointment({
                                         {sitter.name}
                                       </p>
                                       <p className="text-sm text-muted-foreground">
-                                        ${sitter.hourlyRate}/hour
+                                        {/* ${sitter?.hourlyRate}/hour */}
                                       </p>
                                     </div>
                                   </div>
@@ -567,7 +433,7 @@ export default function SittingAppointment({
                                   </div>
                                 </Label>
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                  Specialties: {sitter.specialties.join(", ")}
+                                  Specialties: {sitter.specialties?.join(", ")}
                                 </p>
                               </div>
                             ))}
@@ -582,7 +448,7 @@ export default function SittingAppointment({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Add-ons & Scheduling</CardTitle>
+                  <CardTitle>Add-on Services</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -591,14 +457,12 @@ export default function SittingAppointment({
                     render={() => (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">
-                            Add-on Services
-                          </FormLabel>
                           <FormDescription>
-                            Select any additional services you'd like to include
+                            Select any additional services you&apos;d like to
+                            include
                           </FormDescription>
                         </div>
-                        {addOns.map((item) => (
+                        {service.addOns?.map((item) => (
                           <FormField
                             key={item.id}
                             control={form.control}
@@ -620,7 +484,8 @@ export default function SittingAppointment({
                                             ])
                                           : field.onChange(
                                               field.value?.filter(
-                                                (value) => value !== item.id
+                                                (value: number) =>
+                                                  value !== item.id
                                               )
                                             );
                                       }}
@@ -638,29 +503,82 @@ export default function SittingAppointment({
                       </FormItem>
                     )}
                   />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pet Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
+                      control={form.control}
+                      name="petType"
+                      label="Pet Type"
+                      placeholder="Select Pet Type"
+                      required={true}
+                    >
+                      {petTypes.map((pet, i) => (
+                        <SelectItem key={i} value={pet.value}>
+                          <div className="flex cursor-pointer items-center gap-2">
+                            <p>{pet.label}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
+
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
+                      control={form.control}
+                      name="breed"
+                      label="Breed"
+                      placeholder="Select Breed"
+                      required={true}
+                    >
+                      {breeds[
+                        form.watch("petType") as keyof typeof breeds
+                      ]?.map((breed: any, i: number) => (
+                        <SelectItem key={breed} value={breed.value}>
+                          {breed.label}
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
+                  </div>
 
                   <FormField
                     control={form.control}
-                    name="recurringSchedule"
+                    name="petName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Recurring Schedule</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select schedule" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="None">None</SelectItem>
-                            <SelectItem value="Daily">Daily</SelectItem>
-                            <SelectItem value="Weekly">Weekly</SelectItem>
-                            <SelectItem value="Custom">Custom</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Pet Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your pet's name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Special Instructions</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Any special care instructions, dietary needs, or health concerns"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -676,18 +594,13 @@ export default function SittingAppointment({
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Base Price</span>
-                      <span>
-                        ${totalPrice - (watchFields.isOvernight ? 50 : 0)}
-                      </span>
+                      <span>${totalPrice}</span>
                     </div>
-                    {watchFields.isOvernight && (
-                      <div className="flex justify-between">
-                        <span>Overnight Fee</span>
-                        <span>$50</span>
-                      </div>
-                    )}
-                    {watchFields.addOns?.map((addOnId) => {
-                      const addOn = addOns.find((a) => a.id === addOnId);
+
+                    {watchFields.addOns?.map((addOnId: any) => {
+                      const addOn = service.addOns?.find(
+                        (a) => a.id === addOnId
+                      );
                       return (
                         <div
                           key={addOnId}
@@ -710,24 +623,44 @@ export default function SittingAppointment({
                   </Button>
                 </CardFooter>
               </Card>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Cancellation Policy</h3>
+                <p className="text-sm text-gray-600">
+                  Free cancellation before {form.getValues("time")} on{" "}
+                  {format(addDays(new Date(), 1), "MMM dd")}. Cancel before{" "}
+                  {format(addDays(new Date(), 7), "MMM dd")} for a partial
+                  refund.
+                </p>
+              </div>
+
+              <div className="space-y-4 text-sm text-gray-600">
+                <p>
+                  By confirming this booking, I agree to the Host&apos;s House
+                  Rules, Ground rules for guests, Rebooking and Refund Policy,
+                  and that the service provider can charge my payment method if
+                  I&apos;m responsible for damage.
+                </p>
+                <p>
+                  I also agree to the{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Terms of Service
+                  </a>
+                  ,{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Payments Terms of Service
+                  </a>
+                  , and I acknowledge the{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Privacy Policy
+                  </a>
+                  .
+                </p>
+              </div>
             </div>
           </div>
         </form>
       </Form>
-
-      <div className="mt-8 text-sm text-gray-500">
-        <p>
-          By confirming this booking, you agree to our{" "}
-          <a href="#" className="text-primary hover:underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-primary hover:underline">
-            Privacy Policy
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 }

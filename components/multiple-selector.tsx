@@ -15,9 +15,15 @@ interface ISelectProps {
   values: Array<{ id: string; name: string }>;
   onChange: (value: string[]) => void;
   value: string[];
+  placeholder: string;
 }
 
-export default function MultiSelect({ values, onChange, value }: ISelectProps) {
+export default function MultiSelect({
+  values,
+  onChange,
+  value,
+  placeholder,
+}: ISelectProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>(value || []);
 
   useEffect(() => {
@@ -70,7 +76,7 @@ export default function MultiSelect({ values, onChange, value }: ISelectProps) {
               ))}
             </div>
           ) : (
-            <span>Select Services</span>
+            <span>{placeholder}</span>
           )}
         </Button>
       </DropdownMenuTrigger>

@@ -26,10 +26,10 @@ export const PetSitterClient = () => {
     const getUsers = async () => {
       setLoading(true);
       try {
-        const data = await fetchPetSitters(
-          currentPage,
-          petSittersData.pageSize
-        );
+        const data = await fetchPetSitters({
+          page: currentPage,
+          pageSize: petSittersData.pageSize,
+        });
         setPetSittersData((prevState) => ({
           ...prevState,
           ...data,

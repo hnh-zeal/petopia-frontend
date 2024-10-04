@@ -77,7 +77,7 @@ export default function DoctorInfo({ doctor }: any) {
             Available Slots
           </TabsTrigger>
           <TabsTrigger value="appointments" className="p-2">
-            Appointments
+            Clinic Appointments
           </TabsTrigger>
         </TabsList>
 
@@ -202,14 +202,14 @@ export default function DoctorInfo({ doctor }: any) {
 
           {/* Available Slots Tab */}
           <TabsContent value="slots">
-            <Card className="p-5 my-6">
+            <div className="py-2 my-4">
               <AvailableSlotsClient doctor={doctor} />
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Appointments Tab */}
           <TabsContent value="appointments">
-            <Card className="p-6 my-6">
+            <Card className="p-6 my-4">
               <ClinicAppointmentClient isAdmin={true} doctor={doctor} />
             </Card>
           </TabsContent>

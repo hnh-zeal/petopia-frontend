@@ -30,6 +30,7 @@ import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
+import { breeds } from "@/constants/data";
 
 export const petType = [
   { name: "Cat", value: "cat" },
@@ -37,31 +38,6 @@ export const petType = [
   { name: "Rabbit", value: "rabbit" },
   { name: "Bird", value: "bird" },
 ];
-
-export const breeds: any = {
-  cat: [
-    { name: "Siamese", value: "siamese" },
-    { name: "Persian", value: "persian" },
-    { name: "Maine Coon", value: "maine_coon" },
-    // Add more cat breeds
-  ],
-  dog: [
-    { name: "Labrador Retriever", value: "labrador" },
-    { name: "German Shepherd", value: "german_shepherd" },
-    { name: "Golden Retriever", value: "golden_retriever" },
-    // Add more dog breeds
-  ],
-  rabbit: [
-    { name: "Holland Lop", value: "holland_lop" },
-    { name: "Netherland Dwarf", value: "netherland_dwarf" },
-    // Add more rabbit breeds
-  ],
-  bird: [
-    { name: "Parakeet", value: "parakeet" },
-    { name: "Canary", value: "canary" },
-    // Add more bird breeds
-  ],
-};
 
 export const durationType = [
   { name: "Days", value: "days" },

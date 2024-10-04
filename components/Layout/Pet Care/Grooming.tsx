@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
-import { CareService } from "@/types/api";
+import { CareService, PetSitter } from "@/types/api";
 import {
   fetchRoomSlots,
   fetchServiceByID,
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import {
   Select,
   SelectContent,
@@ -44,6 +45,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -51,72 +53,31 @@ import {
 } from "@/components/ui/form";
 import { CalendarIcon, PawPrint, Scissors, Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GetServerSideProps } from "next";
+import { breeds, GenderOptions, petTypes } from "@/constants/data";
+import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const formSchema = z.object({
-  date: z.date({ required_error: "A date is required" }),
-  startTime: z.string().min(1, "A time is required"),
-  endTime: z.string().min(1, "A time is required"),
-  petType: z.string().min(1, "Pet type is required"),
-  breed: z.string().min(1, "Breed is required"),
+  categoryId: z.number(),
+  sitterId: z.string().min(1, "Pet sitter selection is required"),
+  date: z.date(),
+  time: z.string(),
+  duration: z.number().min(1).optional(),
   petName: z.string().min(1, "Pet name is required"),
-  petSex: z.string().min(1, "Pet sex is required"),
-  petAge: z.string().min(1, "Pet age is required"),
+  petType: z.string(),
+  breed: z.string(),
+  description: z.string().optional(),
   healthConditions: z.string().optional(),
-  specialInstructions: z.string().optional(),
-  service: z.string().min(1, "Service is required"),
-  addOns: z.array(z.string()).optional(),
-  groomer: z.string().min(1, "Groomer is required"),
+  addOns: z.any().optional(),
 });
 
-const petTypes = ["Dog", "Cat", "Bird", "Other"];
-const breeds = {
-  Dog: ["Labrador", "German Shepherd", "Golden Retriever", "Bulldog", "Poodle"],
-  Cat: ["Persian", "Siamese", "Maine Coon", "British Shorthair", "Sphynx"],
-  Bird: ["Parrot", "Canary", "Finch", "Cockatiel", "Budgerigar"],
-  Other: ["Hamster", "Rabbit", "Guinea Pig", "Ferret", "Turtle"],
-};
-
-const groomingPackages = [
+const breadcrumbItems = (service: CareService) => [
+  { title: "Pet Care Services", link: "/pet-care/services" },
+  { title: `${service.name}`, link: `/pet-care/services/${service.id}` },
   {
-    id: "basic",
-    name: "Basic Grooming",
-    description: "Includes bathing, brushing, and basic nail trim",
-    price: 50,
-    icon: <PawPrint className="h-6 w-6" />,
-    rating: 4.5,
-    duration: 60,
+    title: `Confirm Appointment`,
+    link: `/pet-care/services/${service.id}/appointment`,
   },
-  {
-    id: "haircut",
-    name: "Haircut & Styling",
-    description: "Full grooming service with breed-specific haircut",
-    price: 75,
-    icon: <Scissors className="h-6 w-6" />,
-    rating: 4.8,
-    duration: 90,
-  },
-  {
-    id: "advanced",
-    name: "Advanced Grooming",
-    description: "Premium package including spa treatments",
-    price: 100,
-    icon: <Sparkles className="h-6 w-6" />,
-    rating: 4.9,
-    duration: 120,
-  },
-];
-
-const addOns = [
-  { id: "nailTrim", name: "Nail Trim", price: 10 },
-  { id: "teethCleaning", name: "Teeth Cleaning", price: 15 },
-  { id: "earCleaning", name: "Ear Cleaning", price: 12 },
-];
-
-const groomers = [
-  { id: "groomer1", name: "Alice Johnson", rating: 4.9 },
-  { id: "groomer2", name: "Bob Smith", rating: 4.7 },
-  { id: "groomer3", name: "Carol Williams", rating: 4.8 },
 ];
 
 export default function GroomingAppointment({
@@ -124,11 +85,13 @@ export default function GroomingAppointment({
 }: {
   service: CareService;
 }) {
+  const today = startOfDay(new Date());
   const router = useRouter();
   const auth = useRecoilValue(userAuthState);
   const [isLoading, setIsLoading] = useState(false);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
-  const today = startOfDay(new Date());
+  const [selectedPetType, setSelectedPetType] = useState("");
+  const [totalPrice, setTotalPrice] = useState(service.price);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -136,6 +99,21 @@ export default function GroomingAppointment({
       addOns: [],
     },
   });
+
+  const watchFields = form.watch();
+  useEffect(() => {
+    const calculateTotalPrice = () => {
+      const basePrice = service.price;
+      const addOnPrice =
+        watchFields.addOns?.reduce((total: number, addOnId: any) => {
+          const addOn = service.addOns?.find((a) => a.id === addOnId);
+          return total + (addOn?.price || 0);
+        }, 0) || 0;
+      setTotalPrice(basePrice + addOnPrice);
+    };
+
+    calculateTotalPrice();
+  }, [service, watchFields]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
@@ -192,16 +170,13 @@ export default function GroomingAppointment({
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <nav className="mb-6">
-        <ol className="flex text-sm text-gray-500">
-          <li className="after:content-['>'] after:mx-2">Pet Care Service</li>
-          <li>Confirm Appointment</li>
-        </ol>
-      </nav>
+      <div className="mb-6">
+        <Breadcrumbs items={breadcrumbItems(service)} />
+      </div>
 
-      <h1 className="text-3xl font-bold mb-6">
+      {/* <h1 className="text-3xl font-bold mb-6">
         Book Your Pet Care Appointment
-      </h1>
+      </h1> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -209,9 +184,49 @@ export default function GroomingAppointment({
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Appointment Details</CardTitle>
+                  <CardTitle>Service Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Choose Service Category</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            className="grid grid-cols-3 gap-4"
+                          >
+                            {service.categories?.map((category) => (
+                              <div key={category.id} className="relative">
+                                <RadioGroupItem
+                                  value={category.id}
+                                  id={category.id}
+                                  className="peer sr-only"
+                                />
+                                <Label
+                                  htmlFor={category.id}
+                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                >
+                                  {category.icon || (
+                                    <PawPrint className="h-4 w-4" />
+                                  )}
+                                  <span className="mt-2 font-semibold">
+                                    {category.name}
+                                  </span>
+                                  <span className="mt-1 text-sm">
+                                    ฿{category.price}
+                                  </span>
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -254,9 +269,10 @@ export default function GroomingAppointment({
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
-                      name="startTime"
+                      name="time"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Start Time</FormLabel>
@@ -282,9 +298,30 @@ export default function GroomingAppointment({
                       )}
                     />
                   </div>
+
                   <FormField
                     control={form.control}
-                    name="specialInstructions"
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duration (hours)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Special Instructions</FormLabel>
@@ -303,143 +340,223 @@ export default function GroomingAppointment({
 
               <Card>
                 <CardHeader>
+                  <CardTitle>Pet Sitter Selection</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FormField
+                    control={form.control}
+                    name="sitterId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Choose a Pet Sitter</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid gap-4 pt-2"
+                          >
+                            {service.petSitters?.map((sitter) => (
+                              <div key={sitter.id}>
+                                <RadioGroupItem
+                                  value={`${sitter.id}`}
+                                  id={`${sitter.id}`}
+                                  className="peer sr-only"
+                                />
+                                <Label
+                                  htmlFor={`${sitter.id}`}
+                                  className="flex items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                >
+                                  <div className="flex items-center space-x-4">
+                                    <Avatar>
+                                      <AvatarImage
+                                        src={sitter?.profileUrl || ""}
+                                        alt={sitter.name}
+                                      />
+                                      <AvatarFallback>
+                                        {sitter.name
+                                          .split(" ")
+                                          .map((n) => n[0])
+                                          .join("")}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="text-sm font-medium leading-none">
+                                        {sitter.name}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {/* ${sitter?.hourlyRate}/hour */}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Star className="h-4 w-4 fill-primary mr-1" />
+                                    <span className="text-sm">
+                                      {sitter.rating}
+                                    </span>
+                                  </div>
+                                </Label>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                  Specialties: {sitter.specialties?.join(", ")}
+                                </p>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add-on Services</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="addOns"
+                    render={() => (
+                      <FormItem>
+                        <div className="mb-4">
+                          <FormDescription>
+                            Select any additional services you&apos;d like to
+                            include
+                          </FormDescription>
+                        </div>
+                        {service.addOns?.map((item) => (
+                          <FormField
+                            key={item.id}
+                            control={form.control}
+                            name="addOns"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={item.id}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([
+                                              ...field.value,
+                                              item.id,
+                                            ])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value: number) =>
+                                                  value !== item.id
+                                              )
+                                            );
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">
+                                    {item.name} (${item.price})
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
                   <CardTitle>Pet Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
                       control={form.control}
                       name="petType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select pet type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {petTypes.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
+                      label="Pet Type"
+                      placeholder="Select Pet Type"
+                      required={true}
+                    >
+                      {petTypes.map((pet, i) => (
+                        <SelectItem key={i} value={pet.value}>
+                          <div className="flex cursor-pointer items-center gap-2">
+                            <p>{pet.label}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
+
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
                       control={form.control}
                       name="breed"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Breed</FormLabel>
-                          <Select
+                      label="Breed"
+                      placeholder="Select Breed"
+                    >
+                      {breeds[
+                        form.watch("petType") as keyof typeof breeds
+                      ]?.map((breed: any, i: number) => (
+                        <SelectItem key={breed} value={breed.value}>
+                          {breed.label}
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="petName"
+                      label="Pet Name"
+                      placeholder="Enter your pet's name"
+                      required={true}
+                    />
+
+                    <CustomFormField
+                      fieldType={FormFieldType.SKELETON}
+                      control={form.control}
+                      name="petSex"
+                      label="Sex"
+                      renderSkeleton={(field) => (
+                        <FormControl>
+                          <RadioGroup
+                            className="flex h-11 gap-6 xl:justify-evenly"
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select breed" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {breeds[
-                                form.watch("petType") as keyof typeof breeds
-                              ]?.map((breed) => (
-                                <SelectItem key={breed} value={breed}>
-                                  {breed}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                            {GenderOptions.map((option, i) => {
+                              const capitalizedOption =
+                                option.charAt(0).toUpperCase() +
+                                option.slice(1).toLowerCase();
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="petName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter pet name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="petSex"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sex</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex space-x-4"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="male" id="male" />
-                                <Label htmlFor="male">Male</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="female" id="female" />
-                                <Label htmlFor="female">Female</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="petAge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Age (Years)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Enter pet age"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="petAge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Age (Years)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Enter pet age"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                              return (
+                                <div key={i} className="radio-group">
+                                  <div className="flex flex-row space-x-2 justify-around items-center mt-3">
+                                    <RadioGroupItem
+                                      value={option}
+                                      id={capitalizedOption}
+                                    />
+                                    <Label
+                                      htmlFor={capitalizedOption}
+                                      className="cursor-pointer"
+                                    >
+                                      {capitalizedOption}
+                                    </Label>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </RadioGroup>
+                        </FormControl>
                       )}
                     />
                   </div>
@@ -462,145 +579,6 @@ export default function GroomingAppointment({
                   />
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{service?.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="service"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Choose Service Category</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="grid grid-cols-3 gap-4"
-                          >
-                            {groomingPackages.map((pkg) => (
-                              <div key={pkg.id} className="relative">
-                                <RadioGroupItem
-                                  value={pkg.id}
-                                  id={pkg.id}
-                                  className="peer sr-only"
-                                />
-                                <Label
-                                  htmlFor={pkg.id}
-                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                >
-                                  {pkg.icon}
-                                  <span className="mt-2 font-semibold">
-                                    {pkg.name}
-                                  </span>
-                                  <span className="mt-1 text-sm">
-                                    ฿{pkg.price}
-                                  </span>
-                                </Label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="groomer"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Choose Pet Sitter</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="grid grid-cols-3 gap-4"
-                          >
-                            {groomers.map((groomer) => (
-                              <div key={groomer.id} className="relative">
-                                <RadioGroupItem
-                                  value={groomer.id}
-                                  id={groomer.id}
-                                  className="peer sr-only"
-                                />
-                                <Label
-                                  htmlFor={groomer.id}
-                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                >
-                                  <span className="font-semibold">
-                                    {groomer.name}
-                                  </span>
-                                  <span className="mt-1 text-sm flex items-center">
-                                    <Star className="h-4 w-4 fill-primary mr-1" />
-                                    {groomer.rating}
-                                  </span>
-                                </Label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {form.watch("service") === "advanced" && (
-                    <FormField
-                      control={form.control}
-                      name="addOns"
-                      render={() => (
-                        <FormItem>
-                          <FormLabel>Add-ons</FormLabel>
-                          <div className="space-y-2">
-                            {addOns.map((addOn) => (
-                              <div
-                                key={addOn.id}
-                                className="flex items-center space-x-2"
-                              >
-                                <Checkbox
-                                  id={addOn.id}
-                                  checked={form
-                                    .watch("addOns")
-                                    ?.includes(addOn.id)}
-                                  onCheckedChange={(checked) => {
-                                    const currentAddOns =
-                                      form.watch("addOns") || [];
-                                    if (checked) {
-                                      form.setValue("addOns", [
-                                        ...currentAddOns,
-                                        addOn.id,
-                                      ]);
-                                    } else {
-                                      form.setValue(
-                                        "addOns",
-                                        currentAddOns.filter(
-                                          (id) => id !== addOn.id
-                                        )
-                                      );
-                                    }
-                                  }}
-                                />
-                                <Label
-                                  htmlFor={addOn.id}
-                                  className="text-sm font-medium leading-none"
-                                >
-                                  {addOn.name} (฿{addOn.price})
-                                </Label>
-                              </div>
-                            ))}
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </CardContent>
-              </Card>
 
               <Card>
                 <CardHeader>
@@ -609,43 +587,27 @@ export default function GroomingAppointment({
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>Service</span>
-                      <span>
-                        ฿
-                        {groomingPackages.find(
-                          (pkg) => pkg.id === form.watch("service")
-                        )?.price || 0}
-                      </span>
+                      <span>Base Price</span>
+                      <span>${totalPrice}</span>
                     </div>
-                    {form.watch("addOns")?.map((addOnId) => {
-                      const addOn = addOns.find((a) => a.id === addOnId);
+
+                    {watchFields.addOns?.map((addOnId: any) => {
+                      const addOn = service.addOns?.find(
+                        (a) => a.id === addOnId
+                      );
                       return (
                         <div
                           key={addOnId}
                           className="flex justify-between text-sm"
                         >
                           <span>{addOn?.name}</span>
-                          <span>฿{addOn?.price}</span>
+                          <span>${addOn?.price}</span>
                         </div>
                       );
                     })}
                     <div className="flex justify-between font-semibold pt-2 border-t">
                       <span>Total</span>
-                      <span>
-                        ฿
-                        {groomingPackages.find(
-                          (pkg) => pkg.id === form.watch("service")
-                        )?.price +
-                          form
-                            .watch("addOns")
-                            ?.reduce(
-                              (total, addOnId) =>
-                                total +
-                                (addOns.find((a) => a.id === addOnId)?.price ||
-                                  0),
-                              0
-                            )}
-                      </span>
+                      <span>${totalPrice}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -659,7 +621,7 @@ export default function GroomingAppointment({
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Cancellation Policy</h3>
                 <p className="text-sm text-gray-600">
-                  Free cancellation before {form.getValues("startTime")} on{" "}
+                  Free cancellation before {form.getValues("time")} on{" "}
                   {format(addDays(new Date(), 1), "MMM dd")}. Cancel before{" "}
                   {format(addDays(new Date(), 7), "MMM dd")} for a partial
                   refund.
@@ -668,10 +630,10 @@ export default function GroomingAppointment({
 
               <div className="space-y-4 text-sm text-gray-600">
                 <p>
-                  By confirming this booking, I agree to the Host's House Rules,
-                  Ground rules for guests, Rebooking and Refund Policy, and that
-                  the service provider can charge my payment method if I'm
-                  responsible for damage.
+                  By confirming this booking, I agree to the Host&apos;s House
+                  Rules, Ground rules for guests, Rebooking and Refund Policy,
+                  and that the service provider can charge my payment method if
+                  I&apos;m responsible for damage.
                 </p>
                 <p>
                   I also agree to the{" "}

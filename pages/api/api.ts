@@ -336,12 +336,19 @@ export async function fetchAppointmentSlots(queryData: any, token?: string) {
   return data;
 }
 
-export async function fetchPetSitters(
-  page?: number,
-  pageSize?: number,
-  token?: string
-) {
-  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
+export async function fetchPetSitters(queryData: any, token?: string) {
+  const { sitterId, date, time, status, page, pageSize } = queryData;
+  const query = {
+    ...(sitterId && { sitterId }),
+    ...(date && { date }),
+    ...(time && { time }),
+    ...(status && { status }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/pet-sitters${queryUrl}`,
@@ -407,6 +414,22 @@ export async function createCareService(formValues: any) {
     `${process.env.NEXT_PUBLIC_API_URL}/care-services`,
     {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function updateCareService(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-services/${id}`,
+    {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -929,10 +952,26 @@ export async function fetchCategories() {
     }
   );
 
-  console.log(response, ".................................................");
-
   const data = await response.json();
   return data;
 }
 
-export async function fetchCategoriesByService() {}
+export async function createCareAppointment(
+  formValues: any,
+  userToken: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-appointments`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}

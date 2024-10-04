@@ -205,9 +205,13 @@ export interface CareService {
   name: string;
   type: string;
   description: string;
+  mainImage: string;
   price: number;
   rating: number;
   reviews: number;
+  categories: Category[];
+  petSitters: PetSitter[];
+  addOns: any[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -274,15 +278,21 @@ export interface Packages {
 export interface PetSitter {
   id: number;
   name: string;
+  profileUrl: string;
   about: string;
   email: string;
+  rating: number;
   phoneNumber: string;
+  specialties: any;
+  reviews: string;
   services: any;
 }
 
 export interface Category {
   id: string;
+  icon: string;
   name: string;
+  price: number;
   isActive: boolean;
 }
 

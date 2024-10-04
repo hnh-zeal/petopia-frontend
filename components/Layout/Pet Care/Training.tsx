@@ -7,8 +7,6 @@ import * as z from "zod";
 import { format, addDays, startOfDay, addHours } from "date-fns";
 import { useRouter } from "next/router";
 import { toast } from "@/components/ui/use-toast";
-import { useRecoilValue } from "recoil";
-import { userAuthState } from "@/states/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -48,14 +46,11 @@ import {
 import { CalendarIcon, Home, MapPin, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CareService } from "@/types/api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 const formSchema = z.object({
-  trainingType: z.enum([
-    "Basic Obedience",
-    "Advanced Training",
-    "Behavioral Correction",
-    "Specialized Training",
-  ]),
+  trainingType: z.any(),
   sessionCount: z.number().min(1, "At least one session is required"),
   sessionDuration: z
     .number()
@@ -77,36 +72,12 @@ const formSchema = z.object({
   addOns: z.array(z.string()).optional(),
 });
 
-const trainers = [
+const breadcrumbItems = (service: CareService) => [
+  { title: "Pet Care Services", link: "/pet-care/services" },
+  { title: `${service.name}`, link: `/pet-care/services/${service.id}` },
   {
-    id: "1",
-    name: "Emma Wilson",
-    rating: 4.9,
-    hourlyRate: 50,
-    specialties: ["Basic Obedience", "Behavioral Correction"],
-    image: "/placeholder.svg?height=100&width=100",
-    about:
-      "Certified dog trainer with 10 years of experience in obedience and behavior modification.",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    rating: 4.8,
-    hourlyRate: 55,
-    specialties: ["Advanced Training", "Agility"],
-    image: "/placeholder.svg?height=100&width=100",
-    about:
-      "Specializes in advanced training techniques and agility courses for high-energy dogs.",
-  },
-  {
-    id: "3",
-    name: "Sarah Johnson",
-    rating: 4.7,
-    hourlyRate: 60,
-    specialties: ["Specialized Training", "Service Dog Training"],
-    image: "/placeholder.svg?height=100&width=100",
-    about:
-      "Expert in training service dogs and therapy animals for various needs.",
+    title: `Confirm Appointment`,
+    link: `/pet-care/services/${service.id}/appointment`,
   },
 ];
 
@@ -127,7 +98,6 @@ export default function TrainingAppointment({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      trainingType: "Basic Obedience",
       sessionCount: 1,
       sessionDuration: 60,
       trainingLocation: "Trainer's Facility",
@@ -136,6 +106,7 @@ export default function TrainingAppointment({
     },
   });
 
+  const today = startOfDay(new Date());
   const watchFields = form.watch();
 
   useEffect(() => {
@@ -143,14 +114,7 @@ export default function TrainingAppointment({
   }, [watchFields]);
 
   const calculateTotalPrice = () => {
-    const selectedTrainer = trainers.find(
-      (trainer) => trainer.id === watchFields.trainerId
-    );
-    const basePrice = selectedTrainer
-      ? selectedTrainer.hourlyRate *
-        watchFields.sessionCount *
-        (watchFields.sessionDuration / 60)
-      : 0;
+    const basePrice = service.price;
     const locationFee =
       watchFields.trainingLocation === "Owner's Home" ? 10 : 0;
     const addOnPrice =
@@ -187,9 +151,12 @@ export default function TrainingAppointment({
 
   return (
     <div className="container mx-auto p-4 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-6">
+      <div className="mb-6">
+        <Breadcrumbs items={breadcrumbItems(service)} />
+      </div>
+      {/* <h1 className="text-3xl font-bold mb-6">
         Book Your Pet Training Service
-      </h1>
+      </h1> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -212,23 +179,18 @@ export default function TrainingAppointment({
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select training type" />
+                              <SelectValue placeholder="Select Training type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Basic Obedience">
-                              Basic Obedience (sit, stay, come)
-                            </SelectItem>
-                            <SelectItem value="Advanced Training">
-                              Advanced Training (agility, off-leash control)
-                            </SelectItem>
-                            <SelectItem value="Behavioral Correction">
-                              Behavioral Correction (barking, anxiety,
-                              aggression)
-                            </SelectItem>
-                            <SelectItem value="Specialized Training">
-                              Specialized Training (service dog, therapy dog)
-                            </SelectItem>
+                            {service.categories?.map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={`${category.id}`}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -239,24 +201,83 @@ export default function TrainingAppointment({
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="sessionCount"
+                      name="date"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Number of Sessions</FormLabel>
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="block text-sm font-medium text-gray-700">
+                            Date<span className="text-red-400"> *</span>
+                          </FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
-                            />
+                            <div className="relative">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {field.value
+                                      ? format(field.value, "PPP")
+                                      : "Pick a date"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                    disabled={(date) =>
+                                      date < today || date > addDays(today, 14)
+                                    }
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start Time</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select start time" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.from({ length: 24 }, (_, i) => i).map(
+                                (hour) => (
+                                  <SelectItem key={hour} value={`${hour}:00`}>
+                                    {format(
+                                      addHours(startOfDay(new Date()), hour),
+                                      "h:mm a"
+                                    )}
+                                  </SelectItem>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="sessionDuration"
@@ -284,93 +305,41 @@ export default function TrainingAppointment({
                         </FormItem>
                       )}
                     />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="trainingLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Training Location</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select training location" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Trainer's Facility">
-                              <div className="flex items-center">
-                                <Home className="mr-2 h-4 w-4" />
-                                Trainer's Facility
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="Owner's Home">
-                              <div className="flex items-center">
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Owner's Home
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="Park/Neutral Location">
-                              <div className="flex items-center">
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Park/Neutral Location
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pet Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="petName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your pet's name"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
 
                     <FormField
                       control={form.control}
-                      name="petType"
+                      name="trainingLocation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Pet Type</FormLabel>
+                          <FormLabel>Training Location</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select pet type" />
+                                <SelectValue placeholder="Select training location" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Dog">Dog</SelectItem>
-                              <SelectItem value="Cat">Cat</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
+                              <SelectItem value="Trainer's Facility">
+                                <div className="flex items-center">
+                                  <Home className="mr-2 h-4 w-4" />
+                                  Trainer&apos;s Facility
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="Owner's Home">
+                                <div className="flex items-center">
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  Owner&apos;s Home
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="Park/Neutral Location">
+                                <div className="flex items-center">
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  Park/Neutral Location
+                                </div>
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -378,68 +347,9 @@ export default function TrainingAppointment({
                       )}
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="petAge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Age (Years)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="petBreed"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Breed</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your pet's breed"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="behavioralIssues"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Behavioral Issues (if any)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Describe any specific behavioral issues your pet has"
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </CardContent>
               </Card>
-            </div>
 
-            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Trainer Selection</CardTitle>
@@ -457,22 +367,22 @@ export default function TrainingAppointment({
                             defaultValue={field.value}
                             className="grid gap-4 pt-2"
                           >
-                            {trainers.map((trainer) => (
+                            {service.petSitters?.map((trainer) => (
                               <div key={trainer.id}>
                                 <RadioGroupItem
-                                  value={trainer.id}
-                                  id={trainer.id}
+                                  value={`${trainer.id}`}
+                                  id={`${trainer.id}`}
                                   className="peer sr-only"
                                 />
                                 <Label
-                                  htmlFor={trainer.id}
+                                  htmlFor={`${trainer.id}`}
                                   className="flex flex-col rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
                                       <Avatar>
                                         <AvatarImage
-                                          src={trainer.image}
+                                          src={trainer.profileUrl || ""}
                                           alt={trainer.name}
                                         />
                                         <AvatarFallback>
@@ -487,14 +397,14 @@ export default function TrainingAppointment({
                                           {trainer.name}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                          ${trainer.hourlyRate}/hour
+                                          ${trainer?.hourlyRate}/hour
                                         </p>
                                       </div>
                                     </div>
                                     <div className="flex items-center">
                                       <Star className="h-4 w-4 fill-primary mr-1" />
                                       <span className="text-sm">
-                                        {trainer.rating}
+                                        {trainer?.rating}
                                       </span>
                                     </div>
                                   </div>
@@ -505,7 +415,7 @@ export default function TrainingAppointment({
                                     <span className="text-sm font-medium">
                                       Specialties:{" "}
                                     </span>
-                                    {trainer.specialties.map(
+                                    {trainer.specialties?.map(
                                       (specialty, index) => (
                                         <Badge
                                           key={index}
@@ -652,7 +562,8 @@ export default function TrainingAppointment({
                             Add-on Services
                           </FormLabel>
                           <FormDescription>
-                            Select any additional services you'd like to include
+                            Select any additional services you&apos;d like to
+                            include
                           </FormDescription>
                         </div>
                         {addOns.map((item) => (
@@ -691,6 +602,117 @@ export default function TrainingAppointment({
                             }}
                           />
                         ))}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pet Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="petName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pet Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your pet's name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="petType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pet Type</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select pet type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Dog">Dog</SelectItem>
+                              <SelectItem value="Cat">Cat</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="petAge"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pet Age (Years)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="petBreed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pet Breed</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter your pet's breed"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="behavioralIssues"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Behavioral Issues (if any)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Describe any specific behavioral issues your pet has"
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -744,24 +766,44 @@ export default function TrainingAppointment({
                   </Button>
                 </CardFooter>
               </Card>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">Cancellation Policy</h3>
+                <p className="text-sm text-gray-600">
+                  Free cancellation before {form.getValues("startTime")} on{" "}
+                  {format(addDays(new Date(), 1), "MMM dd")}. Cancel before{" "}
+                  {format(addDays(new Date(), 7), "MMM dd")} for a partial
+                  refund.
+                </p>
+              </div>
+
+              <div className="space-y-4 text-sm text-gray-600">
+                <p>
+                  By confirming this booking, I agree to the Host's House Rules,
+                  Ground rules for guests, Rebooking and Refund Policy, and that
+                  the service provider can charge my payment method if I'm
+                  responsible for damage.
+                </p>
+                <p>
+                  I also agree to the{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Terms of Service
+                  </a>
+                  ,{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Payments Terms of Service
+                  </a>
+                  , and I acknowledge the{" "}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Privacy Policy
+                  </a>
+                  .
+                </p>
+              </div>
             </div>
           </div>
         </form>
       </Form>
-
-      <div className="mt-8 text-sm text-gray-500">
-        <p>
-          By confirming this booking, you agree to our{" "}
-          <a href="#" className="text-primary hover:underline">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-primary hover:underline">
-            Privacy Policy
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 }
