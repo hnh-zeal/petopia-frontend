@@ -82,13 +82,6 @@ export const ClinicAppointmentClient = ({
               {doctor && (
                 <h2 className="text-lg font-bold">Clinic Appointments</h2>
               )}
-
-              <Button
-                className="text-xs md:text-sm"
-                onClick={() => router.push(`/admin/pet-clinic/create`)}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Add New
-              </Button>
             </div>
             <Separator />
           </>

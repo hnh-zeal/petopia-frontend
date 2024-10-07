@@ -1,6 +1,6 @@
 import ThemeToggle from "@/components/Layout/ThemeToggle/theme-toggle";
 import { cn } from "@/lib/utils";
-// import { MobileSidebar } from './mobile-sidebar';
+import { MobileSidebar } from "./mobile-sidebar";
 import Link from "next/link";
 import { AdminAvatar } from "./admin-avatar";
 
@@ -27,11 +27,13 @@ export default function Header() {
             </svg>
           </Link>
         </div>
-        <div className={cn("block lg:!hidden")}>{/* <MobileSidebar /> */}</div>
+        {/* <div className={cn("block lg:!hidden")}>
+          <MobileSidebar />
+        </div> */}
 
         <div className="flex items-center gap-2">
           <AdminAvatar />
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
         </div>
       </nav>
     </div>

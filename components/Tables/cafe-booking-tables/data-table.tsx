@@ -33,19 +33,8 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import CreateScheduleForm from "@/components/Forms/create-slot-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { fetchRoomBooking } from "@/pages/api/api";
-import { useRecoilState } from "recoil";
-import { userAuthState } from "@/states/auth";
 import { useRouter } from "next/router";
-import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -146,7 +135,7 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
       {!loading && (
-        <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
+        <ScrollArea className="h-[calc(80vh-200px)] border-">
           <Table className="relative">
             <TableHeader className="bg-zinc-300">
               {table.getHeaderGroups().map((headerGroup) => (

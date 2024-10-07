@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import qs from "querystring";
 
 export async function adminLogin(formValues: any) {
@@ -969,6 +970,98 @@ export async function createCareAppointment(
         Authorization: `Bearer ${userToken}`,
       },
       body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchCareAppointments(queryData: any, token?: string) {
+  const { userId, date, page, pageSize } = queryData;
+
+  const query = {
+    ...(userId && { userId }),
+    ...(date && { date: date.toISOString() }),
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-appointments${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchDiscountPackage(queryData: any, token: string) {
+  const { type } = queryData;
+
+  const query = {
+    ...(type && { type }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/packages/active${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchOverviewReport(queryData: any, adminToken?: string) {
+  const { date } = queryData;
+  const queryString = qs.stringify({ date: format(date, "yyyy-MM-dd") });
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/reports/overview${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchPieData(queryData: any, adminToken?: string) {
+  const queryString = qs.stringify(queryData);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/reports/pie-data${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
     }
   );
 

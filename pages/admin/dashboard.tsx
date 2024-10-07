@@ -1,20 +1,220 @@
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import React from "react";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { DashboardCalendar } from "@/components/dashboard-calendar";
-import { DonutChart } from "@/components/charts/donut-chart";
-import { AreaGraph } from "@/components/charts/area-graph";
-import { BarGraph } from "@/components/charts/bar-graph";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { motion } from "framer-motion";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Heading } from "@/components/ui/heading";
+import {
+  CalendarDays,
+  ChevronRight,
+  Coffee,
+  PawPrint,
+  Stethoscope,
+  Users,
+} from "lucide-react";
+import { Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { format } from "date-fns";
+import { useRouter } from "next/router";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { OverviewData, PieData } from "@/types/api";
+import { fetchOverviewReport, fetchPieData } from "../api/api";
+import { GetStaticProps } from "next";
+import { months } from "@/constants/data";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const breadcrumbItems = [{ title: "Dashboard", link: "/admin/dashboard" }];
 
-export default function Dashboard() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+export const getStaticProps = (async () => {
+  const overviewData = await fetchOverviewReport({ date: new Date() });
+  const pieData = await fetchPieData({ month: 10, year: 2024 });
+  return { props: { overviewData, pieData } };
+}) satisfies GetStaticProps<{
+  overviewData: OverviewData;
+  pieData: PieData;
+}>;
+
+const AppointmentItem = ({ date, name, condition }: any) => (
+  <div className="flex items-center mb-4">
+    <div className="w-16 text-sm text-gray-500">{format(date, "HH:mm a")}</div>
+    <div className="flex-grow flex items-center">
+      <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+      <div>
+        <p className="font-medium">{name}</p>
+        <p className="text-sm text-gray-500">{condition}</p>
+      </div>
+    </div>
+    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+      <ChevronRight size={16} className="text-green-600" />
+    </div>
+  </div>
+);
+
+export default function Dashboard({
+  overviewData,
+  pieData,
+}: {
+  overviewData: OverviewData;
+  pieData: PieData;
+}) {
+  const router = useRouter();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [type, setType] = useState("clinic");
+  const [loading, setLoading] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [countData, setCountData] = useState<any>(overviewData.count);
+  const [appointments, setAppointments] = useState<any>(
+    overviewData.appointments?.clinicAppointments
+  );
+
+  const defaultPieData = {
+    labels: ["Clinic Visits", "Care", "Cafe Bookings"],
+    datasets: [
+      {
+        data: [
+          pieData.clinic_count || 0,
+          pieData.care_count || 0,
+          pieData.cafe_count || 0,
+        ],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.6)",
+          "rgba(54, 162, 235, 0.6)",
+          "rgba(255, 206, 86, 0.6)",
+          "rgba(75, 192, 192, 0.6)",
+          "rgba(153, 102, 255, 0.6)",
+        ],
+        borderColor: [
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(75, 192, 192, 1)",
+          "rgba(153, 102, 255, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const [pieChartData, setPieChartData] = useState(defaultPieData);
+  const handleMonthChange = async (value: string) => {
+    const monthIndex = months.indexOf(value) + 1;
+
+    setSelectedMonth(monthIndex); // Update selected month
+
+    // Fetch new pie data based on the selected month and year
+    try {
+      const fetchedPieData = await fetchPieData({
+        month: monthIndex,
+        year: 2024,
+      });
+
+      setPieChartData({
+        labels: ["Clinic Visits", "Care", "Cafe Bookings"],
+        datasets: [
+          {
+            data: [
+              fetchedPieData.clinic_count || 0,
+              fetchedPieData.care_count || 0,
+              fetchedPieData.cafe_count || 0,
+            ],
+            backgroundColor: [
+              "rgba(255, 99, 132, 0.6)",
+              "rgba(54, 162, 235, 0.6)",
+              "rgba(255, 206, 86, 0.6)",
+            ],
+            borderColor: [
+              "rgba(255, 99, 132, 1)",
+              "rgba(54, 162, 235, 1)",
+              "rgba(255, 206, 86, 1)",
+            ],
+            borderWidth: 1,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("Failed to fetch pie data", error);
+    }
+  };
+
+  const handleTypeChange = (value: string) => {
+    setType(value);
+    switch (value) {
+      case "clinic":
+        setAppointments(overviewData.appointments?.clinicAppointments);
+        break;
+      case "care":
+        setAppointments(overviewData.appointments?.careAppointments);
+        break;
+      case "cafe":
+        setAppointments(overviewData.appointments?.cafeBookings);
+        break;
+    }
+  };
+
+  const handleDateChange = async (date: Date | undefined) => {
+    if (date) {
+      setLoading(true);
+      setDate(date);
+      try {
+        const fetchedOverview = await fetchOverviewReport({ date });
+        setCountData(fetchedOverview.count);
+        switch (type) {
+          case "clinic":
+            setAppointments(fetchedOverview.appointments?.clinicAppointments);
+            break;
+          case "care":
+            setAppointments(fetchedOverview.appointments?.careAppointments);
+            break;
+          case "cafe":
+            setAppointments(fetchedOverview.appointments?.cafeBookings);
+            break;
+        }
+      } catch (error) {
+        console.error("Error fetching time slots:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <>
@@ -26,132 +226,249 @@ export default function Dashboard() {
             <Breadcrumbs items={breadcrumbItems} />
             <div className="flex items-center justify-between space-y-2">
               <Heading title={`Welcome to Management Panel!`} />
-              <div className="hidden items-center space-x-2 pb-5 md:flex">
-                <DashboardCalendar />
-                <Button>Filter</Button>
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[200px] justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleDateChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-            <ScrollArea className="h-[calc(100vh-220px)]">
-              <div className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Clinic Appointments
-                      </CardTitle>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
+            {!loading && (
+              <ScrollArea className="h-[calc(100vh-220px)] pl-2 pr-5">
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
                       >
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </svg>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">$45,231.89</div>
-                      <p className="text-xs text-muted-foreground">
-                        +20.1% from last month
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Pet Care Appointments
-                      </CardTitle>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Clinic Appointments
+                          </CardTitle>
+                          <Stethoscope className="h-6 w-6" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">
+                            +{countData.clinic_count}
+                          </div>
+                          {/* <p className="text-xs text-muted-foreground">
+                          +20.1% from last month
+                        </p> */}
+                        </CardContent>
+                      </motion.div>
+                    </Card>
+
+                    <Card>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
                       >
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">+2350</div>
-                      <p className="text-xs text-muted-foreground">
-                        +180.1% from last month
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        Pet Cafe Appointments
-                      </CardTitle>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Pet Care Appointments
+                          </CardTitle>
+                          <PawPrint className="h-6 w-6" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">
+                            +{countData.care_count}
+                          </div>
+                          {/* <p className="text-xs text-muted-foreground">
+                          +180.1% from last month
+                        </p> */}
+                        </CardContent>
+                      </motion.div>
+                    </Card>
+
+                    <Card>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
                       >
-                        <rect width="20" height="14" x="2" y="5" rx="2" />
-                        <path d="M2 10h20" />
-                      </svg>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">+12,234</div>
-                      <p className="text-xs text-muted-foreground">
-                        +19% from last month
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        New Users
-                      </CardTitle>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Pet Cafe Room Booking
+                          </CardTitle>
+                          <Coffee className="h-6 w-6" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">
+                            +{countData.cafe_count}
+                          </div>
+                          {/* <p className="text-xs text-muted-foreground">
+                          +19% from last month
+                        </p> */}
+                        </CardContent>
+                      </motion.div>
+                    </Card>
+
+                    <Card>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
                       >
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                      </svg>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">+573</div>
-                      <p className="text-xs text-muted-foreground">
-                        +201 since last hour
-                      </p>
-                    </CardContent>
-                  </Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            New Users
+                          </CardTitle>
+                          <Users className="h-6 w-6" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">
+                            +{countData.user_count}
+                          </div>
+                          {/* <p className="text-xs text-muted-foreground">
+                          +201 since last hour
+                        </p> */}
+                        </CardContent>
+                      </motion.div>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <div className="col-span-4 md:col-span-3">
+                      <Card className="w-full max-w-3xl mx-auto">
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Pet Services</CardTitle>
+                            <Select
+                              value={months[selectedMonth - 1]}
+                              onValueChange={handleMonthChange}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select month" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {months.map((month) => (
+                                  <SelectItem key={month} value={month}>
+                                    {month}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-[350px] flex items-center justify-center">
+                              <Pie
+                                data={pieChartData}
+                                options={{
+                                  responsive: true,
+                                  maintainAspectRatio: false,
+                                  plugins: {
+                                    legend: {
+                                      position: "bottom" as const,
+                                    },
+                                    title: {
+                                      display: true,
+                                      text: `Appointments and Bookings for ${months[selectedMonth - 1]}`,
+                                    },
+                                  },
+                                }}
+                              />
+                            </div>
+                          </CardContent>
+                        </motion.div>
+                      </Card>
+                    </div>
+
+                    <div className="col-span-4">
+                      <Card className="bg-white rounded-lg shadow">
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                            <div className="flex flex-row items-center space-x-2">
+                              <CalendarDays className="mr-2 text-blue-500" />
+                              <CardTitle className="text-xl font-bold flex items-center">
+                                Total Appointments (
+                                {`${format(date as Date, "yyyy-MMM-dd")}`})
+                              </CardTitle>
+                            </div>
+                            <Select
+                              value={type}
+                              onValueChange={handleTypeChange}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem key={"clinic"} value={"clinic"}>
+                                  Pet Clinic
+                                </SelectItem>
+                                <SelectItem key={"care"} value={"care"}>
+                                  Pet Care
+                                </SelectItem>
+                                <SelectItem key={"cafe"} value={"cafe"}>
+                                  Pet Cafe
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </CardHeader>
+                          <CardContent className="m-2">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-sm font-medium text-gray-500">
+                                APPOINTMENTS
+                              </h3>
+                              <Button
+                                variant={"ghost"}
+                                onClick={() =>
+                                  router.push(`/admin/pet-${type}/appointments`)
+                                }
+                                className="text-sm text-blue-500"
+                              >
+                                View All
+                              </Button>
+                            </div>
+
+                            {appointments?.map(
+                              (appointment: any, i: number) => (
+                                <div key={i}>
+                                  <AppointmentItem
+                                    date={
+                                      appointment?.startTime || appointment.date
+                                    }
+                                    name={appointment.userId}
+                                    condition={appointment.description}
+                                  />
+                                </div>
+                              )
+                            )}
+                          </CardContent>
+                        </motion.div>
+                      </Card>
+                    </div>
+                    <div className="col-span-4 md:col-span-3"></div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
-                  <div className="col-span-4">
-                    <BarGraph />
-                  </div>
-                  <div className="col-span-4 md:col-span-3">
-                    <DonutChart />
-                  </div>
-                  <div className="col-span-4">
-                    <AreaGraph />
-                  </div>
-                  <div className="col-span-4 md:col-span-3"></div>
-                </div>
-              </div>
-            </ScrollArea>
+              </ScrollArea>
+            )}
           </div>
         </main>
       </div>

@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
   Form,
   FormControl,
@@ -59,8 +58,8 @@ import { CareService } from "@/types/api";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { breeds, petTypes } from "@/constants/data";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
-import { petType } from "@/components/Forms/create-cafe-pets-form";
-import { createCareAppointment } from "@/pages/api/api";
+import { createCareAppointment, fetchDiscountPackage } from "@/pages/api/api";
+import { Badge } from "@/components/ui/badge";
 
 const breadcrumbItems = (service: CareService) => [
   { title: "Pet Care Services", link: "/pet-care/services" },
@@ -97,7 +96,9 @@ export default function SittingAppointment({
   const today = startOfDay(new Date());
   const auth = useRecoilValue(userAuthState);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalPrice, setTotalPrice] = useState(service.price);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discount, setDiscount] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -109,18 +110,28 @@ export default function SittingAppointment({
 
   const watchFields = form.watch();
   useEffect(() => {
-    const calculateTotalPrice = () => {
+    const calculateTotalPrice = async () => {
       const basePrice = service.price;
+      const discountData = await fetchDiscountPackage(
+        { type: "CARE" },
+        auth?.accessToken as string
+      );
       const addOnPrice =
         watchFields.addOns?.reduce((total: number, addOnId: any) => {
           const addOn = service.addOns?.find((a) => a.id === addOnId);
           return total + (addOn?.price || 0);
         }, 0) || 0;
-      setTotalPrice(basePrice + addOnPrice);
+
+      const discountPercent = discountData?.package?.discountPercent || 0;
+      setDiscountPercent(discountPercent);
+      console.log(discountPercent);
+      const discountAmount = (basePrice + addOnPrice) * (discountPercent / 100);
+      setDiscount(discountAmount);
+      setTotalPrice(basePrice + addOnPrice - discountAmount);
     };
 
     calculateTotalPrice();
-  }, [service, watchFields]);
+  }, [service, auth, watchFields]);
 
   const onSubmit = async (formValues: CreateCareFormValue) => {
     setIsLoading(true);
@@ -189,7 +200,7 @@ export default function SittingAppointment({
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
-                            className="grid grid-cols-3 gap-4"
+                            className="grid grid-cols-2 gap-4"
                           >
                             {service.categories?.map((category) => (
                               <div key={category.id} className="relative">
@@ -385,7 +396,7 @@ export default function SittingAppointment({
                     name="sitterId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Choose a Pet Sitter</FormLabel>
+                        <FormLabel>Choose a Trainer</FormLabel>
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
@@ -396,45 +407,61 @@ export default function SittingAppointment({
                               <div key={sitter.id}>
                                 <RadioGroupItem
                                   value={`${sitter.id}`}
-                                  id={`${sitter.id}`}
+                                  id={`${sitter.name}`}
                                   className="peer sr-only"
                                 />
                                 <Label
-                                  htmlFor={`${sitter.id}`}
-                                  className="flex items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                  htmlFor={`${sitter.name}`}
+                                  className="flex flex-col rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
-                                  <div className="flex items-center space-x-4">
-                                    <Avatar>
-                                      <AvatarImage
-                                        src={sitter?.profileUrl || ""}
-                                        alt={sitter.name}
-                                      />
-                                      <AvatarFallback>
-                                        {sitter.name
-                                          .split(" ")
-                                          .map((n) => n[0])
-                                          .join("")}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="text-sm font-medium leading-none">
-                                        {sitter.name}
-                                      </p>
-                                      <p className="text-sm text-muted-foreground">
-                                        {/* ${sitter?.hourlyRate}/hour */}
-                                      </p>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                      <Avatar>
+                                        <AvatarImage
+                                          src={sitter.profileUrl || ""}
+                                          alt={sitter.name}
+                                        />
+                                        <AvatarFallback>
+                                          {sitter.name
+                                            .split(" ")
+                                            .map((n) => n[0])
+                                            .join("")}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="text-sm font-medium leading-none">
+                                          {sitter.name}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {/* ${sitter?.hourlyRate}/hour */}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center">
+                                      <Star className="h-4 w-4 fill-primary mr-1" />
+                                      <span className="text-sm">
+                                        {sitter?.rating}
+                                      </span>
                                     </div>
                                   </div>
-                                  <div className="flex items-center">
-                                    <Star className="h-4 w-4 fill-primary mr-1" />
-                                    <span className="text-sm">
-                                      {sitter.rating}
+                                  <p className="mt-2 text-sm">{sitter.about}</p>
+                                  <div className="mt-2">
+                                    <span className="text-sm font-medium">
+                                      Specialties:{" "}
                                     </span>
+                                    {sitter.specialties?.map(
+                                      (specialty: string, index: number) => (
+                                        <Badge
+                                          key={index}
+                                          variant="secondary"
+                                          className="mr-1"
+                                        >
+                                          {specialty}
+                                        </Badge>
+                                      )
+                                    )}
                                   </div>
                                 </Label>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                  Specialties: {sitter.specialties?.join(", ")}
-                                </p>
                               </div>
                             ))}
                           </RadioGroup>
@@ -588,13 +615,13 @@ export default function SittingAppointment({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Booking Summary</CardTitle>
+                  <CardTitle>Appointment Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Base Price</span>
-                      <span>${totalPrice}</span>
+                      <span>฿ {service.price}</span>
                     </div>
 
                     {watchFields.addOns?.map((addOnId: any) => {
@@ -611,9 +638,14 @@ export default function SittingAppointment({
                         </div>
                       );
                     })}
+
+                    <div className="flex justify-between text-sm">
+                      <span>Discount Package ({discountPercent} %)</span>
+                      <span>฿ {discount}</span>
+                    </div>
                     <div className="flex justify-between font-semibold pt-2 border-t">
                       <span>Total</span>
-                      <span>${totalPrice}</span>
+                      <span>฿ {totalPrice}</span>
                     </div>
                   </div>
                 </CardContent>

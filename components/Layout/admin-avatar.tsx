@@ -15,10 +15,11 @@ import { adminAuthState } from "@/states/auth";
 import { adminLoggedInData } from "@/types";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 export function AdminAvatar() {
   const router = useRouter();
+  // const auth = useRecoilValue(adminAuthState);
   const [auth, setAuth] = useRecoilState<adminLoggedInData | undefined>(
     adminAuthState
   );

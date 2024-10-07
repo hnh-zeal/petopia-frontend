@@ -7,7 +7,7 @@ import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { adminColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
-import { fetchClinicAppointments } from "@/pages/api/api";
+import { fetchCareAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 
@@ -17,7 +17,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
   const [appointmentsData, setAppointmentsData] = useState({
-    clinicAppointments: [],
+    careAppointments: [],
     count: 0,
     totalPages: 0,
     page: 1,
@@ -30,10 +30,10 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     const getAppointments = async () => {
       setLoading(true);
       try {
-        const userId = userAuth?.user?.id || null; // Extract userId only once
+        const userId = userAuth?.user?.id || null;
         const userToken = userAuth?.accessToken;
         const adminToken = adminAuth?.accessToken;
-        const data = await fetchClinicAppointments(
+        const data = await fetchCareAppointments(
           {
             page: currentPage,
             pageSize: appointmentsData.pageSize,
@@ -47,7 +47,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
           ...data,
         }));
       } catch (error) {
-        console.error("Failed to fetch clinic appointments", error);
+        console.error("Failed to fetch care appointments", error);
       } finally {
         setLoading(false);
       }
@@ -65,13 +65,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
       {isAdmin && (
         <>
           <div className="flex items-start justify-between">
-            <Heading title="Clinic Appointments" />
-            <Button
-              className="text-xs md:text-sm"
-              onClick={() => router.push(`/admin/pet-clinic/create`)}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add New
-            </Button>
+            <Heading title="Care Appointments" />
           </div>
           <Separator />
         </>
@@ -80,7 +74,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
         <DataTable
           searchKey="name"
           columns={isAdmin ? adminColumns : userColumns}
-          data={appointmentsData.clinicAppointments}
+          data={appointmentsData.careAppointments}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
           totalPages={appointmentsData.totalPages}
           currentPage={currentPage}

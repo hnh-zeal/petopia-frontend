@@ -56,10 +56,6 @@ const petCareMenus: { title: string; href: string }[] = [
     title: "Pet Sitters",
     href: "/pet-care/pet-sitters",
   },
-  {
-    title: "Make an appointment",
-    href: "/pet-care/appointments",
-  },
 ];
 
 const petCafeMenus: { title: string; href: string }[] = [

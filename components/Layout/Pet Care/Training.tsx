@@ -43,33 +43,31 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { CalendarIcon, Home, MapPin, Star } from "lucide-react";
+import { CalendarIcon, Home, MapPin, PawPrint, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CareService } from "@/types/api";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
+import { breeds, petTypes } from "@/constants/data";
+import { createCareAppointment, fetchDiscountPackage } from "@/pages/api/api";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
 
 const formSchema = z.object({
-  trainingType: z.any(),
-  sessionCount: z.number().min(1, "At least one session is required"),
-  sessionDuration: z
-    .number()
-    .min(30, "Session duration must be at least 30 minutes"),
+  categoryId: z.number(),
+  sitterId: z.string().min(1, "Pet sitter selection is required"),
+  date: z.date(),
+  time: z.string(),
+  duration: z.number(),
   petName: z.string().min(1, "Pet name is required"),
-  petType: z.enum(["Dog", "Cat", "Other"]),
-  petAge: z.number().min(0, "Age must be a positive number"),
-  petBreed: z.string().min(1, "Breed is required"),
-  behavioralIssues: z.string().optional(),
-  trainerId: z.string().min(1, "Trainer selection is required"),
-  trainingLocation: z.enum([
-    "Trainer's Facility",
-    "Owner's Home",
-    "Park/Neutral Location",
-  ]),
-  startDate: z.date(),
-  startTime: z.string(),
-  recurringSchedule: z.enum(["One-time", "Weekly", "Bi-weekly", "Custom"]),
-  addOns: z.array(z.string()).optional(),
+  petType: z.string(),
+  breed: z.string(),
+  description: z.string().optional(),
+  location: z
+    .enum(["Trainer's Facility", "Owner's Home", "Park/Neutral Location"])
+    .optional(),
+  addOns: z.any().optional(),
 });
 
 const breadcrumbItems = (service: CareService) => [
@@ -81,69 +79,91 @@ const breadcrumbItems = (service: CareService) => [
   },
 ];
 
-const addOns = [
-  { id: "followUp", name: "Follow-up Consultation", price: 30 },
-  { id: "videoRecording", name: "Video Recording of Sessions", price: 20 },
-];
+type CreateCareFormValue = z.infer<typeof formSchema>;
 
 export default function TrainingAppointment({
   service,
 }: {
   service: CareService;
 }) {
+  const today = startOfDay(new Date());
   const router = useRouter();
+  const auth = useRecoilValue(userAuthState);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discount, setDiscount] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sessionCount: 1,
-      sessionDuration: 60,
-      trainingLocation: "Trainer's Facility",
-      recurringSchedule: "One-time",
+      duration: 1,
       addOns: [],
     },
   });
 
-  const today = startOfDay(new Date());
   const watchFields = form.watch();
-
   useEffect(() => {
+    const calculateTotalPrice = async () => {
+      const basePrice = service.price;
+      const discountData = await fetchDiscountPackage(
+        { type: "CARE" },
+        auth?.accessToken as string
+      );
+      const addOnPrice =
+        watchFields.addOns?.reduce((total: number, addOnId: any) => {
+          const addOn = service.addOns?.find((a) => a.id === addOnId);
+          return total + (addOn?.price || 0);
+        }, 0) || 0;
+
+      const discountPercent = discountData?.package?.discountPercent || 0;
+      setDiscountPercent(discountPercent);
+      console.log(discountPercent);
+      const discountAmount = (basePrice + addOnPrice) * (discountPercent / 100);
+      setDiscount(discountAmount);
+      setTotalPrice(basePrice + addOnPrice - discountAmount);
+    };
+
     calculateTotalPrice();
-  }, [watchFields]);
+  }, [service, auth, watchFields]);
 
-  const calculateTotalPrice = () => {
-    const basePrice = service.price;
-    const locationFee =
-      watchFields.trainingLocation === "Owner's Home" ? 10 : 0;
-    const addOnPrice =
-      watchFields.addOns?.reduce((total, addOnId) => {
-        const addOn = addOns.find((a) => a.id === addOnId);
-        return total + (addOn?.price || 0);
-      }, 0) || 0;
-    setTotalPrice(basePrice + locationFee + addOnPrice);
-  };
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (formValues: CreateCareFormValue) => {
     setIsLoading(true);
     try {
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Booking submitted:", data);
-      toast({
-        title: "Booking Confirmed",
-        description:
-          "Your pet training appointment has been booked successfully.",
-      });
-      router.push("/bookings");
-    } catch (error) {
-      console.error("Booking submission error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An error occurred while submitting your booking.",
-      });
+      const { petType, petName, breed, date, time, ...other } = formValues;
+
+      const formData = {
+        petData: {
+          option: "new",
+          name: petName,
+          petType,
+        },
+        appointmentData: {
+          serviceId: service.id,
+          date: format(date, "yyyy-MM-dd"),
+          time,
+          totalPrice,
+          ...other,
+        },
+      };
+
+      const data = await createCareAppointment(
+        formData,
+        auth?.accessToken as string
+      );
+
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: "Care Appointment submitted successfully.",
+        });
+        router.push(`/`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -169,30 +189,37 @@ export default function TrainingAppointment({
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="trainingType"
+                    name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Training Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Training type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                        <FormLabel>Choose Service Category</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            className="grid grid-cols-2 gap-4"
+                          >
                             {service.categories?.map((category) => (
-                              <SelectItem
-                                key={category.id}
-                                value={`${category.id}`}
-                              >
-                                {category.name}
-                              </SelectItem>
+                              <div key={category.id} className="relative">
+                                <RadioGroupItem
+                                  value={category.id}
+                                  id={category.id}
+                                  className="peer sr-only"
+                                />
+                                <Label
+                                  htmlFor={category.id}
+                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                >
+                                  {category.icon || (
+                                    <PawPrint className="h-4 w-4" />
+                                  )}
+                                  <span className="mt-2 font-semibold">
+                                    {category.name}
+                                  </span>
+                                </Label>
+                              </div>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </RadioGroup>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -245,10 +272,10 @@ export default function TrainingAppointment({
 
                     <FormField
                       control={form.control}
-                      name="startTime"
+                      name="time"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Start Time</FormLabel>
+                          <FormLabel>Time</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
@@ -280,27 +307,19 @@ export default function TrainingAppointment({
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="sessionDuration"
+                      name="duration"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Session Duration (minutes)</FormLabel>
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange(parseInt(value))
-                            }
-                            defaultValue={field.value.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="30">30 minutes</SelectItem>
-                              <SelectItem value="60">60 minutes</SelectItem>
-                              <SelectItem value="90">90 minutes</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>Duration (hours)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -308,7 +327,7 @@ export default function TrainingAppointment({
 
                     <FormField
                       control={form.control}
-                      name="trainingLocation"
+                      name="location"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Training Location</FormLabel>
@@ -357,7 +376,7 @@ export default function TrainingAppointment({
                 <CardContent>
                   <FormField
                     control={form.control}
-                    name="trainerId"
+                    name="sitterId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Choose a Trainer</FormLabel>
@@ -371,11 +390,11 @@ export default function TrainingAppointment({
                               <div key={trainer.id}>
                                 <RadioGroupItem
                                   value={`${trainer.id}`}
-                                  id={`${trainer.id}`}
+                                  id={`${trainer.name}`}
                                   className="peer sr-only"
                                 />
                                 <Label
-                                  htmlFor={`${trainer.id}`}
+                                  htmlFor={`${trainer.name}`}
                                   className="flex flex-col rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                                 >
                                   <div className="flex items-center justify-between">
@@ -397,7 +416,7 @@ export default function TrainingAppointment({
                                           {trainer.name}
                                         </p>
                                         <p className="text-sm text-muted-foreground">
-                                          ${trainer?.hourlyRate}/hour
+                                          {/* ${trainer?.hourlyRate}/hour */}
                                         </p>
                                       </div>
                                     </div>
@@ -416,7 +435,7 @@ export default function TrainingAppointment({
                                       Specialties:{" "}
                                     </span>
                                     {trainer.specialties?.map(
-                                      (specialty, index) => (
+                                      (specialty: string, index: number) => (
                                         <Badge
                                           key={index}
                                           variant="secondary"
@@ -441,132 +460,21 @@ export default function TrainingAppointment({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Schedule & Add-ons</CardTitle>
+                  <CardTitle>Add-on Services</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Start Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date < new Date() ||
-                                  date > addDays(new Date(), 30)
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="startTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Time</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select start time" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => i).map(
-                                (hour) => (
-                                  <SelectItem key={hour} value={`${hour}:00`}>
-                                    {format(
-                                      addHours(startOfDay(new Date()), hour),
-                                      "h:mm a"
-                                    )}
-                                  </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="recurringSchedule"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Recurring Schedule</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select schedule" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="One-time">One-time</SelectItem>
-                            <SelectItem value="Weekly">Weekly</SelectItem>
-                            <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                            <SelectItem value="Custom">Custom</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="addOns"
                     render={() => (
                       <FormItem>
                         <div className="mb-4">
-                          <FormLabel className="text-base">
-                            Add-on Services
-                          </FormLabel>
                           <FormDescription>
                             Select any additional services you&apos;d like to
                             include
                           </FormDescription>
                         </div>
-                        {addOns.map((item) => (
+                        {service.addOns?.map((item) => (
                           <FormField
                             key={item.id}
                             control={form.control}
@@ -588,7 +496,8 @@ export default function TrainingAppointment({
                                             ])
                                           : field.onChange(
                                               field.value?.filter(
-                                                (value) => value !== item.id
+                                                (value: number) =>
+                                                  value !== item.id
                                               )
                                             );
                                       }}
@@ -617,98 +526,67 @@ export default function TrainingAppointment({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="petName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your pet's name"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
                       control={form.control}
                       name="petType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Type</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select pet type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Dog">Dog</SelectItem>
-                              <SelectItem value="Cat">Cat</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      label="Pet Type"
+                      placeholder="Select Pet Type"
+                      required={true}
+                    >
+                      {petTypes.map((pet, i) => (
+                        <SelectItem key={i} value={pet.value}>
+                          <div className="flex cursor-pointer items-center gap-2">
+                            <p>{pet.label}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
+                    <CustomFormField
+                      fieldType={FormFieldType.SELECT}
                       control={form.control}
-                      name="petAge"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Age (Years)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value))
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="petBreed"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pet Breed</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter your pet's breed"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      name="breed"
+                      label="Breed"
+                      placeholder="Select Breed"
+                      required={true}
+                    >
+                      {breeds[
+                        form.watch("petType") as keyof typeof breeds
+                      ]?.map((breed: any, i: number) => (
+                        <SelectItem key={breed} value={breed.value}>
+                          {breed.label}
+                        </SelectItem>
+                      ))}
+                    </CustomFormField>
                   </div>
 
                   <FormField
                     control={form.control}
-                    name="behavioralIssues"
+                    name="petName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Behavioral Issues (if any)</FormLabel>
+                        <FormLabel>Pet Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your pet's name"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Special Instructions</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe any specific behavioral issues your pet has"
+                            placeholder="Any special care instructions, dietary needs, or health concerns"
                             className="resize-none"
                             {...field}
                           />
@@ -722,28 +600,19 @@ export default function TrainingAppointment({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Booking Summary</CardTitle>
+                  <CardTitle>Appointment Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Base Price</span>
-                      <span>
-                        $
-                        {totalPrice -
-                          (watchFields.trainingLocation === "Owner's Home"
-                            ? 10
-                            : 0)}
-                      </span>
+                      <span>฿ {service.price}</span>
                     </div>
-                    {watchFields.trainingLocation === "Owner's Home" && (
-                      <div className="flex justify-between">
-                        <span>Home Visit Fee</span>
-                        <span>$10</span>
-                      </div>
-                    )}
-                    {watchFields.addOns?.map((addOnId) => {
-                      const addOn = addOns.find((a) => a.id === addOnId);
+
+                    {watchFields.addOns?.map((addOnId: any) => {
+                      const addOn = service.addOns?.find(
+                        (a) => a.id === addOnId
+                      );
                       return (
                         <div
                           key={addOnId}
@@ -754,9 +623,14 @@ export default function TrainingAppointment({
                         </div>
                       );
                     })}
+
+                    <div className="flex justify-between text-sm">
+                      <span>Discount Package ({discountPercent} %)</span>
+                      <span>฿ {discount}</span>
+                    </div>
                     <div className="flex justify-between font-semibold pt-2 border-t">
                       <span>Total</span>
-                      <span>${totalPrice}</span>
+                      <span>฿ {totalPrice}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -770,7 +644,7 @@ export default function TrainingAppointment({
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Cancellation Policy</h3>
                 <p className="text-sm text-gray-600">
-                  Free cancellation before {form.getValues("startTime")} on{" "}
+                  Free cancellation before {form.getValues("time")} on{" "}
                   {format(addDays(new Date(), 1), "MMM dd")}. Cancel before{" "}
                   {format(addDays(new Date(), 7), "MMM dd")} for a partial
                   refund.
@@ -779,10 +653,10 @@ export default function TrainingAppointment({
 
               <div className="space-y-4 text-sm text-gray-600">
                 <p>
-                  By confirming this booking, I agree to the Host's House Rules,
-                  Ground rules for guests, Rebooking and Refund Policy, and that
-                  the service provider can charge my payment method if I'm
-                  responsible for damage.
+                  By confirming this booking, I agree to the Host&apos;s House
+                  Rules, Ground rules for guests, Rebooking and Refund Policy,
+                  and that the service provider can charge my payment method if
+                  I&apos;m responsible for damage.
                 </p>
                 <p>
                   I also agree to the{" "}

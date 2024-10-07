@@ -5,11 +5,16 @@ import { Toaster } from "@/components/ui/toaster";
 
 export default function Login() {
   return (
-    <div className="flex h-full">
+    <div className="container flex h-full">
       <section className="h-screen w-full grid grid-cols-1 lg:grid-cols-2 place-items-center gap-5">
-        <div className="relative hidden h-full flex-col bg-muted text-white lg:flex dark:border-r">
+        <div className="relative hidden flex-col bg-muted text-white lg:flex dark:border-r">
           <div className="relative w-full">
-            <Image src="/.jpg" width="800" height="700" alt="Admin Login" />
+            <Image
+              src="/cat1.jpg"
+              width="800"
+              height="1000"
+              alt="Admin Login"
+            />
           </div>
         </div>
 

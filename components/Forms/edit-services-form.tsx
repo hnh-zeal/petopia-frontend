@@ -12,7 +12,7 @@ import { useToast } from "../ui/use-toast";
 import { CreateServiceSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
 import { useEffect, useState } from "react";
-import { updateCareService } from "@/pages/api/api";
+import { fetchCategories, updateCareService } from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import {
   Form,
@@ -40,6 +40,7 @@ export default function EditServiceForm({ service }: { service: CareService }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [categories, setCategories] = useState<any>([]);
   const router = useRouter();
   const form = useForm<ServiceFormValue>({
     resolver: zodResolver(CreateServiceSchema),
@@ -86,6 +87,19 @@ export default function EditServiceForm({ service }: { service: CareService }) {
   };
 
   useEffect(() => {
+    const getCategories = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchCategories();
+        setCategories(data.categories);
+      } catch (error) {
+        console.error("Failed to fetch Categories", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getCategories();
     setMounted(true);
   }, []);
 
@@ -118,7 +132,7 @@ export default function EditServiceForm({ service }: { service: CareService }) {
                 fieldType={FormFieldType.SELECT}
                 control={form.control}
                 name="type"
-                label="Package Type"
+                label="Service Type"
                 placeholder="Select Type"
                 required={true}
               >
@@ -145,7 +159,7 @@ export default function EditServiceForm({ service }: { service: CareService }) {
                     <FormControl>
                       <>
                         <MultiSelect
-                          values={service.categories}
+                          values={categories}
                           onChange={field.onChange}
                           value={field.value || []}
                           placeholder="Select Categories"

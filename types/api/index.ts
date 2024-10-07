@@ -251,6 +251,7 @@ export interface CafeBooking {
   startTime: Date;
   endTime: Date;
   duration: number;
+  totalPrice: number;
   status: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -299,4 +300,39 @@ export interface Category {
 export interface CategoriesData {
   count: number;
   categories: Category[];
+}
+
+export interface CareAppointment {
+  id: number;
+  description: string;
+  date: string;
+  status: string;
+  type: string;
+  totalPrice: number;
+  createdAt: string;
+  updatedAt: string;
+  user: User;
+  pet: Pet;
+  petSitter: PetSitter;
+  service: CareService;
+  categoryId: Category;
+  reason: string;
+}
+
+export interface PieData {
+  clinic_count: number;
+  care_count: number;
+  cafe_count: number;
+  user_count: number;
+}
+
+export interface Appointments {
+  clinicAppointments: ClinicAppointment[];
+  careAppointments: CareAppointment[];
+  cafeBookings: CafeBooking[];
+}
+
+export interface OverviewData {
+  count: PieData;
+  appointments: Appointments;
 }

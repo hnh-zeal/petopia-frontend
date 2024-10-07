@@ -41,7 +41,7 @@ const rooms = [
 ];
 
 export default function RoomBooking() {
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

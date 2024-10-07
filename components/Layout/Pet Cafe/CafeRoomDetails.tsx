@@ -60,7 +60,10 @@ import {
 } from "@/components/ui/form";
 import { CafeRoom } from "@/types/api";
 import { useEffect, useState } from "react";
-import { defaultEndSlots, defaultTimeSlots } from "@/pages/pet-cafe/booking";
+import {
+  defaultEndSlots,
+  defaultTimeSlots,
+} from "@/pages/pet-cafe/rooms/[id]/booking";
 import { fetchRoomSlots } from "@/pages/api/api";
 
 const formSchema = z.object({
@@ -107,7 +110,7 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
     setDuration(duration);
     setGuests(values.guests);
     setCafeRoom(cafeRoom);
-    router.push(`/pet-cafe/booking`);
+    router.push(`/pet-cafe/rooms/${cafeRoom.id}/booking`);
   };
 
   const handleDateChange = async (date: Date | undefined) => {

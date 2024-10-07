@@ -33,6 +33,11 @@ export const userColumns: ColumnDef<CafeBooking>[] = [
     cell: ({ row }) => <span>{format(row.original.endTime, "HH:mm a")}</span>,
   },
   {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
     cell: ({ row }) => (
@@ -92,22 +97,29 @@ export const adminColumns: ColumnDef<CafeBooking>[] = [
     id: "clinic.name",
     header: ({ column }) => <SortColumn column={column} title="Room" />,
   },
-  {
-    accessorKey: "date",
-    header: ({ column }) => <SortColumn column={column} title="Date" />,
-    cell: ({ row }) => (
-      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
-    ),
-  },
+  // {
+  //   accessorKey: "date",
+  //   header: ({ column }) => <SortColumn column={column} title="Date" />,
+  //   cell: ({ row }) => <span>{format(row.original.date, "dd MMM yyyy")}</span>,
+  // },
   {
     accessorKey: "startTime",
     header: ({ column }) => <SortColumn column={column} title="Start Time" />,
-    cell: ({ row }) => <span>{format(row.original.startTime, "HH:mm a")}</span>,
+    cell: ({ row }) => (
+      <span>{format(row.original.startTime, "dd MMM yyyy HH:mm a")}</span>
+    ),
   },
   {
     accessorKey: "endTime",
     header: ({ column }) => <SortColumn column={column} title="End Time" />,
-    cell: ({ row }) => <span>{format(row.original.endTime, "HH:mm a")}</span>,
+    cell: ({ row }) => (
+      <span>{format(row.original.endTime, "dd MMM yyyy HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
   },
   {
     accessorKey: "createdAt",
@@ -172,9 +184,7 @@ export const roomColumns: ColumnDef<CafeBooking>[] = [
   {
     accessorKey: "date",
     header: ({ column }) => <SortColumn column={column} title="Date" />,
-    cell: ({ row }) => (
-      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
-    ),
+    cell: ({ row }) => <span>{format(row.original.date, "dd MMM yyyy")}</span>,
   },
   {
     accessorKey: "startTime",
@@ -185,6 +195,11 @@ export const roomColumns: ColumnDef<CafeBooking>[] = [
     accessorKey: "endTime",
     header: ({ column }) => <SortColumn column={column} title="End Time" />,
     cell: ({ row }) => <span>{format(row.original.endTime, "HH:mm a")}</span>,
+  },
+  {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
   },
   {
     accessorKey: "createdAt",

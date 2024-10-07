@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -45,10 +45,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
-import { fetchRoomSlots, submitBooking } from "@/pages/api/api";
+import {
+  fetchCafeRoomByID,
+  fetchDiscountPackage,
+  fetchRoomSlots,
+  submitBooking,
+} from "@/pages/api/api";
 import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
+import { GetServerSideProps } from "next";
 import { userAuthState } from "@/states/auth";
+import { CafeRoom } from "@/types/api";
+
+export const getServerSideProps: GetServerSideProps<{
+  cafeRoom: CafeRoom;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const cafeRoom = await fetchCafeRoomByID(Number(id));
+    return { props: { cafeRoom } };
+  } catch (error) {
+    console.error("Error fetching appointment:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export const defaultTimeSlots = [
   "09:00 AM",
@@ -81,9 +103,6 @@ const formSchema = z.object({
   startTime: z.string().min(1, "A time is required"),
   endTime: z.string().min(1, "A time is required"),
   guests: z.number().min(1, "At least one guest is required"),
-  firstName: z.string().min(1, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
-  email: z.string().email("Invalid email address").optional(),
   card: z.string().min(1, "Card information is required").optional(),
   month: z
     .string()
@@ -98,7 +117,11 @@ const formSchema = z.object({
   // billingZip: z.string().min(1, "ZIP code is required"),
 });
 
-export default function ReservationConfirmation() {
+export default function ReservationConfirmation({
+  cafeRoom,
+}: {
+  cafeRoom: CafeRoom;
+}) {
   const today = startOfDay(new Date());
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
@@ -106,7 +129,10 @@ export default function ReservationConfirmation() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
   const [endTimeSlots, setEndTimeSlots] = useState<string[]>(defaultEndSlots);
-  const { date, startTime, endTime, duration, guests, cafeRoom, setDuration } =
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const { date, startTime, endTime, duration, guests, setGuests, setDuration } =
     useBookingStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -115,16 +141,33 @@ export default function ReservationConfirmation() {
       date: date || new Date(),
       startTime,
       endTime,
-      guests: guests,
-      firstName: "",
-      lastName: "",
-      email: "",
+      guests,
       // billingAddress: "",
       // billingCity: "",
       // billingState: "",
       // billingZip: "",
     },
   });
+
+  useEffect(() => {
+    const calculateTotalPrice = async () => {
+      const basePrice = cafeRoom?.price || 0;
+      const discountData = await fetchDiscountPackage(
+        { type: "CAFE" },
+        auth?.accessToken as string
+      );
+      const discountPercent = discountData?.package?.discountPercent || 0;
+      setDiscountPercent(discountPercent);
+      const discountAmount =
+        basePrice * duration * guests * (discountPercent / 100);
+      setDiscount(discountAmount);
+
+      const totalPrice = basePrice * duration * guests - discountAmount;
+      setTotalPrice(totalPrice);
+    };
+
+    calculateTotalPrice();
+  }, [cafeRoom, duration, auth, guests]);
 
   const toggleEdit = () => setIsEditing(!isEditing);
 
@@ -141,6 +184,7 @@ export default function ReservationConfirmation() {
         roomId: cafeRoom?.id,
         date: format(date, "yyyy-MM-dd"),
         duration,
+        totalPrice,
       };
 
       const data = await submitBooking(formData, auth?.accessToken as string);
@@ -297,9 +341,10 @@ export default function ReservationConfirmation() {
                                   type="number"
                                   min="1"
                                   {...field}
-                                  onChange={(e) =>
-                                    field.onChange(parseInt(e.target.value))
-                                  }
+                                  onChange={(e) => {
+                                    setGuests(parseInt(e.target.value));
+                                    field.onChange(parseInt(e.target.value));
+                                  }}
                                   className="pl-10 disabled:opacity-100"
                                   disabled={!isEditing}
                                 />
@@ -416,42 +461,6 @@ export default function ReservationConfirmation() {
                 </CardContent>
               </Card>
 
-              {/* User Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Enter user information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <CustomFormField
-                      fieldType={FormFieldType.INPUT}
-                      control={form.control}
-                      name="firstName"
-                      placeholder="First Name"
-                      label="First Name"
-                      required={true}
-                    />
-                    <CustomFormField
-                      fieldType={FormFieldType.INPUT}
-                      control={form.control}
-                      name="lastName"
-                      placeholder="Last Name"
-                      label="Last Name"
-                      required={true}
-                    />
-                  </div>
-
-                  <CustomFormField
-                    fieldType={FormFieldType.EMAIL}
-                    control={form.control}
-                    name="email"
-                    placeholder="Email"
-                    label="Email"
-                    required={true}
-                  />
-                </CardContent>
-              </Card>
-
               {/* Credit Card Information */}
               <Card>
                 <CardHeader>
@@ -550,21 +559,20 @@ export default function ReservationConfirmation() {
                           <h3 className="font-semibold">Price details</h3>
                           <div className="flex justify-between text-sm">
                             <span>
-                              ฿ {cafeRoom?.price} x {duration} h
+                              ฿ {cafeRoom?.price} x {guests} guests x {duration}{" "}
+                              h
                             </span>
-                            <span>฿ {Number(cafeRoom?.price) * duration}</span>
+                            <span>
+                              ฿ {Number(cafeRoom?.price) * guests * duration}
+                            </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span>Discount (10%)</span>
-                            <span>฿ {Number(cafeRoom?.price) / 10}</span>
+                            <span>Discount Package ({discountPercent} %)</span>
+                            <span>฿ {discount}</span>
                           </div>
                           <div className="flex justify-between font-semibold pt-2 border-t">
                             <span>Total</span>
-                            <span>
-                              ฿{" "}
-                              {Number(cafeRoom?.price) * Number(duration) -
-                                Number(cafeRoom?.price) / 10}
-                            </span>
+                            <span>฿ {totalPrice}</span>
                           </div>
                         </div>
 

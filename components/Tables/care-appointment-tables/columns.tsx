@@ -1,16 +1,15 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdminCellAction, UserCellAction } from "./cell-action";
-import { Checkbox } from "@/components/ui/checkbox";
+import { UserCellAction } from "./cell-action";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
-import DoctorRow from "../doctorRow";
 import UserRow from "../userRow";
 import { format } from "date-fns";
-import { ClinicAppointment } from "@/types/api";
+import { CareAppointment } from "@/types/api";
 import PetRow from "../petRow";
+import SitterRow from "../sitterRow";
 
-export const userColumns: ColumnDef<ClinicAppointment>[] = [
+export const userColumns: ColumnDef<CareAppointment>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,
@@ -21,9 +20,23 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => <PetRow row={row} />,
   },
   {
-    accessorKey: "doctor",
-    header: ({ column }) => <SortColumn column={column} title="Doctor" />,
-    cell: ({ row }) => <DoctorRow row={row} />,
+    accessorKey: "service",
+    header: ({ column }) => <SortColumn column={column} title="Service" />,
+    cell: ({ row }) => (
+      <p>{row.original.service ? row.original.service.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "categoryId",
+    header: ({ column }) => <SortColumn column={column} title="Category" />,
+    cell: ({ row }) => (
+      <p>{row.original.categoryId ? row.original.categoryId.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "sitter",
+    header: ({ column }) => <SortColumn column={column} title="Sitter" />,
+    cell: ({ row }) => <SitterRow row={row} />,
   },
   {
     accessorKey: "date",
@@ -31,6 +44,11 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => (
       <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
     ),
+  },
+  {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
   },
   {
     accessorKey: "createdAt",
@@ -60,26 +78,7 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
   },
 ];
 
-export const adminColumns: ColumnDef<ClinicAppointment>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select Row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const adminColumns: ColumnDef<CareAppointment>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,
@@ -95,9 +94,23 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => <PetRow row={row} />,
   },
   {
-    accessorKey: "doctor",
-    header: ({ column }) => <SortColumn column={column} title="Doctor" />,
-    cell: ({ row }) => <DoctorRow row={row} />,
+    accessorKey: "service",
+    header: ({ column }) => <SortColumn column={column} title="Service" />,
+    cell: ({ row }) => (
+      <p>{row.original.service ? row.original.service.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "categoryId",
+    header: ({ column }) => <SortColumn column={column} title="Category" />,
+    cell: ({ row }) => (
+      <p>{row.original.categoryId ? row.original.categoryId.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "sitter",
+    header: ({ column }) => <SortColumn column={column} title="Sitter" />,
+    cell: ({ row }) => <SitterRow row={row} />,
   },
   {
     accessorKey: "date",
@@ -105,6 +118,11 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => (
       <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
     ),
+  },
+  {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>{row.original.totalPrice} ฿</span>,
   },
   {
     accessorKey: "createdAt",
@@ -130,6 +148,6 @@ export const adminColumns: ColumnDef<ClinicAppointment>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <AdminCellAction data={row.original} />,
+    cell: ({ row }) => <UserCellAction data={row.original} />,
   },
 ];
