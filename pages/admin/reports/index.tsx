@@ -1,42 +1,8 @@
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Packages, PackagesData } from "@/types/api";
-import { fetchPackages } from "@/pages/api/api";
-import { GetStaticProps, InferGetStaticPropsType } from "next";
-import { Toaster } from "@/components/ui/toaster";
-import Header from "@/components/Layout/header";
-import Sidebar from "@/components/Layout/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+"use client";
 
-const breadcrumbItems = [
-  { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Reports", link: "/admin/reports" },
-];
-
-export const getStaticProps = (async () => {
-  const packagesData = await fetchPackages({});
-  return { props: { packagesData } };
-}) satisfies GetStaticProps<{
-  packagesData: PackagesData;
-}>;
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Bar, Line, Pie } from "react-chartjs-2";
+import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -49,22 +15,36 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import {
-  CalendarDays,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Clipboard,
-  Coffee,
-  Syringe,
-  Scissors,
-  Dog,
   CalendarIcon,
+  CircleCheckBig,
+  CircleX,
+  Clock,
+  Ban,
 } from "lucide-react";
+import { addDays, format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { useRecoilValue } from "recoil";
+
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Header from "@/components/Layout/header";
+import Sidebar from "@/components/Layout/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Heading } from "@/components/ui/heading";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { adminAuthState } from "@/states/auth";
+import { fetchReport } from "@/pages/api/api";
+import { generateColor } from "@/utils/colorGenerator";
+import Loading from "@/pages/loading";
 
 ChartJS.register(
   CategoryScale,
@@ -77,6 +57,11 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+const breadcrumbItems = [
+  { title: "Dashboard", link: "/admin/dashboard" },
+  { title: "Reports", link: "/admin/reports" },
+];
 
 const DashboardCard = ({ title, value, icon, color }: any) => (
   <motion.div
@@ -94,60 +79,56 @@ const DashboardCard = ({ title, value, icon, color }: any) => (
 );
 
 const Dashboard = () => {
-  const revenueData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [12000, 19000, 15000, 22000, 18000, 24000],
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
-      },
-    ],
-  };
+  const [clinicData, setClinicData] = useState<any>();
+  const [loading, setLoading] = useState(true);
+  const auth = useRecoilValue(adminAuthState);
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: addDays(new Date(), -20),
+    to: new Date(),
+  });
 
-  const serviceDistributionData = {
-    labels: [
-      "Clinic Visits",
-      "Grooming",
-      "Pet Sitting",
-      "Training",
-      "Cafe Bookings",
-    ],
-    datasets: [
-      {
-        data: [300, 150, 100, 80, 200],
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-        ],
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchClinicReport = async (token: string) => {
+      try {
+        setLoading(true);
+        const data = await fetchReport(
+          { date_from: addDays(new Date(), -20), date_to: new Date() },
+          token
+        );
+        setClinicData(data);
+      } catch (error) {
+        console.error("Failed to fetch report", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const petTypeData = {
-    labels: ["Dogs", "Cats", "Birds", "Small Pets"],
-    datasets: [
-      {
-        label: "Pet Types",
-        data: [450, 300, 100, 150],
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-        ],
-      },
-    ],
-  };
+    if (auth?.accessToken) {
+      fetchClinicReport(auth.accessToken);
+    }
+  }, [auth]);
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const handleDateChange = async (date: Date | undefined) => {
-    if (date) {
-      setDate(date);
+  const handleDateChange = async (
+    date_from: Date | undefined,
+    date_to: Date | undefined
+  ) => {
+    if (date_from && date_to) {
+      setLoading(true);
+      setDate({ from: date_from, to: date_to });
+      try {
+        const data = await fetchReport(
+          {
+            date_from: new Date(date_from),
+            date_to: new Date(date_to),
+          },
+          auth?.accessToken as string
+        );
+        setClinicData(data);
+      } catch (error) {
+        console.error("Error fetching report:", error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -156,136 +137,177 @@ const Dashboard = () => {
       <Header />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-hidden pt-16">
+        <main className="flex-1 overflow-hidden pt-16 bg-gray-100">
           <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
             <Breadcrumbs items={breadcrumbItems} />
             <div className="flex items-center justify-between space-y-2">
-              <Heading title={`Welcome to Management Panel!`} />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[200px] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleDateChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Heading title={`Pet Clinic Report`} />
+              <div className="flex flex-row items-center">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date"
+                      variant={"outline"}
+                      className={cn(
+                        "w-[250px] justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date?.from ? (
+                        date.to ? (
+                          <>
+                            {format(date.from, "LLL dd, y")} -{" "}
+                            {format(date.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(date.from, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={date?.from}
+                      selected={date}
+                      onSelect={(range) =>
+                        handleDateChange(range?.from, range?.to)
+                      }
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
+            {!loading && clinicData && (
+              <ScrollArea className="h-[calc(100vh-220px)] pl-2 pr-5">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <DashboardCard
+                      title="Pending"
+                      value={clinicData?.countData?.pending_count}
+                      icon={<Clock size={24} />}
+                      color="text-yellow-500"
+                    />
+                    <DashboardCard
+                      title="Accepted"
+                      value={clinicData?.countData?.accepted_count}
+                      icon={<CircleCheckBig size={24} />}
+                      color="text-green-500"
+                    />
+                    <DashboardCard
+                      title="Rejected"
+                      value={clinicData?.countData?.rejected_count}
+                      icon={<CircleX size={24} />}
+                      color="text-red-700"
+                    />
+                    <DashboardCard
+                      title="Cancelled"
+                      value={clinicData?.countData?.cancelled_count}
+                      icon={<Ban size={24} />}
+                      color="text-grey-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-7">
+                    <div className="col-span-4">
+                      <Card className="w-full max-w-3xl mx-auto">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="bg-white rounded-lg shadow-md p-6 col-span-2"
+                        >
+                          <h2 className="text-xl font-semibold mb-4">
+                            Appointments by Doctors
+                          </h2>
+                          <div className="h-[350px] flex items-center justify-center">
+                            <Bar
+                              options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                              }}
+                              data={{
+                                labels: clinicData?.barData.map(
+                                  (doctor: any) => doctor.name
+                                ),
+                                datasets: [
+                                  {
+                                    label: "Clinic Appointments",
+                                    data: clinicData.barData?.map(
+                                      (doctor: any) => doctor.count
+                                    ),
+                                    backgroundColor: clinicData.barData?.map(
+                                      (doctor: any) =>
+                                        generateColor(doctor.name, 90)
+                                    ),
+                                  },
+                                ],
+                              }}
+                            />
+                          </div>
+                        </motion.div>
+                      </Card>
+                    </div>
+
+                    <div className="col-span-4 md:col-span-3">
+                      <Card className="w-full max-w-3xl mx-auto">
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Appointments by Clinics</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-[350px] flex items-center justify-center">
+                              <Pie
+                                data={{
+                                  labels: clinicData.pieData?.map(
+                                    (clinic: any) => clinic.name
+                                  ),
+                                  datasets: [
+                                    {
+                                      data: clinicData.pieData?.map(
+                                        (clinic: any) => clinic.count
+                                      ),
+                                      backgroundColor: [
+                                        "rgba(255, 99, 132, 0.6)",
+                                        "rgba(54, 162, 235, 0.6)",
+                                        "rgba(255, 206, 86, 0.6)",
+                                        "rgba(75, 192, 192, 0.6)",
+                                        "rgba(153, 102, 255, 0.6)",
+                                      ],
+                                    },
+                                  ],
+                                }}
+                                options={{
+                                  responsive: true,
+                                  maintainAspectRatio: false,
+                                }}
+                              />
+                            </div>
+                          </CardContent>
+                        </motion.div>
+                      </Card>
+                    </div>
+                  </div>
+
+                  <div className="w-full"></div>
+                </div>
+              </ScrollArea>
+            )}
+            {loading && (
+              <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+                <Loading />
+              </div>
+            )}
           </div>
-
-          <ScrollArea className="h-[calc(100vh-220px)] pl-2 pr-5">
-            <div className=" bg-gray-100 p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <DashboardCard
-                  title="Total Appointments"
-                  value="1,234"
-                  icon={<CalendarDays size={24} />}
-                  color="text-blue-600"
-                />
-                <DashboardCard
-                  title="Active Clients"
-                  value="567"
-                  icon={<Users size={24} />}
-                  color="text-green-600"
-                />
-                <DashboardCard
-                  title="Monthly Revenue"
-                  value="$45,678"
-                  icon={<DollarSign size={24} />}
-                  color="text-yellow-600"
-                />
-                <DashboardCard
-                  title="Growth Rate"
-                  value="12.3%"
-                  icon={<TrendingUp size={24} />}
-                  color="text-purple-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg shadow-md p-6"
-                >
-                  <h2 className="text-xl font-semibold mb-4">Revenue Trend</h2>
-                  <Line data={revenueData} options={{ responsive: true }} />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg shadow-md p-6"
-                >
-                  <h2 className="text-xl font-semibold mb-4">
-                    Service Distribution
-                  </h2>
-                  <Pie
-                    data={serviceDistributionData}
-                    options={{ responsive: true }}
-                  />
-                </motion.div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg shadow-md p-6 col-span-2"
-                >
-                  <h2 className="text-xl font-semibold mb-4">Pet Types</h2>
-                  <Bar data={petTypeData} options={{ responsive: true }} />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg shadow-md p-6"
-                >
-                  <h2 className="text-xl font-semibold mb-4">Quick Stats</h2>
-                  <ul className="space-y-4">
-                    <li className="flex items-center">
-                      <Clipboard className="mr-2 text-blue-500" />
-                      <span>23 Appointments Today</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Coffee className="mr-2 text-yellow-500" />
-                      <span>5 Cafe Rooms Booked</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Syringe className="mr-2 text-red-500" />
-                      <span>15 Vaccinations Scheduled</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Scissors className="mr-2 text-green-500" />
-                      <span>8 Grooming Sessions</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Dog className="mr-2 text-purple-500" />
-                      <span>12 Pet Training Classes</span>
-                    </li>
-                  </ul>
-                </motion.div>
-              </div>
-            </div>
-          </ScrollArea>
         </main>
       </div>
     </>

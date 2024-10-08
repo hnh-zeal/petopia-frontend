@@ -1036,7 +1036,7 @@ export async function fetchOverviewReport(queryData: any, adminToken?: string) {
   const queryUrl = queryString ? `?${queryString}` : "";
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reports/overview${queryUrl}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/reports/dashboard/overview${queryUrl}`,
     {
       method: "GET",
       headers: {
@@ -1055,7 +1055,31 @@ export async function fetchPieData(queryData: any, adminToken?: string) {
   const queryUrl = queryString ? `?${queryString}` : "";
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/reports/pie-data${queryUrl}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/reports/dashboard/pie-data${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchReport(queryData: any, adminToken: string) {
+  const { date_from, date_to } = queryData;
+
+  const queryString = qs.stringify({
+    date_from: format(date_from, "yyyy-MM-dd"),
+    date_to: format(date_to, "yyyy-MM-dd"),
+  });
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/reports/pet-clinics${queryUrl}`,
     {
       method: "GET",
       headers: {

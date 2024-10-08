@@ -107,7 +107,11 @@ export default function Dashboard({
   );
 
   const defaultPieData = {
-    labels: ["Clinic Visits", "Care", "Cafe Bookings"],
+    labels: [
+      "Pet Clinic Appointments",
+      "Pet Care Appointments",
+      "Pet Cafe Bookings",
+    ],
     datasets: [
       {
         data: [
@@ -219,10 +223,10 @@ export default function Dashboard({
   return (
     <>
       <Header />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden ">
         <Sidebar />
-        <main className="flex-1 overflow-hidden pt-16">
-          <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <main className="flex-1 overflow-hidden pt-16 bg-gray-100">
+          <div className="flex-1 space-y-4 p-4 pt-6 md:p-8 ">
             <Breadcrumbs items={breadcrumbItems} />
             <div className="flex items-center justify-between space-y-2">
               <Heading title={`Welcome to Management Panel!`} />
@@ -433,9 +437,14 @@ export default function Dashboard({
                           </CardHeader>
                           <CardContent className="m-2">
                             <div className="flex items-center justify-between mb-4">
-                              <h3 className="text-sm font-medium text-gray-500">
-                                APPOINTMENTS
-                              </h3>
+                              <div className="flex flex-row gap-3 justify-between items-center">
+                                <h3 className="text-sm font-medium text-gray-500">
+                                  APPOINTMENTS{" "}
+                                </h3>
+                                <span className="bg-blue-500 text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
+                                  {appointments.length}
+                                </span>
+                              </div>
                               <Button
                                 variant={"ghost"}
                                 onClick={() =>

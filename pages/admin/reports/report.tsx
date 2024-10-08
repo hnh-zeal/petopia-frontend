@@ -23,6 +23,7 @@ import {
   Syringe,
   Scissors,
   Dog,
+  Clipboard,
 } from "lucide-react";
 
 ChartJS.register(
@@ -36,7 +37,7 @@ ChartJS.register(
   Legend
 );
 
-const ReportSection = ({ title, children }) => (
+const ReportSection = ({ title, children }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -230,6 +231,37 @@ const Report = () => {
           </li>
         </ul>
       </ReportSection>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-lg shadow-md p-6"
+      >
+        <h2 className="text-xl font-semibold mb-4">Quick Stats</h2>
+        <ul className="space-y-4">
+          <li className="flex items-center">
+            <Clipboard className="mr-2 text-blue-500" />
+            <span>23 Appointments Today</span>
+          </li>
+          <li className="flex items-center">
+            <Coffee className="mr-2 text-yellow-500" />
+            <span>5 Cafe Rooms Booked</span>
+          </li>
+          <li className="flex items-center">
+            <Syringe className="mr-2 text-red-500" />
+            <span>15 Vaccinations Scheduled</span>
+          </li>
+          <li className="flex items-center">
+            <Scissors className="mr-2 text-green-500" />
+            <span>8 Grooming Sessions</span>
+          </li>
+          <li className="flex items-center">
+            <Dog className="mr-2 text-purple-500" />
+            <span>12 Pet Training Classes</span>
+          </li>
+        </ul>
+      </motion.div>
     </div>
   );
 };
