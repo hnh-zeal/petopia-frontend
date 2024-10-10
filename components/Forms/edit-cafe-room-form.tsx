@@ -29,7 +29,6 @@ export default function EditCafeRoomForm({ cafeRoom }: any) {
       roomNo: cafeRoom?.roomNo || "",
       price: cafeRoom?.price,
       roomType: cafeRoom?.roomType || "",
-      // facilities: cafeRoom?.facilities || "",
       description: cafeRoom?.description || "",
     },
   });

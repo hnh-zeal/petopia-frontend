@@ -30,12 +30,12 @@ export const getStaticPaths = (async () => {
   const cafeRooms = await fetchCafeRooms();
 
   const paths = cafeRooms.rooms.map((room: any) => ({
-    params: { id: room.id.toString() }, // Convert id to string if necessary
+    params: { id: room.id.toString() },
   }));
 
   return {
     paths,
-    fallback: false, // Set to false if you want to return 404 for any paths not returned by getStaticPaths
+    fallback: false,
   };
 }) satisfies GetStaticPaths;
 

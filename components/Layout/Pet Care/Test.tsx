@@ -123,7 +123,7 @@ export default function PetGroomingBooking() {
     calculateTotal(selectedPackage, updatedAddOns);
   };
 
-  const calculateTotal = (packageId: string | null, addOns: string[]) => {
+  const calculateTotal = (packageId: string | null, addOns: any[]) => {
     const packagePrice =
       groomingPackages.find((pkg) => pkg.id === packageId)?.price || 0;
     const addOnsPrice = addOns.reduce((total, addOnId) => {

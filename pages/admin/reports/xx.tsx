@@ -8,7 +8,7 @@ import {
   Clock,
 } from "lucide-react";
 
-const SummaryCard = ({ icon, title, count, color }) => (
+const SummaryCard = ({ icon, title, count, color }: any) => (
   <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
     <div>
       <h3 className="text-sm text-gray-500">{title}</h3>
@@ -22,7 +22,7 @@ const SummaryCard = ({ icon, title, count, color }) => (
   </div>
 );
 
-const AppointmentItem = ({ time, name, condition }) => (
+const AppointmentItem = ({ time, name, condition }: any) => (
   <div className="flex items-center mb-4">
     <div className="w-16 text-sm text-gray-500">{time}</div>
     <div className="flex-grow flex items-center">
