@@ -1,35 +1,24 @@
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetStaticPaths,
-} from "next";
-import { fetchPetClinicByID, fetchPetClinics } from "@/pages/api/api";
+import type { GetServerSideProps } from "next";
+import { fetchPetClinicByID } from "@/pages/api/api";
 import ClinicDetails from "@/components/Layout/Pet Clinic/ClinicDetails";
-import { PetClinicData } from "@/types/api";
+import { Clinic } from "@/types/api";
 
-export const getStaticProps = (async (context) => {
-  const clinic = await fetchPetClinicByID(Number(context.params?.id));
-  return { props: { clinic } };
-}) satisfies GetStaticProps<{
-  clinic: PetClinicData;
-}>;
+export const getServerSideProps: GetServerSideProps<{
+  clinic: Clinic;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const clinic = await fetchPetClinicByID(Number(id));
+    return { props: { clinic } };
+  } catch (error) {
+    console.error("Error fetching pet clinic:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
-export const getStaticPaths = (async () => {
-  const clinicData = await fetchPetClinics();
-
-  const paths = clinicData.clinics.map((doctor: any) => ({
-    params: { id: doctor.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: false,
-  };
-}) satisfies GetStaticPaths;
-
-export default function PetClinicPage({
-  clinic,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function PetClinicPage({ clinic }: { clinic: Clinic }) {
   return (
     <>
       <ClinicDetails clinic={clinic} />

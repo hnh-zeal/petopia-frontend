@@ -1,7 +1,11 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PackagesData } from "@/types/api";
 import { fetchPackages } from "@/pages/api/api";
-import { GetStaticProps, InferGetStaticPropsType } from "next";
+import {
+  GetServerSideProps,
+  GetStaticProps,
+  InferGetStaticPropsType,
+} from "next";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
@@ -12,16 +16,25 @@ const breadcrumbItems = [
   { title: "Packages", link: "/admin/packages" },
 ];
 
-export const getStaticProps = (async () => {
-  const packagesData = await fetchPackages({});
-  return { props: { packagesData } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   packagesData: PackagesData;
-}>;
+}> = async (context) => {
+  try {
+    const packagesData = await fetchPackages({});
+    return { props: { packagesData } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export default function PackagesPage({
   packagesData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+}: {
+  packagesData: PackagesData;
+}) {
   return (
     <>
       <Header />

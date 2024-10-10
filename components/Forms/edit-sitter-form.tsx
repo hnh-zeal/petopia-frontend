@@ -145,6 +145,7 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
                     </FormLabel>
                     <FormControl>
                       <MultiSelect
+                        placeholder="Choose services"
                         values={services}
                         onChange={field.onChange}
                         value={field.value || []}

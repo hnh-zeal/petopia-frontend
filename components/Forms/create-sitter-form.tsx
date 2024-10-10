@@ -21,14 +21,6 @@ import {
 } from "../ui/form";
 import { ScrollArea } from "../ui/scroll-area";
 import React from "react";
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger,
-} from "@/components/multi-selecting";
 import { createPetSitter, fetchServices } from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import { useRecoilValue } from "recoil";

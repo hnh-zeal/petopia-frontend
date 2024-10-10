@@ -1,19 +1,28 @@
 import { fetchCafePets } from "../../api/api";
 
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
+import type { GetServerSideProps } from "next";
 import { PetClinicData } from "@/types/api";
 import Pets from "@/components/Layout/Pet Cafe/Pets";
 
-export const getStaticProps = (async () => {
-  const petsData = await fetchCafePets({});
-  return { props: { petsData } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   petsData: PetClinicData;
-}>;
+}> = async (context) => {
+  try {
+    const petsData = await fetchCafePets();
+    return { props: { petsData } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export default function CafePetsPage({
   petsData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+}: {
+  petsData: PetClinicData;
+}) {
   return (
     <>
       <Pets petsData={petsData} />

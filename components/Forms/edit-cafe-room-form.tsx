@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +28,6 @@ export default function EditCafeRoomForm({ cafeRoom }: any) {
       roomNo: cafeRoom?.roomNo || "",
       price: cafeRoom?.price,
       roomType: cafeRoom?.roomType || "",
-      // facilities: cafeRoom?.facilities || "",
       description: cafeRoom?.description || "",
     },
   });

@@ -207,7 +207,7 @@ export default function CreatePetClinicForm() {
             <h3 className="font-bold">Treatments and Tools</h3>
             <div className="flex flex-col gap-6">
               <div className="flex md:flex-row xl:flex-row gap-6 items-center">
-                <Controller
+                {/* <Controller
                   control={form.control}
                   name="treatments"
                   render={({ field }) => (
@@ -224,18 +224,18 @@ export default function CreatePetClinicForm() {
                   type="button"
                   className="h-5 w-5 mt-7 hover:cursor-pointer"
                   onClick={addTreatment}
-                />
-                {sections.length > 1 && (
+                />  */}
+                {/* {sections.length > 1 && (
                   <Trash2
                     type="button"
                     className="h-5 w-5 mt-7 hover:cursor-pointer"
                     onClick={() => removeTreatment(index)}
                   />
-                )}
+                )}*/}
               </div>
 
               <div className="flex md:flex-row xl:flex-row gap-6 items-center">
-                <Controller
+                {/* <Controller
                   control={form.control}
                   name="tools"
                   render={({ field }) => (
@@ -247,12 +247,12 @@ export default function CreatePetClinicForm() {
                       {...field}
                     ></CustomFormField>
                   )}
-                />
-                <CirclePlus
+                /> */}
+                {/* <CirclePlus
                   type="button"
                   className="h-5 w-5 mt-7 hover:cursor-pointer"
                   onClick={addTool}
-                />
+                /> */}
 
                 {/* Tools */}
               </div>

@@ -1,4 +1,3 @@
-"use client";
 import { useState, useRef, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import {

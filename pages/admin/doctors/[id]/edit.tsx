@@ -7,11 +7,7 @@ import {
   fetchPetClinics,
 } from "@/pages/api/api";
 import React from "react";
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetStaticPaths,
-} from "next";
+import type { GetServerSideProps } from "next";
 import EditDoctorForm from "@/components/Forms/edit-doctor-form";
 import { Doctor, PetClinicData } from "@/types/api";
 
@@ -21,32 +17,30 @@ const breadcrumbItems = (doctor: any) => [
   { title: `${doctor.name}`, link: "/admin/doctors/create" },
 ];
 
-export const getStaticProps = (async (context) => {
-  const doctor = await fetchDoctorByID(Number(context.params?.id));
-  const petClinics = await fetchPetClinics();
-  return { props: { doctor, petClinics } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   doctor: Doctor;
   petClinics: PetClinicData;
-}>;
-
-export const getStaticPaths = (async () => {
-  const doctorData = await fetchDoctors();
-
-  const paths = doctorData.doctors.map((doctor: any) => ({
-    params: { id: doctor.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: false,
-  };
-}) satisfies GetStaticPaths;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const doctor = await fetchDoctorByID(Number(id));
+    const petClinics = await fetchPetClinics();
+    return { props: { doctor, petClinics } };
+  } catch (error) {
+    console.error("Error fetching cafe room:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export default function DoctorDetails({
   doctor,
   petClinics,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+}: {
+  doctor: Doctor;
+  petClinics: PetClinicData;
+}) {
   return (
     <>
       <Header />

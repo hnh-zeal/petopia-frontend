@@ -1,35 +1,24 @@
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetStaticPaths,
-} from "next";
-import { fetchServiceByID, fetchServices } from "@/pages/api/api";
-import { CareServicesData } from "@/types/api";
+import type { GetServerSideProps } from "next";
+import { fetchServiceByID } from "@/pages/api/api";
+import { CareService } from "@/types/api";
 import ServiceDetails from "@/components/Layout/Pet Care/CareServiceDetails";
 
-export const getStaticProps = (async (context) => {
-  const service = await fetchServiceByID(Number(context.params?.id));
-  return { props: { service } };
-}) satisfies GetStaticProps<{
-  service: CareServicesData;
-}>;
+export const getServerSideProps: GetServerSideProps<{
+  service: CareService;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const service = await fetchServiceByID(Number(id));
+    return { props: { service } };
+  } catch (error) {
+    console.error("Error fetching care service:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
-export const getStaticPaths = (async () => {
-  const servicesData = await fetchServices({});
-
-  const paths = servicesData.careServices.map((service: any) => ({
-    params: { id: service.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: false,
-  };
-}) satisfies GetStaticPaths;
-
-export default function PetClinicPage({
-  service,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function PetClinicPage({ service }: { service: CareService }) {
   return (
     <>
       <ServiceDetails service={service} />

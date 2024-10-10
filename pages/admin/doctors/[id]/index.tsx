@@ -3,13 +3,9 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { fetchDoctorByID, fetchDoctors } from "@/pages/api/api";
 import React from "react";
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetStaticPaths,
-} from "next";
+import type { GetServerSideProps } from "next";
 import DoctorInfo from "@/components/Layout/Profile/DoctorInfo";
-import { RoomsData } from "@/types/api";
+import { Doctor, RoomsData } from "@/types/api";
 
 const breadcrumbItems = (doctor: any) => [
   { title: "Dashboard", link: "/admin/dashboard" },
@@ -17,29 +13,22 @@ const breadcrumbItems = (doctor: any) => [
   { title: `${doctor.name}`, link: "/admin/doctors/create" },
 ];
 
-export const getStaticProps = (async (context) => {
-  const doctor = await fetchDoctorByID(Number(context.params?.id));
-  return { props: { doctor } };
-}) satisfies GetStaticProps<{
-  doctor: RoomsData;
-}>;
+export const getServerSideProps: GetServerSideProps<{
+  doctor: Doctor;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const doctor = await fetchDoctorByID(Number(id));
+    return { props: { doctor } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
-export const getStaticPaths = (async () => {
-  const doctorData = await fetchDoctors();
-
-  const paths = doctorData.doctors.map((doctor: any) => ({
-    params: { id: doctor.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: false,
-  };
-}) satisfies GetStaticPaths;
-
-export default function DoctorDetails({
-  doctor,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function DoctorDetails({ doctor }: { doctor: Doctor }) {
   return (
     <>
       <Header />

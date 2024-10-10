@@ -23,7 +23,7 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import { Line, Pie } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/select";
 import { OverviewData, PieData } from "@/types/api";
 import { fetchOverviewReport, fetchPieData } from "../api/api";
-import { GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { months } from "@/constants/data";
 
 ChartJS.register(
@@ -64,14 +64,21 @@ ChartJS.register(
 
 const breadcrumbItems = [{ title: "Dashboard", link: "/admin/dashboard" }];
 
-export const getStaticProps = (async () => {
-  const overviewData = await fetchOverviewReport({ date: new Date() });
-  const pieData = await fetchPieData({ month: 10, year: 2024 });
-  return { props: { overviewData, pieData } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   overviewData: OverviewData;
   pieData: PieData;
-}>;
+}> = async (context) => {
+  try {
+    const overviewData = await fetchOverviewReport({ date: new Date() });
+    const pieData = await fetchPieData({ month: 10, year: 2024 });
+    return { props: { overviewData, pieData } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 const AppointmentItem = ({ date, name, condition }: any) => (
   <div className="flex items-center mb-4">

@@ -7,23 +7,29 @@ import { fetchCafeRooms } from "@/pages/api/api";
 import { RoomsData } from "@/types/api";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
+import type { GetServerSideProps } from "next";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
   { title: "Cafe Room", link: "/admin/cafe-rooms" },
 ];
 
-export const getStaticProps = (async (context) => {
-  const roomData = await fetchCafeRooms(1, 6);
-  return { props: { roomData } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   roomData: RoomsData;
-}>;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const roomData = await fetchCafeRooms(1, 6);
+    return { props: { roomData } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
-export default function CafeRooms({
-  roomData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
   return (
     <>
       <Header />

@@ -16,7 +16,7 @@ const ProfilePictureUpload = forwardRef<
   ProfilePictureUploadProps
 >(({ field, defaultImage }, ref) => {
   const [preview, setPreview] = useState<string | null>(defaultImage || null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,7 +32,7 @@ const ProfilePictureUpload = forwardRef<
   };
 
   const handleEditClick = () => {
-    fileInputRef.current?.click();
+    fileInputRef.current?.click(); // This triggers the hidden input
   };
 
   return (
@@ -68,12 +68,11 @@ const ProfilePictureUpload = forwardRef<
         type="file"
         accept="image/*"
         className="hidden"
-        ref={(e) => {
-          field.ref(e); // Pass the ref to react-hook-form
-          fileInputRef.current = e; // Assign ref to your custom ref
+        ref={(el) => {
+          fileInputRef.current = el; // Assign ref to the hidden input
+          field.ref(el); // Pass the ref to react-hook-form
         }}
         onChange={(e) => {
-          field.onChange(e); // Call react-hook-form onChange
           handleImageChange(e); // Call your custom onChange for preview
         }}
       />

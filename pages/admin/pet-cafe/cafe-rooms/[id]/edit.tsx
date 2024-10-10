@@ -4,14 +4,10 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-import { fetchCafeRoomByID, fetchCafeRooms } from "@/pages/api/api";
+import { fetchCafeRoomByID } from "@/pages/api/api";
 
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetStaticPaths,
-} from "next";
-import { RoomsData } from "@/types/api";
+import type { GetServerSideProps } from "next";
+import { CafeRoom } from "@/types/api";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
@@ -19,29 +15,22 @@ const breadcrumbItems = [
   { title: "Edit", link: "/admin/pet-cafe/cafe-rooms/edit" },
 ];
 
-export const getStaticProps = (async (context) => {
-  const cafeRoom = await fetchCafeRoomByID(Number(context.params?.id));
-  return { props: { cafeRoom } };
-}) satisfies GetStaticProps<{
-  cafeRoom: RoomsData;
-}>;
+export const getServerSideProps: GetServerSideProps<{
+  cafeRoom: CafeRoom;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const cafeRoom = await fetchCafeRoomByID(Number(id));
+    return { props: { cafeRoom } };
+  } catch (error) {
+    console.error("Error fetching appointment:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
-export const getStaticPaths = (async () => {
-  const cafeRooms = await fetchCafeRooms();
-
-  const paths = cafeRooms.rooms.map((room: any) => ({
-    params: { id: room.id.toString() }, // Convert id to string if necessary
-  }));
-
-  return {
-    paths,
-    fallback: false, // Set to false if you want to return 404 for any paths not returned by getStaticPaths
-  };
-}) satisfies GetStaticPaths;
-
-export default function EditCafeRoom({
-  cafeRoom,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function EditCafeRoom({ cafeRoom }: { cafeRoom: CafeRoom }) {
   return (
     <>
       <Header />
