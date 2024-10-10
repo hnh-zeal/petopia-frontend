@@ -1,19 +1,28 @@
 import { fetchServices } from "../../api/api";
 
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
-import { PetClinicData } from "@/types/api";
+import type { GetServerSideProps } from "next";
+import { CareServicesData } from "@/types/api";
 import PetCareServices from "@/components/Layout/Pet Care/CareServices";
 
-export const getStaticProps = (async () => {
-  const servicesData = await fetchServices({});
-  return { props: { servicesData } };
-}) satisfies GetStaticProps<{
-  servicesData: PetClinicData;
-}>;
+export const getServerSideProps: GetServerSideProps<{
+  servicesData: CareServicesData;
+}> = async (context) => {
+  try {
+    const servicesData = await fetchServices();
+    return { props: { servicesData } };
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export default function PetClinicPage({
   servicesData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+}: {
+  servicesData: CareServicesData;
+}) {
   return (
     <>
       <PetCareServices servicesData={servicesData} />

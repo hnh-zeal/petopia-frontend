@@ -38,7 +38,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { InferGetStaticPropsType, GetStaticProps } from "next";
+import type {
+  InferGetStaticPropsType,
+  GetStaticProps,
+  GetServerSideProps,
+} from "next";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
 import { DoctorData, PetClinicData } from "@/types/api";
 import {
@@ -169,19 +173,30 @@ const steps = [
   { id: "Confirm", label: "Confirm" },
 ];
 
-export const getStaticProps = (async (context) => {
-  const doctorsData = await fetchDoctors();
-  const petClinicsData = await fetchPetClinics();
-  return { props: { doctorsData, petClinicsData } };
-}) satisfies GetStaticProps<{
+export const getServerSideProps: GetServerSideProps<{
   doctorsData: DoctorData;
   petClinicsData: PetClinicData;
-}>;
+}> = async (context) => {
+  const { id } = context.params as { id: string };
+  try {
+    const doctorsData = await fetchDoctors();
+    const petClinicsData = await fetchPetClinics();
+    return { props: { doctorsData, petClinicsData } };
+  } catch (error) {
+    console.error("Error fetching pet clinic:", error);
+    return {
+      notFound: true,
+    };
+  }
+};
 
 export default function ClinicAppointmentPage({
   doctorsData,
   petClinicsData,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+}: {
+  doctorsData: DoctorData;
+  petClinicsData: PetClinicData;
+}) {
   const router = useRouter();
   const auth = useRecoilValue(userAuthState);
   const [currentStep, setCurrentStep] = useState(0);
@@ -597,7 +612,7 @@ export default function ClinicAppointmentPage({
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent className="shad-select-content">
-                                  {petClinicsData.clinics.map(
+                                  {petClinicsData?.petClinics.map(
                                     (clinic: PetClinic, i: number) => (
                                       <SelectItem
                                         key={clinic.id}
