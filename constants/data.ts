@@ -203,9 +203,30 @@ export const navItems: NavItem[] = [
   },
   {
     title: "Reports",
-    href: "/admin/reports",
+    // href: "/admin/reports",
     icon: "report",
     label: "Report",
+    subMenu: true,
+    subMenuItems: [
+      {
+        title: "Pet Clinic Report",
+        href: "/admin/reports/pet-clinic-report",
+        icon: "clinicReport",
+        label: "clinicReport",
+      },
+      {
+        title: "Pet Care Report",
+        href: "/admin/reports/pet-care-report",
+        icon: "careReport",
+        label: "careReport",
+      },
+      {
+        title: "Pet Cafe Report",
+        href: "/admin/reports/pet-cafe-report",
+        icon: "cafeReport",
+        label: "cafeReport",
+      },
+    ],
   },
 ];
 

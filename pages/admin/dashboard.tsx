@@ -23,7 +23,7 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import { Pie } from "react-chartjs-2";
+import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,

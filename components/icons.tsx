@@ -87,6 +87,9 @@ export const Icons = {
   room: DoorOpen,
   packages: PackageCheck,
   report: FileText,
+  clinicReport: FileText,
+  careReport: FileText,
+  cafeReport: FileText,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
