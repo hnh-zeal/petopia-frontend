@@ -65,6 +65,7 @@ export type PetClinic = {
   tools?: string[];
   verified: boolean;
   isActive: string;
+  operatingHours: any[];
 };
 
 export type CareService = {

@@ -1,5 +1,5 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import CafeRoom from "@/components/Layout/cafe-pet-rooms";
+import CafeRooms from "@/components/Layout/cafe-pet-rooms";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,13 +11,12 @@ import type { GetServerSideProps } from "next";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Cafe Room", link: "/admin/cafe-rooms" },
+  { title: "Cafe Rooms", link: "/admin/cafe-rooms" },
 ];
 
 export const getServerSideProps: GetServerSideProps<{
   roomData: RoomsData;
 }> = async (context) => {
-  const { id } = context.params as { id: string };
   try {
     const roomData = await fetchCafeRooms(1, 6);
     return { props: { roomData } };
@@ -29,7 +28,7 @@ export const getServerSideProps: GetServerSideProps<{
   }
 };
 
-export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
+export default function CafeRoomsPage({ roomData }: { roomData: RoomsData }) {
   return (
     <>
       <Header />
@@ -39,7 +38,7 @@ export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
           <ScrollArea className="h-[calc(80vh-220px)]">
             <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
               <Breadcrumbs items={breadcrumbItems} />
-              <CafeRoom roomData={roomData} />
+              <CafeRooms roomData={roomData} />
             </div>
             <div>
               <Toaster />

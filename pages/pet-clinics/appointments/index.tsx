@@ -38,11 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type {
-  InferGetStaticPropsType,
-  GetStaticProps,
-  GetServerSideProps,
-} from "next";
+import type { GetServerSideProps } from "next";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
 import { DoctorData, PetClinicData } from "@/types/api";
 import {
@@ -177,7 +173,6 @@ export const getServerSideProps: GetServerSideProps<{
   doctorsData: DoctorData;
   petClinicsData: PetClinicData;
 }> = async (context) => {
-  const { id } = context.params as { id: string };
   try {
     const doctorsData = await fetchDoctors();
     const petClinicsData = await fetchPetClinics();

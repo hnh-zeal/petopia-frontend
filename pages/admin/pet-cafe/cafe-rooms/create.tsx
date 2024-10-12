@@ -7,8 +7,8 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Cafe Room", link: "/admin/cafe-rooms" },
-  { title: "Create", link: "/admin/cafe-rooms/create" },
+  { title: "Cafe Rooms", link: "/admin/pet-cafe/cafe-rooms" },
+  { title: "Create", link: "/admin/pet-cafe/cafe-rooms/create" },
 ];
 
 export default function CreateCafeRooms() {

@@ -4,19 +4,19 @@ import {
   CardFooter,
   CardContent,
   CardTitle,
-  CardDescription,
+  CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Pagination from "../Tables/pagination";
 import { Separator } from "@/components/ui/separator";
 import { Heading } from "../ui/heading";
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { useRouter } from "next/router";
 import { ScrollArea } from "../ui/scroll-area";
-import { truncate } from "@/utils/truncate";
+import { CafeRoom, RoomsData } from "@/types/api";
 
-export default function CafeRoom({ roomData }: any) {
+export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
   const router = useRouter();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,60 +40,71 @@ export default function CafeRoom({ roomData }: any) {
       <ScrollArea className="h-[calc(100vh-220px)] rounded-md px-3">
         <div className="container mx-auto p-4">
           {roomData?.rooms.length === 0 ? (
-            <p>Loading...</p>
+            <p>No room found.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {roomData?.rooms.map((room: any) => (
-                <Card
-                  key={room?.id}
-                  className="shadow-lg rounded-lg overflow-hidden"
-                >
+              {roomData?.rooms.map((room: CafeRoom) => (
+                <Card key={room.id} className="overflow-hidden">
                   <Image
-                    src={room?.imageUrl || "/dummy-cat.jpg"}
-                    alt={room?.name}
-                    width="500"
-                    height="500"
+                    src={room.mainImage}
+                    alt={room.name}
+                    width={400}
+                    height={300}
                     className="w-full h-48 object-cover"
                   />
-                  <CardContent className="p-4">
-                    <CardTitle className="text-lg font-semibold">
-                      {room.name} - Room No.{room.roomNo}
+                  <CardHeader>
+                    <CardTitle className="flex justify-between items-center">
+                      <span>
+                        {room.name} - Room No.{room.roomNo}
+                      </span>
                     </CardTitle>
-                    <CardDescription className="text-sm text-gray-600 mt-2">
-                      {truncate(room?.description)}
-                    </CardDescription>
-                    {/* Add pricing and promotion details here */}
-                    <div className="mt-4">
-                      <p className="text-red-500 font-bold">
-                        {`$${room.price} `}
-                        <span className="text-sm text-gray-500 line-through">
-                          {room.originalPrice ? `$${room.price}` : "$15"}
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {room.description.substring(0, 150)}...
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-2xl font-bold text-blue-600">
+                          ${room.price}
                         </span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Winter Promotion (1 Nov to 31 Dec) - 5% off
-                      </p>
-                    </div>
-                    {/* Add review section here */}
-                    <div className="mt-3">
-                      <div className="flex items-center">
-                        <div className="flex text-yellow-500">
-                          {/* Replace this with your star rating component */}
-                          <span>&#9733;</span>
-                          <span>&#9733;</span>
-                          <span>&#9733;</span>
-                          <span>&#9733;</span>
-                          <span>&#9734;</span> {/* Empty star */}
-                        </div>
-                        <p className="ml-2 text-sm text-gray-600">
-                          (0 reviews)
-                        </p>
                       </div>
+                      {/* <div className="flex items-center">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className="h-4 w-4 text-yellow-400 fill-current"
+                          />
+                        ))}
+                        <span className="text-sm text-gray-500 ml-1">
+                          (0 reviews)
+                        </span>
+                      </div> */}
                     </div>
+                    {/* <p className="text-sm text-gray-500 mt-2">
+                      Winter Promotion (1 Nov to 31 Dec) - 5% off
+                    </p> */}
                   </CardContent>
-
-                  <CardFooter className="p-4 flex justify-end items-center">
+                  <CardFooter className="bg-gray-50 flex justify-between">
+                    <div className="flex -space-x-2">
+                      {room.pets.slice(0, 3).map((pet) => (
+                        <Image
+                          key={pet.id}
+                          src={pet.imageUrl}
+                          alt={pet.name}
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full border-2 border-white"
+                        />
+                      ))}
+                      {room.pets.length > 3 && (
+                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600">
+                          +{room.pets.length - 3}
+                        </div>
+                      )}
+                    </div>
                     <Button
+                      variant="default"
                       onClick={() =>
                         router.push(`/admin/pet-cafe/cafe-rooms/${room.id}`)
                       }

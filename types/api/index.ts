@@ -1,5 +1,5 @@
 export interface RoomsData {
-  rooms: [];
+  rooms: CafeRoom[];
   count: number;
   page: number;
   pageSize: number;
@@ -54,22 +54,28 @@ export interface OperatingHour {
   endTime: string;
 }
 
-export interface WorkExperience {
+export interface Root {
+  doctors: Doctor[];
+  count: number;
+}
+
+interface WorkExperience {
   from_year: string;
   to_year: string;
   position: string;
   location: string;
 }
 
-export interface Education {
+interface Education {
   year: string;
   name: string;
   location: string;
 }
 
-export interface Root {
-  doctors: Doctor[];
-  count: number;
+interface Schedule {
+  dow: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface Doctor {
@@ -77,30 +83,19 @@ export interface Doctor {
   name: string;
   email: string;
   phoneNumber: string;
-  password: string;
   about: string;
-  profileUrl?: string;
-  specialties?: string[];
-  languages?: string[];
+  profileUrl: string;
+  specialties: string[];
+  languages: string[];
   work_experiences: WorkExperience[];
   education: Education[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  clinic: Clinic;
-}
-
-export interface WorkExperience {
-  from_year: string;
-  to_year: string;
-  position: string;
-  location: string;
-}
-
-export interface Education {
-  year: string;
-  name: string;
-  location: string;
+  clinic: {
+    name: string;
+    description: string;
+    treatment: string[];
+    tools: string[];
+  };
+  schedules: Schedule[];
 }
 
 export interface Clinic {
@@ -211,7 +206,7 @@ export interface CareService {
   reviews: number;
   categories: Category[];
   petSitters: PetSitter[];
-  addOns: any[];
+  addOns: { name: string; price: number; id: number }[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -284,9 +279,10 @@ export interface PetSitter {
   email: string;
   rating: number;
   phoneNumber: string;
-  specialties: any;
+  specialties: string[];
+  languages: string[];
   reviews: string;
-  services: any;
+  services: CareService[];
 }
 
 export interface Category {

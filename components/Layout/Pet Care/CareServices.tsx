@@ -35,52 +35,58 @@ export default function CareServices({
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-extrabold text-center text-gray-900 mb-10">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl font-bold text-center text-indigo-900 mb-8"
+          >
             Pet Care Services
-          </h1>
-          <Separator />
-          <div className="flex justify-center my-6">
+          </motion.h1>
+          <Separator className="mb-8" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex justify-center mb-6"
+          >
             <div className="relative w-full max-w-xl">
               <Input
                 type="text"
                 placeholder="Search services..."
-                className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 rounded-full border-2 border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute h-5 w-5 right-3 top-2.5 text-gray-400" />
             </div>
-            <Button className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 flex items-center">
+            <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
               <Filter className="mr-2 h-4 w-4" size={18} />
               Filter
             </Button>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.length > 0 ? (
               services.map((service: CareService, index: number) => (
-                <Card
+                <motion.div
                   key={service.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <div className="relative h-48">
-                      <Image
-                        src={service.mainImage || "/PetCare/petCareService.jpg"}
-                        alt={service.name}
-                        width={600}
-                        height={600}
-                        className="w-full rounded-md h-48 object-cover"
-                      />
-                    </div>
-                    <CardContent className="p-4">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                    <Image
+                      src={service.mainImage || "/PetCare/petCareService.jpg"}
+                      alt={service.name}
+                      width={600}
+                      height={600}
+                      className="w-full rounded-md h-48 object-cover"
+                    />
+                    <CardContent className="p-6">
+                      <h2 className="text-xl font-semibold text-indigo-700 mb-1">
                         {service.name}
                       </h2>
                       <p className="text-gray-600 text-pretty mb-4">
@@ -113,8 +119,7 @@ export default function CareServices({
                     </CardContent>
                     <CardFooter className="justify-end p-4 pt-0">
                       <Button
-                        variant="default"
-                        className="w-full bg-blue-500 text-white py-2 rounded-full hover:bg-blue-600 transition duration-300"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
                         onClick={() =>
                           router.push(`/pet-care/services/${service.id}`)
                         }
@@ -122,8 +127,8 @@ export default function CareServices({
                         View details
                       </Button>
                     </CardFooter>
-                  </motion.div>
-                </Card>
+                  </Card>
+                </motion.div>
               ))
             ) : (
               <p className="col-span-3 text-center text-gray-500">

@@ -23,6 +23,13 @@ export default function CreateCafeRoomForm() {
   const router = useRouter();
   const form = useForm<ServiceFormValue>({
     resolver: zodResolver(CreateCafeRoomSchema),
+    defaultValues: {
+      name: "",
+      roomNo: "",
+      price: "",
+      roomType: "",
+      description: "",
+    },
   });
 
   const onSubmit = async (formValues: ServiceFormValue) => {

@@ -1,181 +1,258 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import {
-  HeartPulse,
-  Syringe,
-  Users,
-  Package,
-  MessageCircle,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Calendar,
+  Clock,
+  GraduationCap,
+  Languages,
+  Phone,
+  Mail,
+  Stethoscope,
+  Wrench,
+  Star,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { Doctor } from "@/types/api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/router";
 
-export default function ClinicDetails({ clinic }: any) {
+const breadcrumbItems = (doctor: Doctor) => [
+  { title: "Doctors", link: "/pet-clinics/doctors" },
+  { title: `${doctor.name}`, link: `/pet-clinics/doctors/${doctor.id}` },
+];
+
+export interface DoctorDetailsProps {
+  doctor: Doctor;
+}
+
+const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
+  const router = useRouter();
+  const daysOrder = [
+    "SUNDAY",
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+  ];
+  const sortedSchedules = [...doctor.schedules].sort(
+    (a, b) => daysOrder.indexOf(a.dow) - daysOrder.indexOf(b.dow)
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="sticky top-0 bg-white z-10 py-4">
-        <h1 className="text-3xl font-bold">{clinic.name}</h1>
-      </div>
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Main Content */}
-        <div className="w-full lg:w-2/3 xl:w-3/4 order-2 lg:order-1">
-          <Image
-            src="/PetClinic/cardiology.jpg?height=300&width=800"
-            alt="Cardiology Clinic"
-            width={800}
-            height={300}
-            className="w-full rounded-lg mb-6"
-          />
-
-          <section id="general-info" className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-blue-800">
-              General Information
-            </h2>
-            <p className="text-gray-700">{clinic.description}</p>
-          </section>
-
-          <section id="diseases" className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-blue-800">
-              Heart disease diagnosis services
-            </h2>
-            <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li>
-                Special external device examination, electrocardiogram,
-                echocardiography, exercise cardioversion, 24-hour heart rate
-                recording, and abnormal monitoring
-              </li>
-              <li>
-                Invasive procedures are diagnostic procedures that involve
-                inserting a catheter into the heart or blood vessels to diagnose
-                heart disease
-              </li>
-            </ul>
-            <div className="mt-4 space-x-4">
-              <Button className="bg-pink-600 hover:bg-pink-700">
-                Advanced Technology
-              </Button>
-              <Button className="bg-pink-600 hover:bg-pink-700">
-                Invasive Diagnostic Service
-              </Button>
+    <div className="mx-auto p-4 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+      <div className="container mx-auto max-w-4xl">
+        <div className="mb-6">
+          <Breadcrumbs items={breadcrumbItems(doctor)} />
+        </div>
+        <Card className="w-full max-w-4xl mx-auto overflow-hidden shadow-xl">
+          <CardHeader className="bg-indigo-600 text-white p-6">
+            <div className="flex items-center space-x-6">
+              <div className="w-full md:w-1/5 flex flex-row justify-center">
+                <div className="relative w-28 h-28 rounded-full overflow-hidden bg-white border-4 border-indigo-200">
+                  <Image
+                    src={doctor.profileUrl || "/default-doctor.png"}
+                    alt={doctor.name}
+                    layout="fill"
+                    className="rounded-full"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <CardTitle className="text-3xl font-bold">
+                  {doctor.name}
+                </CardTitle>
+                <p className="text-indigo-200">{doctor.clinic.name}</p>
+                <div className="flex items-center">
+                  <Phone className="w-5 h-5 mr-2" />
+                  <span>{doctor.phoneNumber}</span>
+                </div>
+                <div className="flex items-center">
+                  <Mail className="w-5 h-5 mr-2" />
+                  <span>{doctor.email}</span>
+                </div>
+              </div>
             </div>
-          </section>
-
-          <section id="contact" className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-blue-800">
-              For more information, please contact
-            </h2>
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-pink-600 mb-2">
-                  {clinic.name}
+          </CardHeader>
+          <CardContent className="p-6">
+            <Tabs defaultValue="about" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="experience">Experience</TabsTrigger>
+                <TabsTrigger value="clinic">Clinic</TabsTrigger>
+                <TabsTrigger value="schedule">Schedule</TabsTrigger>
+              </TabsList>
+              <TabsContent value="about" className="mt-6">
+                <h3 className="text-xl font-semibold mb-4">
+                  About Dr. {doctor.name}
                 </h3>
-                {clinic.operatingHours?.map((day: any, index: number) => (
-                  <p key={index}>{day.dow} from 7:00 AM to 4:00 PM.</p>
-                ))}
-                <div className="mt-4">
-                  <p>
-                    <span className="font-semibold">Tel:</span> {clinic.contact}
-                  </p>
+                <p className="text-gray-700 mb-4">{doctor.about}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <Star className="w-5 h-5 mr-2 text-indigo-600" />
+                        Specialties
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {doctor.specialties?.map((specialty: string, index) => (
+                          <Badge key={index} variant="secondary">
+                            {specialty.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <Languages className="w-5 h-5 mr-2 text-indigo-600" />
+                        Languages
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {doctor.languages?.map((language, index) => (
+                          <Badge key={index} variant="outline">
+                            {language.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          </section>
-        </div>
+              </TabsContent>
+              <TabsContent value="experience" className="mt-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                      <GraduationCap className="w-6 h-6 mr-2 text-indigo-600" />
+                      Education
+                    </h3>
+                    {doctor.education?.map((edu, index) => (
+                      <Card key={index} className="mb-4">
+                        <CardContent className="p-4">
+                          <p className="font-semibold">{edu.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {edu.location}
+                          </p>
+                          <p className="text-sm text-gray-600">{edu.year}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                      <Stethoscope className="w-6 h-6 mr-2 text-indigo-600" />
+                      Work Experience
+                    </h3>
+                    {doctor.work_experiences?.map((exp, index) => (
+                      <Card key={index} className="mb-4">
+                        <CardContent className="p-4">
+                          <p className="font-semibold">{exp.position}</p>
+                          <p className="text-sm text-gray-600">
+                            {exp.location}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {exp.from_year} - {exp.to_year}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="clinic" className="mt-6">
+                <h3 className="text-xl font-semibold mb-4">
+                  Clinic Information
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  {doctor.clinic.description}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+                  <Card className="shadow-none border-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <Wrench className="w-5 h-5 mr-2 text-indigo-600" />
+                        Treatments
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside">
+                        {doctor.clinic.treatment?.map((treatment, index) => (
+                          <li key={index} className="text-gray-700">
+                            {treatment}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
 
-        {/* Sidebar */}
-        <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2">
-          <div className="lg:sticky lg:top-20 space-y-4">
-            <Card>
-              <CardContent className="p-4">
-                <ul className="space-y-4">
-                  <li>
-                    <Link
-                      href="#general-info"
-                      className="flex items-center text-pink-600 hover:underline"
-                    >
-                      <HeartPulse className="mr-2 h-5 w-5" />
-                      General Information
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#diseases"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <Syringe className="mr-2 h-5 w-5" />
-                      Diseases And Treatment
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#doctors"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <Users className="mr-2 h-5 w-5" />
-                      Related Doctors
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#packages"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <Package className="mr-2 h-5 w-5" />
-                      Packages And Promotions
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="#contact"
-                      className="flex items-center text-gray-600 hover:underline"
-                    >
-                      <MessageCircle className="mr-2 h-5 w-5" />
-                      Contact Us
-                    </Link>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            <Button className="w-full bg-blue-900 hover:bg-blue-800">
-              Make an appointment
+                  <Card className="shadow-none border-none">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center">
+                        <Wrench className="w-5 h-5 mr-2 text-indigo-600" />
+                        Tools
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside">
+                        {doctor.clinic?.tools?.map((tool, index) => (
+                          <li key={index} className="text-gray-700">
+                            {tool}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              <TabsContent value="schedule" className="mt-6">
+                <h3 className="text-xl font-semibold mb-4 flex items-center">
+                  <Calendar className="w-6 h-6 mr-2 text-indigo-600" />
+                  Weekly Schedule
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {sortedSchedules?.map((schedule, index) => (
+                    <Card key={index}>
+                      <CardContent className="p-4">
+                        <p className="font-semibold">{schedule.dow}</p>
+                        <div className="flex items-center text-gray-600">
+                          <Clock className="w-4 h-4 mr-2" />
+                          {schedule.startTime.slice(0, 5)} -{" "}
+                          {schedule.endTime.slice(0, 5)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+          <CardFooter>
+            <Button
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={() => router.push(`/pet-clinics/appointments`)}
+            >
+              Book an Appointment
             </Button>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
-
-      <section id="doctors" className="mt-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-blue-800">
-            Related Doctors
-          </h2>
-          <Link
-            href="/pet-clinics/doctors"
-            className="text-pink-600 hover:underline"
-          >
-            SEE OTHER DOCTORS →
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clinic.doctors?.map((doctor: Doctor, index: number) => (
-            <Card key={index}>
-              <CardContent className="p-4 flex items-center space-x-4">
-                <Image
-                  src={doctor.profileUrl || ""}
-                  alt={doctor.name}
-                  width={150}
-                  height={150}
-                  className="rounded-full w-20 h-20 object-cover"
-                />
-                <div>
-                  <h3 className="font-semibold">{doctor.name}</h3>
-                  <p className="text-pink-600">{doctor.specialties}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
     </div>
   );
-}
+};
+
+export default DoctorDetails;

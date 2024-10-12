@@ -8,7 +8,7 @@ export const getServerSideProps: GetServerSideProps<{
   servicesData: CareServicesData;
 }> = async (context) => {
   try {
-    const servicesData = await fetchServices();
+    const servicesData = await fetchServices({});
     return { props: { servicesData } };
   } catch (error) {
     console.error("Error fetching doctor:", error);
