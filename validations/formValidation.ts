@@ -94,9 +94,11 @@ export const CreateCafePetSchema = z.object({
 
 export const UpdateCafePetSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
-  description: z.string(),
-  roomId: z.string(),
-  age: z.number(),
+  description: z.string().optional(),
+  petType: z.string().optional(),
+  breed: z.string().optional(),
+  roomId: z.any().optional(),
+  age: z.any().optional(),
 });
 
 export const CreateAppointmentSchema = z.object({

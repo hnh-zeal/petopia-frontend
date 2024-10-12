@@ -55,14 +55,18 @@ export default function EditServiceForm({ service }: { service: CareService }) {
   });
 
   const [addOns, setAddOns] = useState(
-    service.addOns || [{ name: "", description: "", price: 0 }]
+    service.addOns?.length > 0
+      ? [...service.addOns]
+      : [{ name: "", description: "", price: 0 }]
   );
+
   const addAddOn = () => {
     setAddOns([...addOns, { name: "", description: "", price: 0 }]);
   };
 
   const removeAddOn = (index: number) => {
-    setAddOns(addOns.filter((_, i) => i !== index));
+    const updatedAddOns = addOns.filter((_, i) => i !== index);
+    setAddOns(updatedAddOns);
   };
 
   const onSubmit = async (formValues: ServiceFormValue) => {

@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { ClinicAppointment, Doctor } from "@/types/api";
+import { CareAppointment, ClinicAppointment, Doctor } from "@/types/api";
 import {
   fetchAppointmentSlots,
   updateClinicAppointment,
@@ -61,10 +61,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getDayName } from "./DoctorSchedule";
-import { AppointmentSlot, Schedule } from "@/constants/data";
+import { AppointmentSlot } from "@/constants/data";
 
 interface AppointmentDetailsProps {
-  appointment: ClinicAppointment;
+  appointment: CareAppointment;
 }
 
 const rejectSchema = z.object({
@@ -81,7 +81,7 @@ const approveSchema = z.object({
 type RejectFormValues = z.infer<typeof rejectSchema>;
 type ApproveFormValues = z.infer<typeof approveSchema>;
 
-export default function AppointmentInfo({
+export default function CareAppointmentInfo({
   appointment,
 }: AppointmentDetailsProps) {
   const auth = useRecoilValue(adminAuthState);
@@ -100,9 +100,7 @@ export default function AppointmentInfo({
 
   const approveForm = useForm<ApproveFormValues>({
     resolver: zodResolver(approveSchema),
-    defaultValues: {
-      doctorId: `${appointment.doctor?.id}`,
-    },
+    defaultValues: {},
   });
 
   const handleApprove = async (values: ApproveFormValues) => {
@@ -222,7 +220,7 @@ export default function AppointmentInfo({
                 {appointment.status === "ACCEPTED" ? (
                   <Badge className="bg-green-500">Accepted</Badge>
                 ) : appointment.status === "PENDING" ? (
-                  <Badge className="bg-orange-500">Pending</Badge>
+                  <Badge className="bg-orange-500 ">Pending</Badge>
                 ) : appointment.status === "REJECTED" ? (
                   <Badge variant="destructive">Rejected</Badge>
                 ) : (

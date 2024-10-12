@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CareAppointment } from "@/types/api";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -43,9 +43,11 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
           <DropdownMenuItem
-            onClick={() => router.push(`/admin/doctors/${data.id}/edit`)}
+            onClick={() =>
+              router.push(`/admin/pet-care/appointments/${data.id}`)
+            }
           >
-            <Edit className="mr-2 h-4 w-4 hover:cursor-pointer" /> Cancel
+            <Eye className="mr-2 h-4 w-4 hover:cursor-pointer" /> See Details
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -113,6 +113,7 @@ export default function GroomingAppointment({
         { type: "CARE" },
         auth?.accessToken as string
       );
+      console.log(discountData);
       const addOnPrice =
         watchFields.addOns?.reduce((total: number, addOnId: any) => {
           const addOn = service.addOns?.find((a) => a.id === addOnId);
@@ -243,9 +244,9 @@ export default function GroomingAppointment({
                                   <span className="mt-2 font-semibold">
                                     {category.name}
                                   </span>
-                                  <span className="mt-1 text-sm">
+                                  {/* <span className="mt-1 text-sm">
                                     ฿{category.price}
-                                  </span>
+                                  </span> */}
                                 </Label>
                               </div>
                             ))}
@@ -398,7 +399,10 @@ export default function GroomingAppointment({
                                     <div className="flex items-center space-x-4">
                                       <Avatar>
                                         <AvatarImage
-                                          src={sitter.profileUrl || ""}
+                                          src={
+                                            sitter?.profileUrl ||
+                                            "/default-pet-sitter.png"
+                                          }
                                           alt={sitter.name}
                                         />
                                         <AvatarFallback>

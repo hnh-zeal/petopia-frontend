@@ -22,9 +22,10 @@ import {
 type CafePetFormValue = z.infer<typeof UpdateCafePetSchema>;
 interface EditCafePetFormProps {
   id: number;
+  onClose: any;
 }
 
-export default function EditCafePetForm({ id }: EditCafePetFormProps) {
+export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -104,6 +105,8 @@ export default function EditCafePetForm({ id }: EditCafePetFormProps) {
   };
 
   const onCancel = () => {
+    console.log("....");
+    onClose();
     form.reset();
   };
 

@@ -1005,6 +1005,20 @@ export async function fetchCareAppointments(queryData: any, token?: string) {
   return data;
 }
 
+export async function fetchCareAppointmentByID(id: number) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-appointments/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return await response.json();
+}
+
 export async function fetchDiscountPackage(queryData: any, token: string) {
   const { type } = queryData;
 

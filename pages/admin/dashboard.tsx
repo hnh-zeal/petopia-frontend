@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { motion } from "framer-motion";
@@ -49,6 +49,9 @@ import { OverviewData, PieData } from "@/types/api";
 import { fetchOverviewReport, fetchPieData } from "../api/api";
 import { GetServerSideProps } from "next";
 import { months } from "@/constants/data";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { truncate } from "@/utils/truncate";
 
 ChartJS.register(
   CategoryScale,
@@ -80,20 +83,57 @@ export const getServerSideProps: GetServerSideProps<{
   }
 };
 
-const AppointmentItem = ({ date, name, condition }: any) => (
-  <div className="flex items-center mb-4">
-    <div className="w-16 text-sm text-gray-500">{format(date, "HH:mm a")}</div>
-    <div className="flex-grow flex items-center">
-      <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
-      <div>
-        <p className="font-medium">{name}</p>
-        <p className="text-sm text-gray-500">{condition}</p>
+const statusConfig: any = {
+  PENDING: { color: "bg-yellow-500", label: "Pending" },
+  ACCEPTED: { color: "bg-green-500", label: "Accepted" },
+  true: { color: "bg-green-500", label: "Booked" },
+  false: { color: "bg-green-500", label: "Unavailable" },
+  REJECTED: { color: "bg-red-700", label: "Rejected" },
+  CANCELLED: { color: "bg-gray-500 ", label: "Cancelled" },
+};
+
+interface AppointmentItemProps {
+  date: Date;
+  name: string;
+  description: string;
+  status: string;
+  imageUrl?: string;
+}
+
+export const AppointmentItem = ({
+  date,
+  name,
+  description,
+  status,
+  imageUrl,
+}: AppointmentItemProps) => (
+  <Card className="mb-4 hover:shadow-md transition-shadow duration-300">
+    <CardContent className="p-4">
+      <div className="flex items-center space-x-4">
+        <Avatar className="w-14 h-14">
+          <AvatarImage src={imageUrl} alt={name} />
+          <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-grow">
+          <h3 className="font-semibold text-lg">{name}</h3>
+          <p className="text-sm text-gray-500">{truncate(description, 50)}</p>
+        </div>
+        <div className="flex flex-col items-end space-y-2">
+          <div className="flex items-center text-sm text-gray-500">
+            <Clock className="w-4 h-4 mr-1" />
+            {format(date, "hh:mm a")}
+          </div>
+
+          <Badge
+            className={`${statusConfig[status].color} px-2 py-1 rounded-full`}
+          >
+            {statusConfig[status].label}
+          </Badge>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400" />
       </div>
-    </div>
-    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-      <ChevronRight size={16} className="text-green-600" />
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 );
 
 export default function Dashboard({
@@ -108,9 +148,9 @@ export default function Dashboard({
   const [type, setType] = useState("clinic");
   const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [countData, setCountData] = useState<any>(overviewData.count);
+  const [overview, setOverview] = useState<OverviewData>(overviewData);
   const [appointments, setAppointments] = useState<any>(
-    overviewData.appointments?.clinicAppointments
+    overview.appointments?.clinicAppointments
   );
 
   const defaultPieData = {
@@ -151,7 +191,6 @@ export default function Dashboard({
 
     setSelectedMonth(monthIndex); // Update selected month
 
-    // Fetch new pie data based on the selected month and year
     try {
       const fetchedPieData = await fetchPieData({
         month: monthIndex,
@@ -190,13 +229,13 @@ export default function Dashboard({
     setType(value);
     switch (value) {
       case "clinic":
-        setAppointments(overviewData.appointments?.clinicAppointments);
+        setAppointments(overview.appointments?.clinicAppointments);
         break;
       case "care":
-        setAppointments(overviewData.appointments?.careAppointments);
+        setAppointments(overview.appointments?.careAppointments);
         break;
       case "cafe":
-        setAppointments(overviewData.appointments?.cafeBookings);
+        setAppointments(overview.appointments?.cafeBookings);
         break;
     }
   };
@@ -207,7 +246,7 @@ export default function Dashboard({
       setDate(date);
       try {
         const fetchedOverview = await fetchOverviewReport({ date });
-        setCountData(fetchedOverview.count);
+        setOverview(fetchedOverview);
         switch (type) {
           case "clinic":
             setAppointments(fetchedOverview.appointments?.clinicAppointments);
@@ -278,7 +317,7 @@ export default function Dashboard({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">
-                            +{countData.clinic_count}
+                            +{overview.count.clinic_count}
                           </div>
                           {/* <p className="text-xs text-muted-foreground">
                           +20.1% from last month
@@ -301,7 +340,7 @@ export default function Dashboard({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">
-                            +{countData.care_count}
+                            +{overview.count.care_count}
                           </div>
                           {/* <p className="text-xs text-muted-foreground">
                           +180.1% from last month
@@ -324,7 +363,7 @@ export default function Dashboard({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">
-                            +{countData.cafe_count}
+                            +{overview.count.cafe_count}
                           </div>
                           {/* <p className="text-xs text-muted-foreground">
                           +19% from last month
@@ -347,7 +386,7 @@ export default function Dashboard({
                         </CardHeader>
                         <CardContent>
                           <div className="text-2xl font-bold">
-                            +{countData.user_count}
+                            +{overview.count.user_count}
                           </div>
                           {/* <p className="text-xs text-muted-foreground">
                           +201 since last hour
@@ -470,8 +509,10 @@ export default function Dashboard({
                                     date={
                                       appointment?.startTime || appointment.date
                                     }
-                                    name={appointment.userId}
-                                    condition={appointment.description}
+                                    name={appointment.user.name}
+                                    description={appointment.description}
+                                    status={appointment.status}
+                                    imageUrl={appointment.user.profileUrl}
                                   />
                                 </div>
                               )

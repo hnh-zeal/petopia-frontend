@@ -24,7 +24,9 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+      </div>
       <Card className="max-w-4xl mx-auto">
         <CardContent className="p-6">
           <Tabs

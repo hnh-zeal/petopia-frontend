@@ -177,22 +177,37 @@ export interface Pet {
   updatedAt: string;
 }
 
+export interface CafePetData {
+  cafePets: CafePet[];
+  count: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface CafePet {
   id: number;
   name: string;
-  description: string;
+  dateOfBirth: string;
+  imageUrl: string;
+  year: number;
+  month: number;
   petType: string;
-  age: number;
-  month?: number;
   breed: string;
   sex: string;
-  medication: any;
-  vaccinationRecords: any;
-  specialNeeds: any;
-  imageUrl?: string;
+  description: string;
+  medication: string;
+  vaccinationRecords: string;
+  specialNeeds: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  room: {
+    id: number;
+    name: string;
+    roomNo: string;
+    roomType: string;
+  };
 }
 
 export interface CareService {
@@ -206,7 +221,7 @@ export interface CareService {
   reviews: number;
   categories: Category[];
   petSitters: PetSitter[];
-  addOns: { name: string; price: number; id: number }[];
+  addOns: { name: string; price: number; id?: number; description: string }[];
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -216,6 +231,7 @@ export interface CafeRoom {
   id: string;
   name: string;
   roomNo: string;
+  roomType: string;
   description: string;
   price: number;
   promotion: string;
@@ -224,6 +240,7 @@ export interface CafeRoom {
   amenities: string[];
   mainImage: string;
   images: string[];
+  isActive: boolean;
   pets: {
     id: string;
     name: string;

@@ -418,7 +418,10 @@ export default function SittingAppointment({
                                     <div className="flex items-center space-x-4">
                                       <Avatar>
                                         <AvatarImage
-                                          src={sitter.profileUrl || ""}
+                                          src={
+                                            sitter.profileUrl ||
+                                            "/default-pet-sitter.png"
+                                          }
                                           alt={sitter.name}
                                         />
                                         <AvatarFallback>
