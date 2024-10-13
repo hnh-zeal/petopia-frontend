@@ -2,7 +2,6 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import CreatePetSitterForm from "@/components/Forms/create-sitter-form";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },

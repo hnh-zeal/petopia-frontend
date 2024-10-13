@@ -53,7 +53,6 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
   const auth = useRecoilValue(userAuthState);
   const [loading, setLoading] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const router = useRouter();
 
   const cancelForm = useForm<CancelFormValues>({
     resolver: zodResolver(cancelSchema),

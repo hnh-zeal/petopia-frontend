@@ -1,37 +1,49 @@
-import React, { useState } from "react";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+"use client";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Form, FormLabel } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { Heading } from "../ui/heading";
 import { Separator } from "@/components/ui/separator";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
-import { useToast } from "../ui/use-toast";
-import { CreatePetClinicSchema } from "@/validations/formValidation";
-import { SelectItem } from "../ui/select";
-import { CirclePlus, Plus, Trash2 } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
 import SubmitButton from "../submit-button";
-import { daysOfWeek } from "@/constants/data";
+import { useToast } from "../ui/use-toast";
+import { useEffect, useState } from "react";
+import { Form, FormLabel } from "../ui/form";
+import { ScrollArea } from "../ui/scroll-area";
+import { Clinic } from "@/types/api";
+import { updatePetSitterByID } from "@/pages/api/api";
 import { Input } from "../ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { CreatePetClinicSchema } from "@/validations/formValidation";
+import { daysOfWeek } from "@/constants/data";
+import { SelectItem } from "../ui/select";
 
-type PetClinicFormValue = z.infer<typeof CreatePetClinicSchema>;
+type PetSitterFormValue = z.infer<typeof CreatePetClinicSchema>;
 
-export default function CreatePetClinicForm() {
+export default function EditPetClinicForm({
+  petClinic,
+}: {
+  petClinic: Clinic;
+}) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([
     { dow: "", startTime: "", endTime: "" },
   ]);
-
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const form = useForm<PetClinicFormValue>({
+
+  const form = useForm<PetSitterFormValue>({
     resolver: zodResolver(CreatePetClinicSchema),
     defaultValues: {
-      treatment: [" "],
-      tools: [" "],
+      name: petClinic.name,
+      contact: petClinic.contact,
+      description: petClinic.description,
+      sections: petClinic.operatingHours,
+      treatment: petClinic.treatment?.length > 0 ? petClinic.treatment : [" "],
+      tools: petClinic.tools?.length > 0 ? petClinic.tools : [" "],
     },
   });
 
@@ -61,21 +73,20 @@ export default function CreatePetClinicForm() {
     name: "tools",
   });
 
-  const onSubmit = async (formValues: PetClinicFormValue) => {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  const onSubmit = async (formValues: PetSitterFormValue) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formValues),
-        }
-      );
+      const data = await updatePetSitterByID(petClinic.id, formValues);
 
-      const data = await response.json();
+      console.log(formValues);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -84,7 +95,7 @@ export default function CreatePetClinicForm() {
       } else {
         toast({
           variant: "success",
-          description: "PetClinic created.",
+          description: `${data.message}`,
         });
         router.push("/admin/pet-clinic/pet-centers");
       }
@@ -93,15 +104,14 @@ export default function CreatePetClinicForm() {
     }
   };
 
-  const onReset = () => {
-    form.reset();
-    setSections([{ dow: "", startTime: "", endTime: "" }]);
+  const onCancel = () => {
+    router.push("/admin/pet-clinic/pet-centers");
   };
 
   return (
     <>
       <div className="flex items-start justify-between">
-        <Heading title="Create Pet Clinic" />
+        <Heading title="Edit Pet Clinic" />
       </div>
       <Separator />
       <ScrollArea className="h-[calc(100vh-200px)] px-4">
@@ -113,11 +123,11 @@ export default function CreatePetClinicForm() {
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
-                placeholder="Enter pet-clinic's name"
                 control={form.control}
                 name="name"
                 label="Name"
               />
+
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 placeholder="Contact Number"
@@ -297,18 +307,20 @@ export default function CreatePetClinicForm() {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-end space-x-4 ">
-              <div className="flex items-center justify-end space-x-4">
+            <div className="flex mt-10 items-center justify-between space-x-4">
+              <div></div>
+              <div className="flex items-center justify-between space-x-4">
                 <Button
                   disabled={loading}
+                  type="button"
                   variant="outline"
                   className="ml-auto w-full"
-                  onClick={onReset}
+                  onClick={onCancel}
                 >
-                  Reset
+                  Cancel
                 </Button>
                 <SubmitButton isLoading={loading} className="ml-auto w-full">
-                  Create
+                  Update
                 </SubmitButton>
               </div>
             </div>

@@ -3,58 +3,75 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import React, { useEffect, useState } from "react";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import UserInfo from "@/components/userInfo";
 import { useRouter } from "next/router";
-import { User } from "@/constants/data";
 import { fetchUserByID } from "@/pages/api/api";
+import { UserDetails } from "@/types/api";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
+import UserInfo from "@/components/Layout/Profile/UserInfo";
+import Loading from "@/pages/loading";
 
-export default function UserDetails() {
+const breadcrumbItems = (user: UserDetails | undefined) => [
+  { title: "Dashboard", link: "/admin/dashboard" },
+  { title: "Users", link: "/admin/users" },
+  { title: user ? user.name : "Loading...", link: "/admin/users" },
+];
+
+export default function UserDetailsPage() {
   const router = useRouter();
   const { id } = router.query;
-  const [userData, setUserData] = useState<User>();
+
+  const auth = useRecoilValue(adminAuthState);
+  const [userData, setUserData] = useState<UserDetails>();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
+    if (id) {
       setLoading(true);
-      try {
-        const data = await fetchUserByID(Number(id));
-        setUserData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch User", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const getUser = async () => {
+        try {
+          const data = await fetchUserByID(
+            Number(id),
+            auth?.accessToken as string
+          );
+          setUserData(data); // Directly set the user data
+        } catch (error) {
+          console.error("Failed to fetch User", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    getUser();
-  }, [id]);
+      getUser();
+    }
+  }, [id, auth]);
 
   if (!id) return null;
 
-  const breadcrumbItems = [
-    { title: "Dashboard", link: "/admin/dashboard" },
-    { title: "Users", link: "/admin/users" },
-    { title: `${userData?.name}`, link: "/admin/users" },
-  ];
-
   return (
     <>
-      <Header />
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-hidden pt-16">
-          <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
-            <Breadcrumbs items={breadcrumbItems} />
-            <ScrollArea className="h-[calc(100vh-220px)]">
-              <UserInfo user={userData} />
-            </ScrollArea>
+      {id && (
+        <>
+          <Header />
+          <div className="flex h-screen overflow-hidden">
+            <Sidebar />
+            <main className="flex-1 overflow-hidden pt-16">
+              <div className="flex-1 space-y-4 pt-6 md:p-8">
+                <Breadcrumbs items={breadcrumbItems(userData)} />
+                <ScrollArea className="h-[calc(100vh-120px)]">
+                  {!loading && userData ? (
+                    <UserInfo user={userData} />
+                  ) : (
+                    <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+                      <Loading />
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            </main>
           </div>
-        </main>
-      </div>
+        </>
+      )}
     </>
   );
 }

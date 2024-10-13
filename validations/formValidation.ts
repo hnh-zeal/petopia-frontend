@@ -31,8 +31,8 @@ export const UserLoginSchema = z.object({
 export const UserSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   email: z.string().email({ message: "Enter a valid email address" }),
-  phoneNumber: z.string(),
-  about: z.string(),
+  phone: z.string(),
+  address: z.string(),
 });
 
 export const ForgotPasswordSchema = z.object({
@@ -49,16 +49,18 @@ export const ChangePasswordSchema = z.object({
 });
 
 const sectionSchema = z.object({
-  dow: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
+  dow: z.string().optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
 });
 
 export const CreatePetClinicSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   contact: z.string().min(1, { message: "Contact No. is required." }),
   description: z.string(),
-  sections: z.array(sectionSchema),
+  sections: z.array(sectionSchema).optional(),
+  tools: z.any(z.string()).optional(),
+  treatment: z.any(z.string()).optional(),
 });
 
 const addOnSchema = z.object({

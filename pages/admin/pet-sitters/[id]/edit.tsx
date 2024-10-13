@@ -4,10 +4,11 @@ import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchPetSitterByID } from "@/pages/api/api";
+import Loading from "@/pages/loading";
 import { PetSitter } from "@/types/api";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
@@ -31,9 +32,7 @@ export const getServerSideProps: GetServerSideProps<{
 };
 
 export default function EditPetSitter({ petSitter }: { petSitter: PetSitter }) {
-  const router = useRouter();
-  const { id } = router.query;
-  if (!id) return null;
+  const [loading, setLoading] = useState(false);
 
   return (
     <>
@@ -44,7 +43,13 @@ export default function EditPetSitter({ petSitter }: { petSitter: PetSitter }) {
           <ScrollArea className="calc(80vh-220px)">
             <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
               <Breadcrumbs items={breadcrumbItems} />
-              <EditSitterForm petSitter={petSitter} />
+              {!loading ? (
+                <EditSitterForm petSitter={petSitter} />
+              ) : (
+                <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+                  <Loading />
+                </div>
+              )}
             </div>
           </ScrollArea>
         </main>

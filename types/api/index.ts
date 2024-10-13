@@ -89,12 +89,9 @@ export interface Doctor {
   languages: string[];
   work_experiences: WorkExperience[];
   education: Education[];
-  clinic: {
-    name: string;
-    description: string;
-    treatment: string[];
-    tools: string[];
-  };
+  isActive: boolean;
+  createdAt: Date;
+  clinic: Clinic;
   schedules: Schedule[];
 }
 
@@ -103,16 +100,14 @@ export interface Clinic {
   name: string;
   description: string;
   contact: string;
-  image?: string;
-  treatment?: string[];
-  tools?: string[];
-  facilities?: string[];
-  operatingHours?: OperatingHour[];
-  servicesProvided?: string[];
-  photos?: string[];
+  mainImage: string;
+  treatment: string[];
+  tools: string[];
+  operatingHours: { dow: string; startTime: string; endTime: string }[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  doctors: Doctor[];
 }
 
 export interface OperatingHour {
@@ -348,4 +343,36 @@ export interface Appointments {
 export interface OverviewData {
   count: PieData;
   appointments: Appointments;
+}
+
+export interface PackageHistory {
+  id: number;
+  expiredDate: string;
+  package: {
+    name: string;
+    price: string;
+    duration: number;
+    durationType: string;
+  };
+}
+
+export interface UserDetails {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  birthDate: string;
+  address: string;
+  city: string;
+  country: string;
+  profileUrl: string;
+  lastLoginDate: string;
+  currentLoginDate: string;
+  isActive: boolean;
+  createdAt: string;
+  pets: Pet[];
+  clinicAppointments: ClinicAppointment[];
+  careAppointments: CareAppointment[];
+  bookings: CafeBooking[];
+  packageHistory: PackageHistory[];
 }

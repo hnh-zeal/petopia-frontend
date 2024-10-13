@@ -129,13 +129,14 @@ export async function fetchUsers(
   return data;
 }
 
-export async function fetchUserByID(id: number) {
+export async function fetchUserByID(id: number, adminToken: string) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
       },
     }
   );
@@ -152,6 +153,27 @@ export async function updateUserWithToken(token: string, formValues: any) {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function updateUserByID(
+  id: number,
+  adminToken: string,
+  formValues: any
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
       },
       body: JSON.stringify(formValues),
     }

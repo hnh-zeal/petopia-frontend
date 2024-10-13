@@ -1,8 +1,8 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Heading } from "../ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,13 +24,22 @@ import { createPetSitter, fetchServices } from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
+import { useFieldArray, useForm } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Plus, Trash } from "lucide-react";
 
-const CreatePetSitterSchema = z.object({
+// Schema for validation using zod
+export const CreatePetSitterSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   email: z.string().email({ message: "Enter a valid email address" }),
   phoneNumber: z.string(),
-  serviceIds: z.array(z.any()).nonempty("Please select at least one person"),
-  about: z.string(),
+  serviceIds: z.array(z.any()).nonempty("Please select at least one service."),
+  specialties: z.any(z.string()).optional(),
+  languages: z.any(z.string()).optional(),
+  about: z
+    .string()
+    .min(1, { message: "About section is required." })
+    .optional(),
 });
 
 type DoctorFormValue = z.infer<typeof CreatePetSitterSchema>;
@@ -40,11 +48,33 @@ export default function CreatePetSitterForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
-
   const router = useRouter();
   const auth = useRecoilValue(userAuthState);
+
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreatePetSitterSchema),
+    defaultValues: {
+      specialties: [" "],
+      languages: [" "],
+    },
+  });
+
+  const {
+    fields: specialtiesFields,
+    append: appendSpecialty,
+    remove: removeSpecialty,
+  } = useFieldArray({
+    control: form.control,
+    name: "specialties",
+  });
+
+  const {
+    fields: languagesFields,
+    append: appendLanguage,
+    remove: removeLanguage,
+  } = useFieldArray({
+    control: form.control,
+    name: "languages",
   });
 
   useEffect(() => {
@@ -52,8 +82,7 @@ export default function CreatePetSitterForm() {
       setLoading(true);
       try {
         const data = await fetchServices({});
-        const services = data.careServices;
-        setServices(services);
+        setServices(data.careServices);
       } catch (error) {
         console.error("Failed to fetch Care Services", error);
       } finally {
@@ -125,14 +154,14 @@ export default function CreatePetSitterForm() {
             </div>
 
             <div className="grid grid-cols-2 gap-6 w-full">
+              {/* Multi-Select for Services */}
               <FormField
                 control={form.control}
                 name="serviceIds"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Select Services <span className="text-red-400">*</span>{" "}
-                      <></>
+                      Select Services <span className="text-red-400">*</span>
                     </FormLabel>
                     <FormControl>
                       <MultiSelect
@@ -146,6 +175,7 @@ export default function CreatePetSitterForm() {
                   </FormItem>
                 )}
               />
+
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 placeholder="Phone Number"
@@ -154,6 +184,86 @@ export default function CreatePetSitterForm() {
                 label="Phone Number"
                 required={true}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 w-full">
+              <div className="flex flex-col gap-3">
+                <FormLabel>Specialties</FormLabel>
+                <div className="flex flex-col gap-3">
+                  {/* Map over the specialties fields */}
+                  {specialtiesFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-3 items-center">
+                      <Input
+                        {...form.register(`specialties.${index}` as const)}
+                        placeholder="Enter specialty"
+                      />
+
+                      {/* Plus button: only on the last item */}
+                      {index === specialtiesFields.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => appendSpecialty("")}
+                          className="px-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {/* Trash button: shown if there is more than one input */}
+                      {specialtiesFields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => removeSpecialty(index)}
+                          className="px-2"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <FormLabel>Languages</FormLabel>
+                <div className="flex flex-col gap-3">
+                  {/* Map over the specialties fields */}
+                  {languagesFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-3 items-center">
+                      <Input
+                        {...form.register(`languages.${index}` as const)}
+                        placeholder="Enter languages"
+                      />
+
+                      {/* Plus button: only on the last item */}
+                      {index === languagesFields.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => appendLanguage("")}
+                          className="px-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {/* Trash button: shown if there is more than one input */}
+                      {languagesFields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => removeLanguage(index)}
+                          className="px-2"
+                        >
+                          <Trash className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="w-full">
@@ -185,40 +295,6 @@ export default function CreatePetSitterForm() {
             </div>
           </form>
         </Form>
-
-        {/* <FormField
-              control={form.control}
-              name="serviceIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel></FormLabel>
-                  <MultiSelector
-                    onValuesChange={field.onChange}
-                    values={field.value}
-                  >
-                    <MultiSelectorTrigger>
-                      <MultiSelectorInput placeholder="Select services" />
-                    </MultiSelectorTrigger>
-                    <MultiSelectorContent>
-                      <MultiSelectorList>
-                        {servicesData.careServices?.map(
-                          (service: CareService) => (
-                            <MultiSelectorItem
-                              key={service.name}
-                              value={service.name}
-                            >
-                              <span>{service.name}</span>
-                            </MultiSelectorItem>
-                          )
-                        )}
-                      </MultiSelectorList>
-                    </MultiSelectorContent>
-                  </MultiSelector>
-                  <FormDescription>Select Services</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
       </ScrollArea>
     </>
   );

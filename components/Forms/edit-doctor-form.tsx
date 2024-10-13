@@ -47,6 +47,7 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
       email: doctor.email,
       profile: doctor.profileUrl,
       phoneNumber: doctor.phoneNumber,
+      clinicId: String(doctor.clinic.id),
       about: doctor.about,
       work_experiences: doctor.work_experiences,
       education: doctor.education,

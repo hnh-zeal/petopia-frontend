@@ -12,7 +12,14 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { UserSchema } from "@/validations/formValidation";
 import { useEffect, useState } from "react";
-import { fetchUserByID, fetchPetClinics } from "@/pages/api/api";
+import {
+  fetchUserByID,
+  fetchPetClinics,
+  updateUserByID,
+} from "@/pages/api/api";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
+import { UserDetails } from "@/types/api";
 
 type UserFormValue = z.infer<typeof UserSchema>;
 interface EditUserFormProps {
@@ -22,46 +29,23 @@ interface EditUserFormProps {
 export default function EditUserForm({ id }: EditUserFormProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const auth = useRecoilValue(adminAuthState);
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState({});
-  const [petClinicsData, setPetClinicsData] = useState({
-    clinics: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
+  const [userData, setUserData] = useState<UserDetails>();
 
   const form = useForm<UserFormValue>({
     resolver: zodResolver(UserSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phoneNumber: "",
-      about: "",
-    },
+    defaultValues: {},
   });
 
   useEffect(() => {
-    const getPetClinics = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPetClinics();
-        setPetClinicsData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const getUser = async () => {
       setLoading(true);
       try {
-        const data = await fetchUserByID(Number(id));
+        const data = await fetchUserByID(
+          Number(id),
+          auth?.accessToken as string
+        );
         setUserData((prevState) => ({
           ...prevState,
           ...data,
@@ -75,31 +59,27 @@ export default function EditUserForm({ id }: EditUserFormProps) {
     };
 
     getUser();
-    getPetClinics();
-  }, [id, form]);
+  }, [id, auth, form]);
 
   const onSubmit = async (formValues: UserFormValue) => {
     setLoading(true);
     try {
       // Call API
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formValues),
-        }
+      const data = await updateUserByID(
+        id,
+        auth?.accessToken as string,
+        formValues
       );
-
-      const data = await response.json();
       if (data.error) {
         toast({
           variant: "destructive",
           description: `${data.message}`,
         });
       } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
         router.push("/admin/users");
       }
     } finally {
@@ -126,25 +106,30 @@ export default function EditUserForm({ id }: EditUserFormProps) {
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
+              placeholder="Enter User's name"
+              value={userData?.name}
               name="name"
               label="Name"
             />
 
             <CustomFormField
               fieldType={FormFieldType.EMAIL}
-              placeholder="Enter user's email"
+              placeholder="Enter your email"
               control={form.control}
               name="email"
               label="Email"
+              value={userData?.email}
+              isDisabled={true}
             />
           </div>
 
           <div className="flex flex-col gap-6 xl:flex-row">
             <CustomFormField
               fieldType={FormFieldType.INPUT}
-              placeholder="Phone Number"
+              placeholder="Enter User's phone number"
               control={form.control}
-              name="phoneNumber"
+              value={userData?.phone}
+              name="phone"
               label="Phone Number"
             />
           </div>
@@ -152,19 +137,20 @@ export default function EditUserForm({ id }: EditUserFormProps) {
           <div className="flex flex-col gap-6 xl:flex-row">
             <CustomFormField
               fieldType={FormFieldType.TEXTAREA}
-              placeholder="About"
+              placeholder="Address"
               control={form.control}
-              name="about"
-              label="About"
+              value={userData?.address}
+              name="address"
+              label="Address"
             />
           </div>
 
-          <div className="flex mt-10 items-center justify-between space-x-4">
-            <div></div>
-            <div className="flex items-center justify-between space-x-4">
+          <div className="flex mt-10 items-center justify-end space-x-4">
+            <div className="flex items-center justify-end space-x-4">
               <Button
                 disabled={loading}
                 variant="outline"
+                type="button"
                 className="ml-auto w-full"
                 onClick={onCancel}
               >

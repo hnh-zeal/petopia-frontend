@@ -1,36 +1,40 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { fetchDoctorByID } from "@/pages/api/api";
+import { fetchPetClinicByID } from "@/pages/api/api";
 import React, { useState } from "react";
 import type { GetServerSideProps } from "next";
-import DoctorInfo from "@/components/Layout/Profile/DoctorInfo";
-import { Doctor } from "@/types/api";
+import PetClinicInfo from "@/components/Layout/Profile/PetClinicInfo";
+import { Clinic } from "@/types/api";
 import Loading from "@/pages/loading";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const breadcrumbItems = (doctor: any) => [
+const breadcrumbItems = (petClinic: Clinic) => [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Doctors", link: "/admin/doctors" },
-  { title: `${doctor.name}`, link: "/admin/doctors/create" },
+  { title: "Pet Centers", link: "/admin/pet-clinic/pet-centers" },
+  { title: `${petClinic.name}`, link: "/admin/pet-clinic/pet-centers/create" },
 ];
 
 export const getServerSideProps: GetServerSideProps<{
-  doctor: Doctor;
+  petClinic: Clinic;
 }> = async (context) => {
   const { id } = context.params as { id: string };
   try {
-    const doctor = await fetchDoctorByID(Number(id));
-    return { props: { doctor } };
+    const petClinic = await fetchPetClinicByID(Number(id));
+    return { props: { petClinic } };
   } catch (error) {
-    console.error("Error fetching doctor:", error);
+    console.error("Error fetching petClinic:", error);
     return {
       notFound: true,
     };
   }
 };
 
-export default function DoctorDetails({ doctor }: { doctor: Doctor }) {
+export default function PetClinicDetailsPage({
+  petClinic,
+}: {
+  petClinic: Clinic;
+}) {
   const [loading, setLoading] = useState(false);
 
   return (
@@ -40,10 +44,10 @@ export default function DoctorDetails({ doctor }: { doctor: Doctor }) {
         <Sidebar />
         <main className="flex-1 overflow-hidden pt-16">
           <div className="flex-1 space-y-4 pt-6 md:p-8">
-            <Breadcrumbs items={breadcrumbItems(doctor)} />
+            <Breadcrumbs items={breadcrumbItems(petClinic)} />
             <ScrollArea className="h-[calc(100vh-120px)]">
               {!loading ? (
-                <DoctorInfo doctor={doctor} />
+                <PetClinicInfo petClinic={petClinic} />
               ) : (
                 <div className="flex items-center justify-center h-[calc(100vh-220px)]">
                   <Loading />

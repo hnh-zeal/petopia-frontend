@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Heading } from "../ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -23,14 +23,9 @@ import {
 import { ScrollArea } from "../ui/scroll-area";
 import { PetSitter } from "@/types/api";
 import { fetchServices, updatePetSitterByID } from "@/pages/api/api";
-
-const CreatePetSitterSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  email: z.string().email({ message: "Enter a valid email address" }),
-  phoneNumber: z.string(),
-  serviceIds: z.array(z.any()).nonempty("Please select at least one person"),
-  about: z.string(),
-});
+import { CreatePetSitterSchema } from "./create-sitter-form";
+import { Input } from "../ui/input";
+import { Plus, Trash, Trash2 } from "lucide-react";
 
 type PetSitterFormValue = z.infer<typeof CreatePetSitterSchema>;
 interface EditPetSitterFormProps {
@@ -53,7 +48,28 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
       serviceIds: petServices,
       phoneNumber: petSitter.phoneNumber,
       about: petSitter.about,
+      specialties:
+        petSitter.specialties?.length > 0 ? petSitter.specialties : [" "],
+      languages: petSitter.languages?.length > 0 ? petSitter.languages : [" "],
     },
+  });
+
+  const {
+    fields: specialtiesFields,
+    append: appendSpecialty,
+    remove: removeSpecialty,
+  } = useFieldArray({
+    control: form.control,
+    name: "specialties",
+  });
+
+  const {
+    fields: languagesFields,
+    append: appendLanguage,
+    remove: removeLanguage,
+  } = useFieldArray({
+    control: form.control,
+    name: "languages",
   });
 
   useEffect(() => {
@@ -163,6 +179,81 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
                 name="phoneNumber"
                 label="Phone Number"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 w-full">
+              <div className="flex flex-col gap-3">
+                <FormLabel>Specialties</FormLabel>
+                <div className="flex flex-col gap-3">
+                  {/* Map over the specialties fields */}
+                  {specialtiesFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-3 items-center">
+                      <Input
+                        {...form.register(`specialties.${index}` as const)}
+                        placeholder="Enter specialty"
+                      />
+
+                      {index === specialtiesFields.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => appendSpecialty("")}
+                          className="px-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {specialtiesFields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => removeSpecialty(index)}
+                          className="px-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <FormLabel>Languages</FormLabel>
+                <div className="flex flex-col gap-3">
+                  {languagesFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-3 items-center">
+                      <Input
+                        {...form.register(`languages.${index}` as const)}
+                        placeholder="Enter languages"
+                      />
+
+                      {index === languagesFields.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => appendLanguage("")}
+                          className="px-2"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {languagesFields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => removeLanguage(index)}
+                          className="px-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-6 xl:flex-row">

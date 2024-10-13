@@ -9,7 +9,7 @@ const breadcrumbItems = [
   { title: "Pet Centers", link: "/dashboard/pet-centers" },
 ];
 
-export default function Users() {
+export default function PetClinicsPage() {
   return (
     <>
       <Header />
