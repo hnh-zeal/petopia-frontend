@@ -136,7 +136,7 @@ export const adminColumns: ColumnDef<CafeBooking>[] = [
         {row.original?.status ? (
           <Badge className="bg-green-500">Booked</Badge>
         ) : (
-          <Badge variant="destructive">Cancelled</Badge>
+          <Badge className="bg-gray-500">Cancelled</Badge>
         )}
       </>
     ),

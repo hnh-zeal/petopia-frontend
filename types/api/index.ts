@@ -7,7 +7,7 @@ export interface RoomsData {
 }
 
 export interface PetClinicData {
-  petClinics: [];
+  clinics: Clinic[];
   count: number;
   page: number;
   pageSize: number;
@@ -150,6 +150,9 @@ export interface User {
   pets?: Pet[];
   packages?: Packages[];
   clinicAppointments?: ClinicAppointment[];
+  careAppointments?: CareAppointment[];
+  bookings?: CafeBooking[];
+  packageHistory: PackageHistory[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -250,7 +253,7 @@ export interface CafeRoom {
 }
 
 export interface CafeBooking {
-  id: string;
+  id: number;
   room: CafeRoom;
   user: User;
   guests: number;
@@ -317,6 +320,7 @@ export interface CareAppointment {
   status: string;
   type: string;
   totalPrice: number;
+  duration: number;
   createdAt: string;
   updatedAt: string;
   user: User;
@@ -348,12 +352,7 @@ export interface OverviewData {
 export interface PackageHistory {
   id: number;
   expiredDate: string;
-  package: {
-    name: string;
-    price: string;
-    duration: number;
-    durationType: string;
-  };
+  package: Packages;
 }
 
 export interface UserDetails {

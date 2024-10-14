@@ -1,7 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { DoctorClient } from "@/components/Tables/doctor-tables/client";
 import { CareServicesClient } from "@/components/Tables/pet-care-tables/client";
 import { Toaster } from "@/components/ui/toaster";
 import { ScrollArea } from "@radix-ui/react-scroll-area";

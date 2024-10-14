@@ -2,6 +2,7 @@ import type { GetServerSideProps } from "next";
 import { fetchCafeRoomByID } from "@/pages/api/api";
 import { CafeRoom } from "@/types/api";
 import CafeRoomDetails from "@/components/Layout/Pet Cafe/CafeRoomDetails";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export const getServerSideProps: GetServerSideProps<{
   cafeRoom: CafeRoom;
@@ -18,9 +19,17 @@ export const getServerSideProps: GetServerSideProps<{
   }
 };
 
+const breadcrumbItems = (cafeRoom: CafeRoom) => [
+  { title: "Pet Cafe Rooms", link: "/pet-care/rooms" },
+  { title: `${cafeRoom.name}`, link: `/pet-care/rooms/${cafeRoom.id}` },
+];
+
 export default function RoomDetailPage({ cafeRoom }: { cafeRoom: CafeRoom }) {
   return (
     <>
+      <div className="container mx-auto mt-4 p-4">
+        <Breadcrumbs items={breadcrumbItems(cafeRoom)} />
+      </div>
       <CafeRoomDetails cafeRoom={cafeRoom} />
     </>
   );

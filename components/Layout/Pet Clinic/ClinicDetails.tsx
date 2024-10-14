@@ -12,15 +12,16 @@ import {
   Star,
 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Doctor } from "@/types/api";
+import { Clinic, Doctor } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/router";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
-export default function ClinicDetails({ clinic }: any) {
+export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
   const router = useRouter();
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-4">
       <div className="sticky top-0 bg-white z-10 py-4">
         <h1 className="text-3xl font-bold mb-6">{clinic.name}</h1>
       </div>

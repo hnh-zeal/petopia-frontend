@@ -61,7 +61,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getDayName } from "./DoctorSchedule";
-import { AppointmentSlot, Schedule } from "@/constants/data";
+import { AppointmentSlot } from "@/constants/data";
 
 interface AppointmentDetailsProps {
   appointment: ClinicAppointment;

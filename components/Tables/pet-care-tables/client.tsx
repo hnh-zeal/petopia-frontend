@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchServices } from "@/pages/api/api";
+import Loading from "@/pages/loading";
 
 export const CareServicesClient = () => {
   const router = useRouter();
@@ -71,7 +72,11 @@ export const CareServicesClient = () => {
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </>
   );
 };

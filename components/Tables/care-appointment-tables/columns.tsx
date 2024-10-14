@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { UserCellAction } from "./cell-action";
+import { AdminCellAction, UserCellAction } from "./cell-action";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 import UserRow from "../userRow";
@@ -66,6 +66,8 @@ export const userColumns: ColumnDef<CareAppointment>[] = [
           <Badge className="bg-green-500">Accepted</Badge>
         ) : row.original?.status === "PENDING" ? (
           <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
         ) : (
           <Badge variant="destructive">Rejected</Badge>
         )}
@@ -74,7 +76,13 @@ export const userColumns: ColumnDef<CareAppointment>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "PENDING" && (
+          <UserCellAction data={row.original} />
+        )}
+      </>
+    ),
   },
 ];
 
@@ -122,15 +130,15 @@ export const adminColumns: ColumnDef<CareAppointment>[] = [
   {
     accessorKey: "totalPrice",
     header: ({ column }) => <SortColumn column={column} title="Price" />,
-    cell: ({ row }) => <span>{row.original.totalPrice} ฿</span>,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
   },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
-    cell: ({ row }) => (
-      <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
-    ),
-  },
+  // {
+  //   accessorKey: "createdAt",
+  //   header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
+  //   cell: ({ row }) => (
+  //     <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
+  //   ),
+  // },
   {
     accessorKey: "status",
     header: ({ column }) => <SortColumn column={column} title="Status" />,
@@ -140,6 +148,8 @@ export const adminColumns: ColumnDef<CareAppointment>[] = [
           <Badge className="bg-green-500">Accepted</Badge>
         ) : row.original?.status === "PENDING" ? (
           <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
         ) : (
           <Badge variant="destructive">Rejected</Badge>
         )}
@@ -148,6 +158,6 @@ export const adminColumns: ColumnDef<CareAppointment>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => <AdminCellAction data={row.original} />,
   },
 ];

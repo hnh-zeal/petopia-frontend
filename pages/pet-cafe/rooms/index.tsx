@@ -1,15 +1,15 @@
 import { fetchCafeRooms } from "../../api/api";
 
 import type { GetServerSideProps } from "next";
-import { RoomsData } from "@/types/api";
+import { CafeRoom, RoomsData } from "@/types/api";
 import CafeRooms from "@/components/Layout/Pet Cafe/CafeRooms";
 
 export const getServerSideProps: GetServerSideProps<{
-  cafeRoomData: RoomsData;
+  cafeRooms: CafeRoom[];
 }> = async (context) => {
   try {
     const cafeRoomData = await fetchCafeRooms();
-    return { props: { cafeRoomData } };
+    return { props: { cafeRooms: cafeRoomData.rooms } };
   } catch (error) {
     console.error("Error fetching doctor:", error);
     return {
@@ -18,14 +18,10 @@ export const getServerSideProps: GetServerSideProps<{
   }
 };
 
-export default function CafeRoomPage({
-  cafeRoomData,
-}: {
-  cafeRoomData: RoomsData;
-}) {
+export default function CafeRoomPage({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
   return (
     <>
-      <CafeRooms cafeRoomData={cafeRoomData} />
+      <CafeRooms cafeRooms={cafeRooms} />
     </>
   );
 }

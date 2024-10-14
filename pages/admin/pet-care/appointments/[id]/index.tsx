@@ -9,7 +9,8 @@ import { CareAppointment } from "@/types/api";
 
 const breadcrumbItems = (appointment: CareAppointment) => [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Pet Care", link: "/admin/pet-care/appointments" },
+  { title: "Pet Care", link: "/admin/pet-care/services" },
+  { title: "Appointments", link: "/admin/pet-care/appointments" },
   { title: `Appointment #${appointment.id}`, link: "" },
 ];
 

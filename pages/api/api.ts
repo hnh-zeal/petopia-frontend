@@ -162,6 +162,27 @@ export async function updateUserWithToken(token: string, formValues: any) {
   return data;
 }
 
+export async function updatePetWithToken(
+  id: number,
+  token: string,
+  formValues: any
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pets/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function updateUserByID(
   id: number,
   adminToken: string,
@@ -1001,6 +1022,27 @@ export async function createCareAppointment(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function updateCareAppointment(
+  id: number,
+  formValues: any,
+  token: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/care-appointments/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(formValues),
     }

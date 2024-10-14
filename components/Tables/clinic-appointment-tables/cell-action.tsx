@@ -81,7 +81,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
       } else {
         toast({
           variant: "success",
-          description: "Appointment canceled successfully.",
+          description: "Appointment cancelled successfully.",
         });
         window.location.reload();
       }

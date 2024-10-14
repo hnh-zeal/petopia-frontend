@@ -10,7 +10,7 @@ import CustomFormField, { FormFieldType } from "../custom-form-field";
 import { useToast } from "../ui/use-toast";
 import { EditProfileSchema } from "@/validations/formValidation";
 import { useEffect, useRef, useState } from "react";
-import { PencilIcon } from "lucide-react";
+import { Edit, PencilIcon } from "lucide-react";
 import { format } from "date-fns";
 import {
   deleteFile,
@@ -205,7 +205,9 @@ export default function EditProfileForm({ user }: EditProfileProps) {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">User Information</h2>
           {!isEditing && (
-            <Button onClick={() => setIsEditing(true)}>Edit</Button>
+            <Button onClick={() => setIsEditing(true)}>
+              <Edit className="h-4 w-4 mr-3" /> Edit
+            </Button>
           )}
         </div>
         {isEditing ? (

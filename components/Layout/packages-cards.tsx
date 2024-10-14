@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import Pagination from "../Tables/pagination";
 import { Separator } from "@/components/ui/separator";
 import { Heading } from "../ui/heading";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Packages, PackagesData } from "@/types/api";
@@ -185,7 +185,10 @@ export default function PackagesCards({
                     </div>
                   </CardContent>
                   <CardFooter className="flex flex-row justify-end">
-                    <Button onClick={() => onEdit(pkg)}>Edit</Button>
+                    <Button onClick={() => onEdit(pkg)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}

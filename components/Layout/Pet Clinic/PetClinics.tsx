@@ -7,29 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { truncate } from "@/utils/truncate";
-import { PetClinic } from "@/constants/data";
-import { Clock, Filter, MapPin, Phone, Search, Star } from "lucide-react";
+import { Clock, Filter, Phone, Search, Star } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { format } from "date-fns";
-
-const formatTime = (time: string) => {
-  const [hours, minutes] = time.split(":");
-  const date = new Date();
-  date.setHours(Number(hours), Number(minutes));
-  return format(date, "p"); // 'p' is for formatting time in AM/PM format
-};
+import { Clinic, PetClinicData } from "@/types/api";
 
 export default function PetClinics({
   clinicData,
 }: {
-  clinicData: { clinics: PetClinic[] };
+  clinicData: PetClinicData;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [clinics, setClinics] = useState(clinicData.clinics || []);
 
   useEffect(() => {
-    const filteredClinics = clinicData.clinics.filter((clinic: PetClinic) =>
+    const filteredClinics = clinicData.clinics.filter((clinic: Clinic) =>
       clinic.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setClinics(filteredClinics);
@@ -73,7 +65,7 @@ export default function PetClinics({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {clinics.length > 0 ? (
-            clinics.map((clinic: PetClinic, index: number) => (
+            clinics.map((clinic: Clinic, index: number) => (
               <motion.div
                 key={clinic.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -82,7 +74,7 @@ export default function PetClinics({
               >
                 <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 rounded-lg">
                   <Image
-                    src={clinic.image || "/PetCare/petCareService.jpg"}
+                    src={clinic.mainImage || "/PetCare/petCareService.jpg"}
                     alt={clinic.name}
                     width={600}
                     height={300}
@@ -95,6 +87,7 @@ export default function PetClinics({
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">
                       {truncate(clinic.description, 100)}
                     </p>
+
                     <div className="flex items-center text-gray-500 mb-2">
                       <Phone className="mr-2 h-4 w-4" />
                       <span>{clinic.contact || "(555) 123-4567"}</span>

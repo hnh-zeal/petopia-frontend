@@ -6,123 +6,128 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/router";
 import { truncate } from "@/utils/truncate";
-import { ChevronDown, Search, Star } from "lucide-react";
+import { ChevronDown, Filter, Phone, Search, Star } from "lucide-react";
+import { CafeRoom } from "@/types/api";
+import { motion } from "framer-motion";
 
-interface CafeRoom {
-  id: string;
-  name: string;
-  description: string;
-  mainImage: string;
-  images: string[];
-  price: number;
-  originalPrice: number;
-  promotion: string;
-  rating: number;
-  reviews: number;
-}
-
-export default function CafeRooms({
-  cafeRoomData,
-}: {
-  cafeRoomData: { rooms: CafeRoom[] };
-}) {
+export default function CafeRooms({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [rooms, setRooms] = useState(cafeRoomData.rooms || []);
+  const [rooms, setRooms] = useState(cafeRooms || []);
 
   useEffect(() => {
-    const filteredRooms = cafeRoomData.rooms.filter((room) =>
+    const filteredRooms = cafeRooms.filter((room) =>
       room.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setRooms(filteredRooms);
-  }, [searchTerm, cafeRoomData.rooms]);
+  }, [searchTerm, cafeRooms]);
 
   const router = useRouter();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Pet Cafe Rooms</h1>
-      <Separator />
-      <div className="flex gap-4 my-6">
-        <div className="relative flex-grow">
-          <Input
-            type="text"
-            placeholder="Search by room name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pr-10"
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <Search className="h-5 w-5 text-gray-400" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-4xl font-bold text-center text-indigo-900 mb-8"
+        >
+          Pet Cafe Rooms
+        </motion.h1>
+        <Separator className="mb-8" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex justify-center mb-6"
+        >
+          <div className="relative w-full max-w-xl">
+            <Input
+              type="text"
+              placeholder="Search cafe room..."
+              className="w-full px-4 py-3 rounded-full border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
           </div>
+          <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
+            <Filter className="mr-2 h-4 w-4" size={18} />
+            Filter
+          </Button>
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {rooms.length > 0 ? (
+            rooms.map((room, index) => (
+              <motion.div
+                key={room.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 rounded-lg">
+                  <Image
+                    src={room.mainImage || "/Pet Cafe/cafeRoom.jpg"}
+                    alt={room.name}
+                    width={600}
+                    height={300}
+                    className="w-full h-48 object-cover"
+                  />
+                  <CardContent className="p-6">
+                    <h2 className="text-xl font-semibold text-indigo-700 mb-1">
+                      {room.name}
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                      {truncate(room.description, 150)}
+                    </p>
+
+                    <div className="flex items-center text-gray-500 mb-2">
+                      <span className="text-lg font-bold">
+                        $ {room.price.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-gray-500 mb-2">
+                      <Phone className="mr-2 h-4 w-4" />
+                      <span>{room.contact || "(555) 123-4567"}</span>
+                    </div>
+                    {/* <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < room.rating
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm text-gray-600 ml-2">
+                        ({room.reviews} reviews)
+                      </span>
+                    </div> */}
+                  </CardContent>
+                  <CardFooter className="bg-gray-50 p-4">
+                    <Button
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
+                      onClick={() => router.push(`/pet-cafe/rooms/${room.id}`)}
+                    >
+                      View details
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))
+          ) : (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="col-span-3 text-center text-gray-500 text-xl mt-8"
+            >
+              No room found. Please try a different search term.
+            </motion.p>
+          )}
         </div>
-        <Button>
-          Filter <ChevronDown className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rooms.length > 0 ? (
-          rooms.map((room) => (
-            <Card key={room.id} className="overflow-hidden">
-              <div className="relative h-48">
-                <Image
-                  // src={room.mainImage}
-                  src="/Pet Cafe/cafeRoom.jpg"
-                  alt={room.name}
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-              <CardContent className="p-4">
-                <h2 className="text-xl font-semibold text-primary mb-2">
-                  {room.name}
-                </h2>
-                <p className="text-sm text-gray-600 mb-4">
-                  {truncate(room.description, 200)}
-                </p>
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <span className="text-lg font-bold">
-                      ${room.price.toFixed(2)}
-                    </span>
-                    <span className="text-sm text-gray-500 line-through ml-2">
-                      ${room.price.toFixed(2)}
-                    </span>
-                  </div>
-                  <span className="text-sm text-green-600">
-                    {room.promotion}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < room.rating
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="text-sm text-gray-600 ml-2">
-                    ({room.reviews} reviews)
-                  </span>
-                </div>
-              </CardContent>
-              <CardFooter className="justify-end p-4 pt-0">
-                <Button
-                  variant="default"
-                  onClick={() => router.push(`/pet-cafe/rooms/${room.id}`)}
-                >
-                  View details
-                </Button>
-              </CardFooter>
-            </Card>
-          ))
-        ) : (
-          <p className="col-span-3 text-center text-gray-500">
-            No rooms found.
-          </p>
-        )}
       </div>
     </div>
   );

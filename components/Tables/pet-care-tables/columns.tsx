@@ -1,11 +1,12 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { CareService } from "@/constants/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 import { truncate } from "@/utils/truncate";
+import { serviceType } from "@/components/Forms/create-services-form";
+import { CareService } from "@/types/api";
 
 export const columns: ColumnDef<CareService>[] = [
   // {
@@ -34,6 +35,25 @@ export const columns: ColumnDef<CareService>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => <SortColumn column={column} title="Name" />,
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => <SortColumn column={column} title="Type" />,
+    cell: ({ row }) => {
+      const matchedType = serviceType.find(
+        (type) => type.value === row.original.type
+      );
+      return (
+        <span className="text-pretty">
+          {matchedType ? matchedType.name : "Unknown"}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "price",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.price}</span>,
   },
   {
     accessorKey: "description",
