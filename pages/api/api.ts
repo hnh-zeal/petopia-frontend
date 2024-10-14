@@ -502,6 +502,19 @@ export async function fetchServiceByID(id: number) {
   return data;
 }
 
+export async function createCafePets(formValues: any, adminToken: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cafe-pets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify(formValues),
+  });
+
+  return await response.json();
+}
+
 export async function fetchCafePets(queryData?: any) {
   const { page, pageSize } = queryData;
   const query = {
@@ -620,7 +633,6 @@ export async function updateCafePetByID(id: number, formValues: any) {
 }
 
 export async function fetchRoomSlots(queryData: any) {
-  console.log(queryData);
   const { roomId, status, date, page, pageSize } = queryData;
   const query = {
     ...(roomId && { roomId }),
@@ -648,7 +660,6 @@ export async function fetchRoomSlots(queryData: any) {
 }
 
 export async function submitBooking(formValues: any, token: string) {
-  console.log(formValues);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/room-booking`,
     {
@@ -673,7 +684,7 @@ export async function fetchRoomBooking(queryData: any, token?: string) {
     ...(roomId && { roomId }),
     ...(status && { status }),
     ...(page && { page }),
-    ...(date && { date: date.toISOString() }),
+    ...(date && { date: format(date, "yyyy-MM-dd") }),
     ...(pageSize && { pageSize }),
   };
 
@@ -776,7 +787,7 @@ export async function fetchClinicAppointments(queryData: any, token?: string) {
   const query = {
     ...(userId && { userId }),
     ...(doctorId && { doctorId }),
-    ...(date && { date: date.toISOString() }),
+    ...(date && { date: format(date, "yyyy-MM-dd") }),
     ...(page && { page }),
     ...(pageSize && { pageSize }),
   };
@@ -1004,7 +1015,7 @@ export async function fetchCareAppointments(queryData: any, token?: string) {
 
   const query = {
     ...(userId && { userId }),
-    ...(date && { date: date.toISOString() }),
+    ...(date && { date: format(date, "yyyy-MM-dd") }),
     ...(page && { page }),
     ...(pageSize && { pageSize }),
   };

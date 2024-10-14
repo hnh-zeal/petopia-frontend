@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { fetchAppointmentSlots } from "@/pages/api/api";
 
 import { Separator } from "@/components/ui/separator";
+import Loading from "@/pages/loading";
 
 export const AvailableSlotsClient = ({ doctor }: any) => {
   const [loading, setLoading] = useState(true);
@@ -57,7 +58,11 @@ export const AvailableSlotsClient = ({ doctor }: any) => {
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </div>
   );
 };

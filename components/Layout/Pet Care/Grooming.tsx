@@ -113,7 +113,6 @@ export default function GroomingAppointment({
         { type: "CARE" },
         auth?.accessToken as string
       );
-      console.log(discountData);
       const addOnPrice =
         watchFields.addOns?.reduce((total: number, addOnId: any) => {
           const addOn = service.addOns?.find((a) => a.id === addOnId);
@@ -122,7 +121,6 @@ export default function GroomingAppointment({
 
       const discountPercent = discountData?.package?.discountPercent || 0;
       setDiscountPercent(discountPercent);
-      console.log(discountPercent);
       const discountAmount = (basePrice + addOnPrice) * (discountPercent / 100);
       setDiscount(discountAmount);
       setTotalPrice(basePrice + addOnPrice - discountAmount);

@@ -105,7 +105,6 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
   };
 
   const onCancel = () => {
-    console.log("....");
     onClose();
     form.reset();
   };

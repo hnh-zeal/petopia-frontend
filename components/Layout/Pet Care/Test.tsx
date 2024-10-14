@@ -476,12 +476,7 @@ export default function PetGroomingBooking() {
             Next <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button
-            onClick={() => console.log("Booking submitted")}
-            className="ml-auto"
-          >
-            Confirm Booking
-          </Button>
+          <Button className="ml-auto">Confirm Booking</Button>
         )}
       </div>
     </div>

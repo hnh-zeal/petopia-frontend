@@ -223,7 +223,7 @@ export interface CareService {
 }
 
 export interface CafeRoom {
-  id: string;
+  id: number;
   name: string;
   roomNo: string;
   roomType: string;

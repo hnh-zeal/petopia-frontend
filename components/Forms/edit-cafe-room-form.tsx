@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -13,10 +20,14 @@ import { CreateCafeRoomSchema } from "@/validations/formValidation";
 import { useState } from "react";
 import { updateCafeRoomByID } from "@/pages/api/api";
 import { ScrollArea } from "../ui/scroll-area";
+import { SelectItem } from "../ui/select";
+import { roomType } from "@/constants/data";
+import { Input } from "../ui/input";
+import { CafeRoom } from "@/types/api";
 
 type ServiceFormValue = z.infer<typeof CreateCafeRoomSchema>;
 
-export default function EditCafeRoomForm({ cafeRoom }: any) {
+export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -88,24 +99,46 @@ export default function EditCafeRoomForm({ cafeRoom }: any) {
             </div>
 
             <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Price"
+              <FormField
                 control={form.control}
                 name="price"
-                label="Price"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="shad-input-label">
+                      Price <span className="text-red-400">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Price"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      />
+                    </FormControl>
+                    <FormMessage className="shad-error" />
+                  </FormItem>
+                )}
               />
 
               <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Room Type."
+                fieldType={FormFieldType.SELECT}
                 control={form.control}
                 name="roomType"
                 label="Room Type"
-              />
+                placeholder="Select Room Type"
+                required={true}
+              >
+                {roomType?.map((type, i) => (
+                  <SelectItem key={i} value={`${type}`}>
+                    <div className="flex cursor-pointer items-center gap-2">
+                      <p>{type}</p>
+                    </div>
+                  </SelectItem>
+                ))}
+              </CustomFormField>
             </div>
 
-            <div className="flex flex-col gap-6 xl:flex-row">
+            {/* <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 placeholder="Facilities"
@@ -113,7 +146,7 @@ export default function EditCafeRoomForm({ cafeRoom }: any) {
                 name="facilities"
                 label="Facilities"
               />
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
@@ -131,6 +164,7 @@ export default function EditCafeRoomForm({ cafeRoom }: any) {
                 <Button
                   disabled={loading}
                   variant="outline"
+                  type="button"
                   className="ml-auto w-full"
                   onClick={onReset}
                 >

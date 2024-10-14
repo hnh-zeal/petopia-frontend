@@ -17,7 +17,6 @@ export const getServerSideProps: GetServerSideProps<{
   appointment: CareAppointment;
 }> = async (context) => {
   const { id } = context.params as { id: string };
-  console.log(id);
   try {
     const appointment = await fetchCareAppointmentByID(Number(id));
     return { props: { appointment } };

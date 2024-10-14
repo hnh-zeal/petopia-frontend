@@ -384,4 +384,6 @@ export const months = [
   "December",
 ];
 
+export const roomType = ["Family", "Special", "Normal", "Deluxe"];
+
 export const GenderOptions = ["male", "female", "other"];

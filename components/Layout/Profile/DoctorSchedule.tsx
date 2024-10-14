@@ -77,7 +77,6 @@ const ScheduleSwitch = ({ schedule }: { schedule: Schedule }) => {
   const handleStatusToggle = async (schedule: Schedule) => {
     setLoading(true);
     try {
-      console.log(schedule);
       const data = await updateDoctorScheduleByID(schedule.id, {
         isActive: !isActive,
       });

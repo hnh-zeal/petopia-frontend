@@ -5,7 +5,6 @@ import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { fetchCafePets } from "@/pages/api/api";
 import { CafePetData } from "@/types/api";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { GetServerSideProps } from "next";
 
 const breadcrumbItems = [
@@ -17,7 +16,7 @@ export const getServerSideProps: GetServerSideProps<{
   petsData: CafePetData;
 }> = async (context) => {
   try {
-    const petsData = await fetchCafePets({});
+    const petsData = await fetchCafePets({ page: 1, pageSize: 6 });
     return { props: { petsData: petsData } };
   } catch (error) {
     console.error("Error fetching doctor:", error);

@@ -24,6 +24,8 @@ import {
   PawPrint,
 } from "lucide-react";
 import { CafeRoom } from "@/types/api";
+import { fetchCafeRoomByID, updateCafeRoomByID } from "@/pages/api/api";
+import { toast } from "@/components/ui/use-toast";
 
 interface CafeRoomInfoProps {
   cafeRoom: CafeRoom;
@@ -31,14 +33,34 @@ interface CafeRoomInfoProps {
 
 export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
   const router = useRouter();
+  const [roomData, setRoomData] = useState(cafeRoom);
   const [isActive, setIsActive] = useState(cafeRoom.isActive);
+  const [loading, setLoading] = useState(false);
 
-  const handleStatusToggle = () => {
+  const handleStatusToggle = async () => {
+    setLoading(true);
+    try {
+      const data = await updateCafeRoomByID(cafeRoom.id, {
+        isActive: !isActive,
+      });
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
+        const roomData = await fetchCafeRoomByID(cafeRoom.id);
+        setRoomData(roomData);
+      }
+    } finally {
+      setLoading(false);
+    }
     setIsActive(!isActive);
-    // Here you would typically update the server with the new status
   };
-
-  const roomName = `${cafeRoom.name} - Room No.${cafeRoom.roomNo}`;
 
   return (
     <div className="min-h-screen">
@@ -49,7 +71,14 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
         className="max-w-7xl mx-auto"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <Heading title={roomName} />
+          <div className="flex flex-row justify-between gap-4">
+            <Heading title={`${cafeRoom.name} - Room No.${cafeRoom.roomNo}`} />
+            <div className="flex items-center">
+              <Badge variant={`${isActive ? "success" : "destructive"}`}>
+                {isActive ? "Active" : "Inactive"}
+              </Badge>
+            </div>
+          </div>
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <div className="flex items-center space-x-2">
               <Switch
@@ -57,7 +86,6 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                 onCheckedChange={handleStatusToggle}
                 aria-label="Toggle room active status"
               />
-              <span>{isActive ? "Active" : "Inactive"}</span>
             </div>
             <Button
               onClick={() =>
@@ -98,7 +126,7 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                             transition={{ duration: 0.2 }}
                           >
                             <Image
-                              src={image}
+                              src={image || `/default-pet-cafe.png`}
                               alt={`Room image ${index + 1}`}
                               layout="fill"
                               objectFit="cover"
@@ -157,16 +185,13 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                       {cafeRoom.pets.map((pet) => (
                         <motion.div
                           key={pet.id}
-                          className="flex flex-col items-center cursor-pointer"
+                          className="flex flex-col items-center"
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.2 }}
-                          onClick={() =>
-                            router.push(`/pet-cafe/pets/${pet.id}`)
-                          }
                         >
                           <div className="relative w-20 h-20 mb-2">
                             <Image
-                              src={pet.imageUrl}
+                              src={pet.imageUrl || `/default-cafe-pet.png`}
                               alt={pet.name}
                               layout="fill"
                               objectFit="cover"

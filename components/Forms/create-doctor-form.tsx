@@ -63,7 +63,6 @@ export default function CreateDoctorForm() {
   ]);
 
   const processForm: SubmitHandler<DoctorFormValue> = (data) => {
-    console.log(data);
     reset();
   };
 

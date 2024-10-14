@@ -11,6 +11,7 @@ import { fetchClinicAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 import { Doctor } from "@/types/api";
+import Loading from "@/pages/loading";
 
 interface ClinicAppointmentProps {
   isAdmin: boolean;
@@ -43,7 +44,6 @@ export const ClinicAppointmentClient = ({
         const userToken = userAuth?.accessToken;
         const adminToken = adminAuth?.accessToken;
         const doctorId = doctor ? doctor.id : null;
-        console.log(doctorId);
         const data = await fetchClinicAppointments(
           {
             userId,
@@ -99,7 +99,11 @@ export const ClinicAppointmentClient = ({
             onPageChange={handlePageChange}
           />
         )}
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+            <Loading />
+          </div>
+        )}
       </div>
     </>
   );

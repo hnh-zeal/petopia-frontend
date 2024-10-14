@@ -43,10 +43,10 @@ export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
             <p>No room found.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {roomData?.rooms.map((room: CafeRoom) => (
+              {roomData?.rooms?.map((room: CafeRoom) => (
                 <Card key={room.id} className="overflow-hidden">
                   <Image
-                    src={room.mainImage}
+                    src={room.mainImage || `/default-pet-cafe.png`}
                     alt={room.name}
                     width={400}
                     height={300}
@@ -86,20 +86,25 @@ export default function CafeRooms({ roomData }: { roomData: RoomsData }) {
                     </p> */}
                   </CardContent>
                   <CardFooter className="bg-gray-50 flex justify-between">
-                    <div className="flex -space-x-2">
-                      {room.pets.slice(0, 3).map((pet) => (
-                        <Image
-                          key={pet.id}
-                          src={pet.imageUrl}
-                          alt={pet.name}
-                          width={32}
-                          height={32}
-                          className="w-8 h-8 rounded-full border-2 border-white"
-                        />
-                      ))}
-                      {room.pets.length > 3 && (
+                    <div
+                      className="flex -space-x-2 hover:cursor-pointer"
+                      onClick={() => router.push(`/admin/pet-cafe/pets`)}
+                    >
+                      {room?.pets
+                        ?.slice(0, 3)
+                        .map((pet) => (
+                          <Image
+                            key={pet.id}
+                            src={pet.imageUrl || `/default-cafe-pet.png`}
+                            alt={pet.name}
+                            width={32}
+                            height={32}
+                            className="w-8 h-8 rounded-full border-2 border-white"
+                          />
+                        ))}
+                      {room?.pets?.length > 3 && (
                         <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-gray-600">
-                          +{room.pets.length - 3}
+                          +{room?.pets?.length - 3}
                         </div>
                       )}
                     </div>

@@ -86,7 +86,6 @@ export default function EditPetClinicForm({
     try {
       const data = await updatePetSitterByID(petClinic.id, formValues);
 
-      console.log(formValues);
       if (data.error) {
         toast({
           variant: "destructive",

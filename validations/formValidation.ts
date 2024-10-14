@@ -81,7 +81,7 @@ export const CreateServiceSchema = z.object({
 export const CreateCafeRoomSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   roomNo: z.string(),
-  price: z.string(),
+  price: z.number(),
   roomType: z.string(),
   description: z.string(),
   // facilities: z.string(),
@@ -100,7 +100,8 @@ export const UpdateCafePetSchema = z.object({
   petType: z.string().optional(),
   breed: z.string().optional(),
   roomId: z.any().optional(),
-  age: z.any().optional(),
+  dateOfBirth: z.date().optional(),
+  sex: z.any().optional(),
 });
 
 export const CreateAppointmentSchema = z.object({

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { fetchCareAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
+import Loading from "@/pages/loading";
 
 export const CareAppointmentClient = ({ isAdmin = false }) => {
   const router = useRouter();
@@ -81,7 +82,11 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </>
   );
 };

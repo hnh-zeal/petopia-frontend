@@ -20,8 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronDown } from "lucide-react";
 import * as React from "react";
 import Pagination from "../pagination";
 import { Calendar } from "@/components/ui/calendar";
@@ -56,13 +62,16 @@ export function DataTable<TData, TValue>({
   currentPage,
   onPageChange,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const { id } = router.query;
+  const [tableData, setTableData] = React.useState<TData[]>(data);
+  const [date, setDate] = React.useState<Date | any>();
+  const [loading, setLoading] = React.useState(false);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [tableData, setTableData] = React.useState<TData[]>(data);
-  const [loading, setLoading] = React.useState(false);
-  const [date, setDate] = React.useState<Date>();
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -84,27 +93,44 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const router = useRouter();
-  const id = router.query;
-  const filterDate = async (selectedDate: Date | null) => {
-    if (!selectedDate) return;
+  const handleDateChange = async (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setLoading(true);
+      setDate(selectedDate);
+      try {
+        const data = await fetchRoomBooking({
+          ...(router.query.id && { doctorId: Number(id) }),
+          date: selectedDate,
+          page: 1,
+          pageSize: 10,
+        });
+        const filterData: any[] = data.data;
+        setTableData(filterData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const resetDate = async () => {
     setLoading(true);
     try {
+      setDate(null);
       const data = await fetchRoomBooking({
-        ...(router.query.id && { roomId: Number(id) }),
-        date: selectedDate,
+        ...(router.query.id && { doctorId: Number(id) }),
         page: 1,
         pageSize: 10,
       });
 
-      const filteredData: any[] = data.data;
-      setTableData(filteredData);
+      const resetData: any[] = data.data;
+      setTableData(resetData);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
     }
   };
-
   return (
     <>
       <div className="flex items-center justify-between space-x-2">
@@ -126,43 +152,69 @@ export function DataTable<TData, TValue>({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={handleDateChange}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-          <Button onClick={() => filterDate(date as Date)}>Filter</Button>
+          <Button onClick={resetDate}>Reset</Button>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="ml-auto">
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      {!loading && (
-        <ScrollArea className="h-[calc(80vh-200px)] border-">
-          <Table className="relative">
-            <TableHeader className="bg-zinc-300">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} className="text-black">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
+      <ScrollArea className="h-[calc(80vh-200px)] border-">
+        <Table className="relative">
+          <TableHeader className="bg-zinc-300">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} className="text-black">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
 
+          {!loading && (
             <TableBody>
-              {table.getRowModel().rows?.length ? (
+              {table.getRowModel()?.rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="hover:cursor-pointer"
+                    className="hover:cursor-pointer "
                     onClick={() =>
                       !!onClickRow && onClickRow((row.original as any).id)
                     }
@@ -188,10 +240,10 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               )}
             </TableBody>
-            <ScrollBar orientation="horizontal" />
-          </Table>
-        </ScrollArea>
-      )}
+          )}
+          <ScrollBar orientation="horizontal" />
+        </Table>
+      </ScrollArea>
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">

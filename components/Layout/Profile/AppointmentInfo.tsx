@@ -209,6 +209,11 @@ export default function AppointmentInfo({
     }
   };
 
+  const onCancel = () => {
+    setIsRejectDialogOpen(false);
+    rejectForm.reset();
+  };
+
   return (
     <>
       <ScrollArea className="h-[calc(100vh-120px)] px-4">
@@ -652,11 +657,7 @@ export default function AppointmentInfo({
                   )}
                 />
                 <AlertDialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => rejectForm.reset()}
-                  >
+                  <Button type="button" variant="outline" onClick={onCancel}>
                     Cancel
                   </Button>
                   <Button type="submit">Reject</Button>

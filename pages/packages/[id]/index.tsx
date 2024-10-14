@@ -69,7 +69,6 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
         ...formValues,
         packageId: pkg.id,
       };
-      console.log(formData);
 
       const data = await purchasePackage(formData, auth?.accessToken as string);
       if (data.error) {

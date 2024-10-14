@@ -11,6 +11,7 @@ import { fetchRoomBooking } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 import { CafeRoom } from "@/types/api";
+import Loading from "@/pages/loading";
 
 export const CafeBookingClient = ({
   isAdmin = false,
@@ -84,7 +85,11 @@ export const CafeBookingClient = ({
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </div>
   );
 };

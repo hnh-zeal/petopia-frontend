@@ -50,7 +50,6 @@ const UserRegisterForm = () => {
   });
 
   const processForm: SubmitHandler<UserRegisterValue> = (data) => {
-    console.log(data);
     reset();
   };
 

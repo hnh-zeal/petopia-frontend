@@ -118,7 +118,6 @@ export default function TrainingAppointment({
 
       const discountPercent = discountData?.package?.discountPercent || 0;
       setDiscountPercent(discountPercent);
-      console.log(discountPercent);
       const discountAmount = (basePrice + addOnPrice) * (discountPercent / 100);
       setDiscount(discountAmount);
       setTotalPrice(basePrice + addOnPrice - discountAmount);

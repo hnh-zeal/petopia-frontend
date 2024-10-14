@@ -93,48 +93,66 @@ const statusConfig: any = {
 };
 
 interface AppointmentItemProps {
+  id: number;
   date: Date;
   name: string;
   description: string;
   status: string;
   imageUrl?: string;
+  type: string;
 }
 
 export const AppointmentItem = ({
+  id,
   date,
   name,
   description,
   status,
   imageUrl,
-}: AppointmentItemProps) => (
-  <Card className="mb-4 hover:shadow-md transition-shadow duration-300">
-    <CardContent className="p-4">
-      <div className="flex items-center space-x-4">
-        <Avatar className="w-14 h-14">
-          <AvatarImage src={imageUrl} alt={name} />
-          <AvatarFallback>{name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-grow">
-          <h3 className="font-semibold text-lg">{name}</h3>
-          <p className="text-sm text-gray-500">{truncate(description, 50)}</p>
-        </div>
-        <div className="flex flex-col items-end space-y-2">
-          <div className="flex items-center text-sm text-gray-500">
-            <Clock className="w-4 h-4 mr-1" />
-            {format(date, "hh:mm a")}
+  type,
+}: AppointmentItemProps) => {
+  const router = useRouter();
+  const redirectLink =
+    type === "clinic"
+      ? `/admin/pet-clinic/appointments/${id}`
+      : type === "care"
+        ? `/admin/pet-care/appointments/${id}`
+        : `/admin/pet-cafe/room-booking/${id}`;
+  return (
+    <Card className="mb-4 hover:shadow-md transition-shadow duration-300">
+      <CardContent className="p-4">
+        <div className="flex items-center space-x-4">
+          <Avatar className="w-14 h-14">
+            <AvatarImage src={imageUrl} alt={name} />
+            <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-grow">
+            <h3 className="font-semibold text-lg">{name}</h3>
+            <p className="text-sm text-gray-500">{truncate(description, 50)}</p>
           </div>
+          <div className="flex flex-col items-end space-y-2">
+            <div className="flex items-center text-sm text-gray-500">
+              <Clock className="w-4 h-4 mr-1" />
+              {format(date, "hh:mm a")}
+            </div>
 
-          <Badge
-            className={`${statusConfig[status].color} px-2 py-1 rounded-full`}
+            <Badge
+              className={`${statusConfig[status].color} px-2 py-1 rounded-full`}
+            >
+              {statusConfig[status].label}
+            </Badge>
+          </div>
+          <Button
+            variant={"ghost"}
+            onClick={() => router.push(`${redirectLink}`)}
           >
-            {statusConfig[status].label}
-          </Badge>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </Button>
         </div>
-        <ChevronRight className="w-5 h-5 text-gray-400" />
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function Dashboard({
   overviewData,
@@ -506,6 +524,7 @@ export default function Dashboard({
                               (appointment: any, i: number) => (
                                 <div key={i}>
                                   <AppointmentItem
+                                    id={appointment.id}
                                     date={
                                       appointment?.startTime || appointment.date
                                     }
@@ -513,6 +532,7 @@ export default function Dashboard({
                                     description={appointment.description}
                                     status={appointment.status}
                                     imageUrl={appointment.user.profileUrl}
+                                    type={type}
                                   />
                                 </div>
                               )

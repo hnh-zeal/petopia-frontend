@@ -9,8 +9,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
-  Calendar,
   Cake,
   PawPrint,
   Heart,
@@ -19,6 +19,7 @@ import {
   Syringe,
   FileText,
   AlertTriangle,
+  CalendarIcon,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,12 +30,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { CafePet, CafePetData } from "@/types/api";
+import { CafePet, CafePetData, CafeRoom } from "@/types/api";
 import { ScrollArea } from "../ui/scroll-area";
 import { Heading } from "../ui/heading";
 import Pagination from "../Tables/pagination";
-import EditCafePetForm from "../Forms/edit-cafe-pets-form";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -43,13 +50,14 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { UpdateCafePetSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { breeds, PetClinic, petTypes } from "@/constants/data";
-import {
-  fetchCafePetByID,
-  fetchCafeRooms,
-  updateCafePetByID,
-} from "@/pages/api/api";
+import { breeds, GenderOptions, PetClinic, petTypes } from "@/constants/data";
+import { fetchCafeRooms, updateCafePetByID } from "@/pages/api/api";
 import { useRouter } from "next/router";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar } from "../ui/calendar";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Label } from "../ui/label";
 
 interface CafePetsListProps {
   petsData: CafePetData;
@@ -70,13 +78,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
 
   const [loading, setLoading] = useState(false);
   const [cafePet, setCafePet] = useState<CafePet>();
-  const [roomData, setRoomData] = useState({
-    rooms: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
+  const [roomData, setRoomData] = useState<CafeRoom[]>();
   const form = useForm<CafePetFormValue>({
     resolver: zodResolver(UpdateCafePetSchema),
   });
@@ -86,10 +88,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
       setLoading(true);
       try {
         const data = await fetchCafeRooms();
-        setRoomData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
+        setRoomData(data.rooms);
       } catch (error) {
         console.error("Failed to fetch Pet Centers", error);
       } finally {
@@ -103,8 +102,12 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
   const onEdit = (pet: CafePet) => {
     setCafePet(pet);
     form.setValue("name", pet.name);
-    form.setValue("roomId", pet.room.id);
+    form.setValue("dateOfBirth", new Date(pet.dateOfBirth));
+    form.setValue("roomId", String(pet.room.id));
     form.setValue("description", pet.description);
+    form.setValue("petType", pet.petType);
+    form.setValue("breed", pet.breed);
+    form.setValue("sex", pet.sex);
     setDialogOpen(true);
   };
 
@@ -146,7 +149,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
         <Heading title="Pets" />
         <Button
           className="text-xs md:text-sm"
-          onClick={() => router.push(`/admin/pet-cafe/cafe-rooms/create`)}
+          onClick={() => router.push(`/admin/pet-cafe/pets/create`)}
         >
           <Plus className="mr-2 h-4 w-4" /> Add New
         </Button>
@@ -163,7 +166,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                 >
                   <CardHeader className="relative p-0">
                     <Image
-                      src={pet.imageUrl}
+                      src={pet.imageUrl || `/default-cafe-pet.png`}
                       alt={pet.name}
                       width={400}
                       height={300}
@@ -178,7 +181,9 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                   <CardContent className="p-4">
                     <CardTitle className="text-xl mb-2 flex items-center justify-between">
                       <span>{pet.name}</span>
-                      <Badge variant="outline">{pet.petType}</Badge>
+                      <Badge variant="secondary" className="capitalize">
+                        {pet.petType}
+                      </Badge>
                     </CardTitle>
                     <div className="space-y-2">
                       <div className="flex items-center">
@@ -189,14 +194,14 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                       </div>
                       <div className="flex items-center">
                         <PawPrint className="w-4 h-4 mr-2 text-gray-500" />
-                        <span>{pet.breed}</span>
+                        <span className="capitalize">{pet.breed}</span>
                       </div>
                       <div className="flex items-center">
                         <Heart className="w-4 h-4 mr-2 text-gray-500" />
-                        <span>{pet.sex}</span>
+                        <span className="capitalize">{pet.sex}</span>
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
                         <span>
                           Born: {new Date(pet.dateOfBirth).toLocaleDateString()}
                         </span>
@@ -228,7 +233,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                     <Separator className="my-3 w-full" />
                     <div className="flex items-center justify-between w-full">
                       <span className="text-sm text-gray-500">
-                        Room: {pet.room.name} (No. {pet.room.roomNo})
+                        Room: {pet.room?.name} (No. {pet.room?.roomNo})
                       </span>
                       <Button size="sm" onClick={() => onEdit(pet)}>
                         <Edit className="mr-2 h-4 w-4" /> Edit
@@ -281,7 +286,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                   name="roomId"
                   label="Room"
                 >
-                  {roomData.rooms.map((room: PetClinic, i) => (
+                  {roomData?.map((room: CafeRoom, i: number) => (
                     <SelectItem key={room.name + i} value={`${room.id}`}>
                       <div className="flex cursor-pointer items-center gap-2">
                         <p>{room.name}</p>
@@ -292,20 +297,78 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
               </div>
 
               <div className="flex flex-col gap-6 xl:flex-row">
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  placeholder="Birth Date"
+                <FormField
                   control={form.control}
                   name="dateOfBirth"
-                  label="Birth Date"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel className="block text-sm font-medium text-gray-700">
+                        Date of Birth <span className="text-red-400">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-[220px] text-left font-normal",
+                                !field.value && "text-gray-400"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 text-gray-400" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-sm mt-1" />
+                    </FormItem>
+                  )}
                 />
 
                 <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  placeholder="Age"
+                  fieldType={FormFieldType.SKELETON}
                   control={form.control}
-                  name="age"
-                  label="Age"
+                  name="sex"
+                  label="Sex"
+                  renderSkeleton={(field) => (
+                    <>
+                      <FormControl>
+                        <RadioGroup
+                          className="flex py-3 px-2 gap-3 xl:justify-between"
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          {GenderOptions.map((option, i) => (
+                            <div
+                              key={option + i}
+                              className="radio-group flex flex-row gap-3"
+                            >
+                              <RadioGroupItem value={option} id={option} />
+                              <Label
+                                htmlFor={option}
+                                className="cursor-pointer"
+                              >
+                                {option}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </>
+                  )}
                 />
               </div>
 
