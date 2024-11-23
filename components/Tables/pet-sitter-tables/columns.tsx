@@ -42,13 +42,10 @@ export const columns: ColumnDef<PetSitter>[] = [
     accessorKey: "phoneNumber",
     header: ({ column }) => <SortColumn column={column} title="Phone Number" />,
   },
-  // {
-  //   accessorFn: (row) => row.careService.name,
-  //   id: "careService.name",
-  //   header: ({ column }) => (
-  //     <SortColumn column={column} title="Pet Care Service" />
-  //   ),
-  // },
+  {
+    accessorKey: "about",
+    header: ({ column }) => <SortColumn column={column} title="About" />,
+  },
   {
     accessorKey: "isActive",
     header: "Status",

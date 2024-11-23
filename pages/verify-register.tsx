@@ -58,7 +58,6 @@ export default function ForgotPassword() {
         ...formValues,
       };
 
-      // Verify the OTP
       const otpVerificationResponse = await verifyOTP(formData);
       if (otpVerificationResponse.error) {
         toast({
@@ -66,7 +65,6 @@ export default function ForgotPassword() {
           description: `${otpVerificationResponse.message}`,
         });
       } else {
-        // Complete the registration process
         const registrationResponse = await userRegister(registerValues);
         if (registrationResponse.error) {
           toast({
@@ -98,73 +96,70 @@ export default function ForgotPassword() {
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-60px)] px-2">
-      <section className="bg-gray-50 dark:bg-gray-900">
-        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
-          <div className="w-1/2 my-10 bg-white rounded-lg shadow dark:border sm:max-w-2xl dark:bg-gray-800 dark:border-gray-700">
-            <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Verify OTP
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Enter OTP to reset password resetting password.
-              </p>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex flex-col items-center space-y-12"
-                >
-                  <section className="space-y-6 w-full flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      onInput={(value) => handleOTPInput(value)}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} className="h-14 w-14" />
-                        <InputOTPSlot index={1} className="h-14 w-14" />
-                        <InputOTPSlot index={2} className="h-14 w-14" />
-                        <InputOTPSlot index={3} className="h-14 w-14" />
-                        <InputOTPSlot index={4} className="h-14 w-14" />
-                        <InputOTPSlot index={5} className="h-14 w-14" />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </section>
+    <section className="bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto lg:py-0">
+        <div className="w-1/2 my-10 bg-white rounded-lg shadow dark:border sm:max-w-2xl dark:bg-gray-800 dark:border-gray-700">
+          <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Verify OTP
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Enter OTP to continue registration.
+            </p>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col items-center space-y-12"
+              >
+                <section className="space-y-6 w-full flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    onInput={(value) => handleOTPInput(value)}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="h-14 w-14" />
+                      <InputOTPSlot index={1} className="h-14 w-14" />
+                      <InputOTPSlot index={2} className="h-14 w-14" />
+                      <InputOTPSlot index={3} className="h-14 w-14" />
+                      <InputOTPSlot index={4} className="h-14 w-14" />
+                      <InputOTPSlot index={5} className="h-14 w-14" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </section>
 
-                  <div className="flex flex-row justify-end space-x-4 w-full">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        router.push("/register");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? (
-                        <div className="flex items-center gap-4">
-                          <Image
-                            src="/assets/icons/loader.svg"
-                            alt="loader"
-                            width={24}
-                            height={24}
-                            className="animate-spin"
-                          />
-                          Loading...
-                        </div>
-                      ) : (
-                        <>Verify OTP</>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </div>
-            <div>
-              <Toaster />
-            </div>
+                <div className="flex flex-row justify-end space-x-4 w-full">
+                  <Button variant="outline" onClick={() => router.back()}>
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-[#00b2d8]"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src="/assets/icons/loader.svg"
+                          alt="loader"
+                          width={24}
+                          height={24}
+                          className="animate-spin"
+                        />
+                        Loading...
+                      </div>
+                    ) : (
+                      <>Verify OTP</>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+          <div>
+            <Toaster />
           </div>
         </div>
-      </section>
-    </ScrollArea>
+      </div>
+    </section>
   );
 }

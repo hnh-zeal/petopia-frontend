@@ -1,13 +1,12 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { PetClinic } from "@/constants/data";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 import { truncate } from "@/utils/truncate";
+import { Clinic } from "@/types/api";
 
-export const columns: ColumnDef<PetClinic>[] = [
+export const columns: ColumnDef<Clinic>[] = [
   // {
   //   id: "select",
   //   header: ({ table }) => (

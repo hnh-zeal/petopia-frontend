@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/router";
 import { truncate } from "@/utils/truncate";
-import { ChevronDown, Filter, Phone, Search, Star } from "lucide-react";
+import { Phone, Search } from "lucide-react";
 import { CafeRoom } from "@/types/api";
 import { motion } from "framer-motion";
 
@@ -24,13 +24,13 @@ export default function CafeRooms({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-bold text-center text-indigo-900 mb-8"
+          className="text-4xl font-bold text-center text-black mb-8"
         >
           Pet Cafe Rooms
         </motion.h1>
@@ -45,16 +45,16 @@ export default function CafeRooms({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
             <Input
               type="text"
               placeholder="Search cafe room..."
-              className="w-full px-4 py-3 rounded-full border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-full border-2 border-[#00b2d8] focus:outline-none focus:ring-2 focus:ring-[#00b2d8] focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
           </div>
-          <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
+          {/* <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
             <Filter className="mr-2 h-4 w-4" size={18} />
             Filter
-          </Button>
+          </Button> */}
         </motion.div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {rooms.length > 0 ? (
@@ -108,7 +108,7 @@ export default function CafeRooms({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
                   </CardContent>
                   <CardFooter className="bg-gray-50 p-4">
                     <Button
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
+                      className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6] text-white py-2 rounded-md"
                       onClick={() => router.push(`/pet-cafe/rooms/${room.id}`)}
                     >
                       View details

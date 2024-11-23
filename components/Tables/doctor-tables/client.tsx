@@ -2,48 +2,20 @@
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
-import { useEffect, useState } from "react";
 import { fetchDoctors } from "@/pages/api/api";
+import Loading from "@/pages/loading";
+import { Doctor } from "@/types/api";
+import { useFetchData } from "@/hooks/useFetchData";
 
 export const DoctorClient = () => {
   const router = useRouter();
 
-  const [doctorsData, setDoctorsData] = useState({
-    doctors: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchDoctors(currentPage, doctorsData.pageSize);
-        setDoctorsData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch doctors", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUsers();
-  }, [currentPage, doctorsData.pageSize]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<Doctor>(fetchDoctors, 1, 5);
 
   return (
     <>
@@ -53,7 +25,7 @@ export const DoctorClient = () => {
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/doctors/create`)}
         >
-          <Plus className="mr-2 h-4 w-4" /> Add New
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New
         </Button>
       </div>
       <Separator />
@@ -61,14 +33,18 @@ export const DoctorClient = () => {
         <DataTable
           searchKey="name"
           columns={columns}
-          data={doctorsData.doctors}
+          data={data}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={doctorsData.totalPages}
+          totalPages={totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </>
   );
 };

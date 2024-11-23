@@ -29,7 +29,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Clinic } from "@/types/api";
 
 interface AppointmentFormProps {
@@ -75,12 +74,12 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   fetchAppointmentSlots,
   auth,
 }) => {
-  const [doctors, setDoctors] = useState(doctorsData.doctors);
+  const [doctors, setDoctors] = useState(doctorsData.data);
   const [timeSlots, setTimeSlots] = useState<string[]>(defaultTimeSlots);
   const [loading, setLoading] = useState(false);
 
   const handleClinicChange = (clinicId: string) => {
-    const filteredDoctors = doctorsData.doctors.filter(
+    const filteredDoctors = doctorsData.data.filter(
       (doctor: any) => doctor.clinic.id === parseInt(clinicId)
     );
     form.setValue("clinicId", clinicId);
@@ -107,7 +106,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             },
             auth?.accessToken as string
           );
-          const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
+          const formattedTimeSlots = fetchedTimeSlots.slots?.map((slot: any) =>
             format(new Date(slot.startTime), "h:mm a")
           );
           setTimeSlots(formattedTimeSlots);
@@ -184,7 +183,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="shad-select-content">
-                            {petClinicsData?.petClinics.map(
+                            {petClinicsData?.data?.map(
                               (clinic: Clinic, i: number) => (
                                 <SelectItem
                                   key={clinic.id}
@@ -223,7 +222,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="shad-select-content">
-                            {doctors.map((doctor: any, i: number) => (
+                            {doctors?.map((doctor: any, i: number) => (
                               <SelectItem
                                 key={doctor.id}
                                 value={`${doctor.id}`}

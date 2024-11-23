@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { NavItem, SubNavItem } from "@/types";
+import { NavItem, Role, SubNavItem } from "@/types";
 import { Dispatch, SetStateAction } from "react";
 import { useSidebar } from "@/hooks/useSidebar";
 import {
@@ -14,6 +14,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 interface DashboardNavProps {
   items: NavItem[];
@@ -26,14 +28,35 @@ export function DashboardNav({
   // setOpen,
   isMobileNav = false,
 }: DashboardNavProps) {
-  if (!items?.length) {
+  const [mounted, setMounted] = useState(false);
+  const adminAuth = useRecoilValue(adminAuthState);
+
+  const accessItems = items
+    .map((item) => ({
+      ...item,
+      subMenuItems: item.subMenuItems?.filter(
+        (subItem: SubNavItem) =>
+          !subItem.roles || subItem.roles.includes(adminAuth?.role as string)
+      ),
+    }))
+    .filter(
+      (item) =>
+        (!item.roles || item.roles.includes(adminAuth?.role as string)) &&
+        (!item.subMenuItems || item.subMenuItems.length > 0)
+    );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !items?.length || !adminAuth) {
     return null;
   }
 
   return (
     <nav className="grid items-start gap-2">
       <TooltipProvider>
-        {items.map((item, index) => {
+        {accessItems.map((item, index) => {
           return <MenuItem key={index} item={item} isMobileNav={isMobileNav} />;
         })}
       </TooltipProvider>

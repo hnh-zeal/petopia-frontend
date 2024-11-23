@@ -14,12 +14,12 @@ import {
 import { adminAuthState } from "@/states/auth";
 import { adminLoggedInData } from "@/types";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
 
 export function AdminAvatar() {
   const router = useRouter();
-  // const auth = useRecoilValue(adminAuthState);
+  const [mounted, setMounted] = useState(false);
   const [auth, setAuth] = useRecoilState<adminLoggedInData | undefined>(
     adminAuthState
   );
@@ -28,11 +28,16 @@ export function AdminAvatar() {
     if (auth === undefined) {
       router.push("/admin");
     }
+    setMounted(true);
   }, [auth, router]);
 
   const logout = () => {
     setAuth(undefined);
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <DropdownMenu>

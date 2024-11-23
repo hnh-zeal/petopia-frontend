@@ -1,3 +1,5 @@
+import { Role } from "..";
+
 export interface RoomsData {
   rooms: CafeRoom[];
   count: number;
@@ -7,7 +9,7 @@ export interface RoomsData {
 }
 
 export interface PetClinicData {
-  clinics: Clinic[];
+  data: Clinic[];
   count: number;
   page: number;
   pageSize: number;
@@ -23,7 +25,7 @@ export interface CareServicesData {
 }
 
 export interface DoctorData {
-  doctors: [];
+  data: Doctor[];
   count: number;
   page: number;
   pageSize: number;
@@ -72,10 +74,14 @@ interface Education {
   location: string;
 }
 
-interface Schedule {
+export interface Schedule {
+  id: number;
+  doctorId: number;
+  dayOfWeek: string;
   dow: string;
   startTime: string;
   endTime: string;
+  isActive: boolean;
 }
 
 export interface Doctor {
@@ -168,7 +174,6 @@ export interface Pet {
   sex: string;
   medication: any;
   vaccinationRecords: any;
-  specialNeeds: any;
   imageUrl?: string;
   isActive: boolean;
   createdAt: string;
@@ -176,7 +181,7 @@ export interface Pet {
 }
 
 export interface CafePetData {
-  cafePets: CafePet[];
+  data: CafePet[];
   count: number;
   page: number;
   pageSize: number;
@@ -196,7 +201,6 @@ export interface CafePet {
   description: string;
   medication: string;
   vaccinationRecords: string;
-  specialNeeds: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -214,6 +218,7 @@ export interface CareService {
   type: string;
   description: string;
   mainImage: string;
+  images: string[];
   price: number;
   rating: number;
   reviews: number;
@@ -221,6 +226,7 @@ export interface CareService {
   petSitters: PetSitter[];
   addOns: { name: string; price: number; id?: number; description: string }[];
   isActive: boolean;
+  contact?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -239,15 +245,7 @@ export interface CafeRoom {
   mainImage: string;
   images: string[];
   isActive: boolean;
-  pets: {
-    id: string;
-    name: string;
-    petType: string;
-    age: number;
-    sex: string;
-    description: string;
-    imageUrl: string;
-  }[];
+  pets: CafePet[];
   operatingHours: { dow: string }[];
   contact: string;
 }
@@ -263,6 +261,17 @@ export interface CafeBooking {
   duration: number;
   totalPrice: number;
   status: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RoomSlot {
+  id: number;
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  status: Boolean;
+  roomId: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -374,4 +383,27 @@ export interface UserDetails {
   careAppointments: CareAppointment[];
   bookings: CafeBooking[];
   packageHistory: PackageHistory[];
+}
+
+export interface Admin {
+  id: number;
+  name: string;
+  email: string;
+  role: Role;
+  password: string;
+  profileUrl: string;
+  currentLoginDate: Date;
+  lastLoginDate: Date;
+  isActive: boolean;
+  about: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AdminData {
+  admins: Admin[];
+  count: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
 }

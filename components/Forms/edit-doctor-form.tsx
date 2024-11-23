@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -142,10 +142,6 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
     }
   };
 
-  const onReset = () => {
-    form.reset();
-  };
-
   return (
     <>
       <div className="flex items-start justify-between">
@@ -205,7 +201,7 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
                 label="Pet Center"
                 placeholder="Select Pet Center"
               >
-                {petClinics.clinics.map((center: PetClinic, i: number) => (
+                {petClinics.data.map((center: PetClinic, i: number) => (
                   <SelectItem key={center.name + i} value={`${center.id}`}>
                     <div className="flex cursor-pointer items-center gap-2">
                       <p>{center.name}</p>

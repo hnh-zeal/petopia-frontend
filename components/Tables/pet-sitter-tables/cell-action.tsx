@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PetSitter } from "@/constants/data";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -43,13 +43,16 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
           <DropdownMenuItem
+            className="hover:cursor-pointer"
+            onClick={() => router.push(`/admin/pet-sitters/${data.id}`)}
+          >
+            <Eye className="mr-2 h-4 w-4" /> See Details
+          </DropdownMenuItem>
+          <DropdownMenuItem
             onClick={() => router.push(`/admin/pet-sitters/${data.id}/edit`)}
           >
             <Edit className="mr-2 h-4 w-4" /> Update
           </DropdownMenuItem>
-          {/* <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Trash className="mr-2 h-4 w-4" /> Delete
-          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

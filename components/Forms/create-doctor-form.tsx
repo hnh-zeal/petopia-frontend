@@ -1,6 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -12,14 +19,22 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateDoctorSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { useEffect, useState } from "react";
-import { PetClinic } from "@/constants/data";
+import { useCallback, useState } from "react";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { motion } from "framer-motion";
-import { fetchPetClinics } from "@/pages/api/api";
+import {
+  createDoctor,
+  fetchPetClinics,
+  singleFileUpload,
+} from "@/pages/api/api";
 import { daysOfWeek } from "@/constants/data";
+import { Clinic } from "@/types/api";
+import { useFetchList } from "@/hooks/useFetchList";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
+import ProfilePictureUpload from "../Layout/profile-upload";
 
 const steps = [
   { id: "Step 1", name: "Personal Information" },
@@ -31,15 +46,13 @@ type DoctorFormValue = z.infer<typeof CreateDoctorSchema>;
 
 export default function CreateDoctorForm() {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [petClinicsData, setPetClinicsData] = useState({
-    clinics: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
   const router = useRouter();
+  const adminAuth = useRecoilValue(adminAuthState);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchClinics = useCallback(() => fetchPetClinics({}), []);
+  const { data, loading, error } = useFetchList(fetchClinics);
+
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreateDoctorSchema),
   });
@@ -110,47 +123,39 @@ export default function CreateDoctorForm() {
     setSchedule(schedule.filter((_, i) => i !== index));
   };
 
-  useEffect(() => {
-    const getPetClinics = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPetClinics();
-        setPetClinicsData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getPetClinics();
-  }, []);
-
   const onSubmit = async (formValues: DoctorFormValue) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
-      // const schedule =
+      const { profile, ...otherValues } = formValues;
+      let profileUrl;
+
+      if (profile instanceof File) {
+        const fileData = await singleFileUpload(
+          { file: profile, isPublic: false },
+          adminAuth?.accessToken as string
+        );
+
+        if (fileData.error) {
+          toast({
+            variant: "destructive",
+            description: fileData.message,
+          });
+          return;
+        }
+
+        profileUrl = fileData.url;
+      }
+
       const formData = {
-        // schedule: {}
         ...formValues,
+        profileUrl,
         ...{ clinicId: Number(formValues.clinicId) },
       };
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/doctors`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
+      const data = await createDoctor(
+        formData,
+        adminAuth?.accessToken as string
       );
-
-      const data = await response.json();
       if (data.error) {
         toast({
           variant: "destructive",
@@ -164,7 +169,7 @@ export default function CreateDoctorForm() {
         router.push("/admin/doctors");
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -226,6 +231,22 @@ export default function CreateDoctorForm() {
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
+                <FormField
+                  control={form.control}
+                  name="profile"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel className="shad-input-label">
+                        Profile Picture
+                      </FormLabel>
+                      <FormControl>
+                        <ProfilePictureUpload field={field} defaultImage={""} />
+                      </FormControl>
+                      <FormMessage className="shad-error" />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Name and Email */}
                 <div className="flex flex-col gap-6 xl:flex-row">
                   <CustomFormField
@@ -254,7 +275,7 @@ export default function CreateDoctorForm() {
                     label="Pet Center"
                     placeholder="Select Pet Center"
                   >
-                    {petClinicsData.clinics.map((center: PetClinic, i) => (
+                    {data?.data?.map((center: Clinic, i: number) => (
                       <SelectItem key={center.name + i} value={`${center.id}`}>
                         <div className="flex cursor-pointer items-center gap-2">
                           <p>{center.name}</p>
@@ -585,7 +606,7 @@ export default function CreateDoctorForm() {
                     <div></div>
                     <div className="flex items-center justify-between space-x-4">
                       <Button
-                        disabled={loading}
+                        disabled={isLoading}
                         variant="outline"
                         className="ml-auto w-full"
                         onClick={onReset}
@@ -593,7 +614,7 @@ export default function CreateDoctorForm() {
                         Reset
                       </Button>
                       <SubmitButton
-                        isLoading={loading}
+                        isLoading={isLoading}
                         className="ml-auto w-full"
                       >
                         Create

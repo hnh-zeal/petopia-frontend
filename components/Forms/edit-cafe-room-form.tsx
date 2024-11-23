@@ -24,6 +24,12 @@ import { SelectItem } from "../ui/select";
 import { roomType } from "@/constants/data";
 import { Input } from "../ui/input";
 import { CafeRoom } from "@/types/api";
+import Image from "next/image";
+import { Label } from "../ui/label";
+import { UploadButton } from "@/utils/uploadthing";
+import { X } from "lucide-react";
+import ImageUpload from "../ImageUpload";
+import MultiImageUpload from "../MultiImageUpload";
 
 type ServiceFormValue = z.infer<typeof CreateCafeRoomSchema>;
 
@@ -31,6 +37,8 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [mainImage, setMainImage] = useState<string>(cafeRoom.mainImage);
+  const [images, setImages] = useState<string[]>(cafeRoom.images);
 
   const form = useForm<ServiceFormValue>({
     resolver: zodResolver(CreateCafeRoomSchema),
@@ -40,22 +48,32 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
       price: cafeRoom?.price,
       roomType: cafeRoom?.roomType || "",
       description: cafeRoom?.description || "",
+      mainImage: cafeRoom?.mainImage || "",
+      images: cafeRoom?.images || [],
     },
   });
 
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await updateCafeRoomByID(cafeRoom.id, formValues);
+      const dataToSubmit = {
+        ...formValues,
+        mainImage,
+        images,
+      };
+
+      console.log(dataToSubmit);
+
+      const data = await updateCafeRoomByID(cafeRoom.id, dataToSubmit);
       if (data.error) {
         toast({
           variant: "destructive",
-          description: `${data.message}`,
+          description: data.message,
         });
       } else {
         toast({
           variant: "success",
-          description: "Service created.",
+          description: data.message,
         });
         router.push("/admin/pet-cafe/cafe-rooms");
       }
@@ -66,6 +84,8 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
 
   const onReset = () => {
     form.reset();
+    setMainImage("");
+    setImages([]);
   };
 
   return (
@@ -80,6 +100,40 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="p-2">
+                <ImageUpload
+                  image={mainImage}
+                  onImageUpload={(url: string) => {
+                    setMainImage(url);
+                  }}
+                  onImageRemove={() => {
+                    setMainImage("");
+                  }}
+                  label="Room Main Image"
+                  description="Upload an image"
+                />
+              </div>
+
+              <div className="p-2">
+                <MultiImageUpload
+                  images={images}
+                  onImageUpload={(newImages: string[]) => {
+                    setImages(newImages);
+                  }}
+                  onImageRemove={(index: number) => {
+                    const updatedImages = images.filter((_, i) => i !== index);
+                    setImages(updatedImages);
+                    if (index === 0) {
+                      setImages([]);
+                    }
+                  }}
+                  label="Other Images"
+                  description="Upload additional images for the cafe room"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -138,16 +192,6 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
               </CustomFormField>
             </div>
 
-            {/* <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Facilities"
-                control={form.control}
-                name="facilities"
-                label="Facilities"
-              />
-            </div> */}
-
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.TEXTAREA}
@@ -158,8 +202,7 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
+            <div className="flex mt-10 items-center justify-end space-x-4">
               <div className="flex items-center justify-around space-x-4">
                 <Button
                   disabled={loading}

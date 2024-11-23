@@ -14,14 +14,13 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Calendar,
   DollarSign,
-  Hash,
   Home,
   Info,
   Camera,
   Edit,
   PawPrint,
+  FileText,
 } from "lucide-react";
 import { CafeRoom } from "@/types/api";
 import { fetchCafeRoomByID, updateCafeRoomByID } from "@/pages/api/api";
@@ -98,7 +97,7 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
         </div>
         <Separator className="my-6" />
 
-        <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+        <ScrollArea className="h-[calc(100vh-240px)] pr-4">
           <Tabs defaultValue="room-info">
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="room-info">Room Information</TabsTrigger>
@@ -154,13 +153,6 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                     <div className="space-y-4">
                       <div className="flex items-center">
                         <Home className="w-5 h-5 mr-2 " />
-                        <span className="font-semibold">Room Type:</span>
-                        <Badge variant="secondary" className="ml-2">
-                          {cafeRoom.roomType}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center">
-                        <Hash className="w-5 h-5 mr-2 " />
                         <span className="font-semibold">Room Number:</span>
                         <span className="ml-2">{cafeRoom.roomNo}</span>
                       </div>
@@ -168,6 +160,11 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                         <DollarSign className="w-5 h-5 mr-2 " />
                         <span className="font-semibold">Price:</span>
                         <span className="ml-2">${cafeRoom.price}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FileText className="w-5 h-5 mr-2 " />
+                        <span className="font-semibold">Description:</span>
+                        <span className="ml-2">{cafeRoom.description}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -193,7 +190,7 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                             <Image
                               src={pet.imageUrl || `/default-cafe-pet.png`}
                               alt={pet.name}
-                              layout="fill"
+                              fill
                               objectFit="cover"
                               className="rounded-full"
                             />
@@ -201,7 +198,7 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                           <span className="font-semibold text-center">
                             {pet.name}
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="capitalize text-sm text-gray-500">
                             {pet.petType}
                           </span>
                         </motion.div>
@@ -209,26 +206,13 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card className="col-span-1 md:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Room Description</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 leading-relaxed">
-                      {cafeRoom.description}
-                    </p>
-                  </CardContent>
-                </Card>
               </div>
             </TabsContent>
 
             <TabsContent value="slots">
-              <Card>
-                <CardContent className="p-6">
-                  <RoomSlotsClient cafeRoom={cafeRoom} />
-                </CardContent>
-              </Card>
+              <div className="px-4">
+                <RoomSlotsClient cafeRoom={cafeRoom} />
+              </div>
             </TabsContent>
 
             <TabsContent value="appointments">

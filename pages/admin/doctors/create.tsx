@@ -2,11 +2,11 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import CreateDoctorForm from "@/components/Forms/create-doctor-form";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
-  { title: "Doctors", link: "/dashboard/doctors" },
+  { title: "Doctors", link: "/admin/doctors" },
+  { title: "Create", link: "/admin/doctors" },
 ];
 
 export default function CreateDoctor() {

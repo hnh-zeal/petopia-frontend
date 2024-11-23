@@ -20,8 +20,8 @@ export const getServerSideProps: GetServerSideProps<{
 };
 
 const breadcrumbItems = (cafeRoom: CafeRoom) => [
-  { title: "Pet Cafe Rooms", link: "/pet-care/rooms" },
-  { title: `${cafeRoom.name}`, link: `/pet-care/rooms/${cafeRoom.id}` },
+  { title: "Pet Cafe Rooms", link: "/pet-cafe/rooms" },
+  { title: `${cafeRoom.name}`, link: `/pet-cafe/rooms/${cafeRoom.id}` },
 ];
 
 export default function RoomDetailPage({ cafeRoom }: { cafeRoom: CafeRoom }) {

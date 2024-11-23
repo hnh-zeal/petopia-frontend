@@ -20,16 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { CalendarIcon, ChevronDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import * as React from "react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Pagination from "../pagination";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -42,7 +35,6 @@ import { format } from "date-fns";
 import { fetchRoomSlots } from "@/pages/api/api";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
-import CreateScheduleForm from "@/components/Forms/create-slot-form";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +42,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import CreateRoomSlotForm from "@/components/Forms/create-room-slot";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -79,7 +72,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [date, setDate] = React.useState<Date>();
+  const [date, setDate] = React.useState<Date | any>();
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -110,7 +103,7 @@ export function DataTable<TData, TValue>({
 
   const router = useRouter();
   const { id } = router.query;
-  const filterDate = async (selectedDate: Date | null) => {
+  const handleDateChange = async (selectedDate: Date | undefined) => {
     if (!selectedDate) return;
     setLoading(true);
     try {
@@ -121,8 +114,26 @@ export function DataTable<TData, TValue>({
         pageSize: 10,
       });
 
-      const filteredData: any[] = data.slots;
+      const filteredData: any[] = data.data;
       setTableData(filteredData);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+    }
+  };
+
+  const resetDate = async () => {
+    setLoading(true);
+    try {
+      setDate(null);
+      const data = await fetchRoomSlots({
+        ...(router.query.id && { roomId: Number(id) }),
+        page: 1,
+        pageSize: 10,
+      });
+
+      const resetData: any[] = data.data;
+      setTableData(resetData);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
@@ -150,12 +161,12 @@ export function DataTable<TData, TValue>({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={handleDateChange}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-          <Button onClick={() => filterDate(date as Date)}>Filter</Button>
+          <Button onClick={resetDate}>Reset</Button>
         </div>
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
@@ -170,14 +181,14 @@ export function DataTable<TData, TValue>({
             <DialogHeader>
               <DialogTitle>Create Room Slots</DialogTitle>
             </DialogHeader>
-            <CreateScheduleForm onCancel={handleCancel} />
+            <CreateRoomSlotForm onCancel={handleCancel} />
           </DialogContent>
         </Dialog>
       </div>
       {!loading && (
         <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
           <Table className="relative">
-            <TableHeader>
+            <TableHeader className="bg-zinc-300">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
@@ -185,7 +196,7 @@ export function DataTable<TData, TValue>({
                 >
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead key={header.id} className="text-black">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -237,10 +248,10 @@ export function DataTable<TData, TValue>({
       )}
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="space-x-2">
           <Pagination
             currentPage={currentPage}

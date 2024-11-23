@@ -107,13 +107,17 @@ export async function resetPassword(formValues: any) {
   return await response.json();
 }
 
-export async function fetchUsers(
-  adminToken: string,
-  page?: number,
-  pageSize?: number
-) {
-  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
-  // const sortParams = "" || `&sort=[{"orderBy":"name", "order":"desc"}]`;
+export async function fetchUsers(queryData: any, adminToken?: string) {
+  const { page, pageSize } = queryData;
+
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/users${queryUrl}`,
     {
@@ -219,12 +223,30 @@ export async function toggleActiveUser(id: number) {
   return data;
 }
 
-export async function fetchDoctors(
-  page?: number,
-  pageSize?: number,
-  adminToken?: string
-) {
-  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
+export async function createDoctor(formValues: any, adminToken: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/doctors`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify(formValues),
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchDoctors(queryData: any, adminToken?: string) {
+  const { page, pageSize } = queryData;
+
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/doctors${queryUrl}`,
@@ -272,6 +294,22 @@ export async function updateDoctorByID(id: number, formValues: any) {
   return data;
 }
 
+export async function addDoctorSchedule(formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/doctor-schedules`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function updateDoctorScheduleByID(id: number, values: any) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/doctor-schedules/${id}`,
@@ -288,8 +326,16 @@ export async function updateDoctorScheduleByID(id: number, values: any) {
   return data;
 }
 
-export async function fetchPetClinics(page?: number, pageSize?: number) {
-  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
+export async function fetchPetClinics(queryData?: any, adminToken?: string) {
+  const { page, pageSize } = queryData || {};
+
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics${queryUrl}`,
@@ -297,6 +343,7 @@ export async function fetchPetClinics(page?: number, pageSize?: number) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
       },
     }
   );
@@ -312,6 +359,22 @@ export async function fetchPetClinicByID(id: number) {
       headers: {
         "Content-Type": "application/json",
       },
+    }
+  );
+
+  return await response.json();
+}
+
+export async function updatePetClinicByID(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/pet-clinics/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // Authorization: `Bearer ${adminToken}`,
+      body: JSON.stringify(formValues),
     }
   );
 
@@ -558,12 +621,17 @@ export async function fetchCafePets(queryData?: any) {
   return await response.json();
 }
 
-export async function fetchCafeRooms(
-  page?: number,
-  pageSize?: number,
-  adminToken?: string
-) {
-  const queryUrl = page && pageSize ? `?page=${page}&pageSize=${pageSize}` : "";
+export async function fetchCafeRooms(queryData: any, adminToken?: string) {
+  const { page, pageSize } = queryData;
+
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/rooms${queryUrl}`,
     {
@@ -1222,6 +1290,99 @@ export async function fetchCafeReport(queryData: any, adminToken: string) {
       headers: {
         "Content-Type": "application/json",
         ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function createAdmin(formValues: any, adminToken: string) {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admins`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify(formValues),
+  });
+
+  const data = await response.json();
+  return data;
+}
+
+export async function editAdmin(
+  id: number,
+  formValues: any,
+  adminToken: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admins/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchAdmins(queryData: any, adminToken?: string) {
+  const { page, pageSize } = queryData;
+
+  const query = {
+    ...(page && { page }),
+    ...(pageSize && { pageSize }),
+  };
+
+  const queryString = qs.stringify(query);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admins${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function updateAdminByID(id: number, formValues: any) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admins/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchAdminByID(id: number | string, adminToken?: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/admins/${id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
       },
     }
   );

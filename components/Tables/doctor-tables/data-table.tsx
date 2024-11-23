@@ -24,7 +24,7 @@ import {
 import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import * as React from "react";
 import {
   DropdownMenu,
@@ -174,10 +174,10 @@ export function DataTable<TData, TValue>({
       </ScrollArea>
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="space-x-2">
           <Pagination
             currentPage={currentPage}

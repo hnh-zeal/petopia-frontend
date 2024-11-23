@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import Pagination from "../Tables/pagination";
 import { Separator } from "@/components/ui/separator";
 import { Heading } from "../ui/heading";
-import { Edit, Plus } from "lucide-react";
+import { Edit, PlusCircle } from "lucide-react";
 import { useRouter } from "next/router";
 import { ScrollArea } from "../ui/scroll-area";
 import { Packages, PackagesData } from "@/types/api";
@@ -139,14 +139,14 @@ export default function PackagesCards({
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/packages/create`)}
         >
-          <Plus className="mr-2 h-4 w-4" /> Add New
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New
         </Button>
       </div>
       <Separator />
       <ScrollArea className="h-[calc(100vh-220px)] rounded-md px-3">
         <div className="container mx-auto p-4">
           {packagesData.packages?.length === 0 ? (
-            <p>Loading...</p>
+            <p>No Results Found</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {packagesData.packages?.map((pkg: Packages) => (

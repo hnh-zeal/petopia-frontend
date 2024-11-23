@@ -24,7 +24,7 @@ import {
 import { Input } from "../../ui/input";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import * as React from "react";
 import {
   DropdownMenu,
@@ -116,14 +116,14 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Table className="relative">
-        <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
-          <TableHeader>
+      <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
+        <Table className="relative">
+          <TableHeader className="bg-zinc-300">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="text-black">
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-black">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -170,14 +170,14 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
           <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </Table>
+        </Table>
+      </ScrollArea>
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="space-x-2">
           <Pagination
             currentPage={currentPage}

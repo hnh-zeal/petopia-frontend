@@ -4,7 +4,6 @@ import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchAppointmentSlots } from "@/pages/api/api";
 
-import { Separator } from "@/components/ui/separator";
 import Loading from "@/pages/loading";
 
 export const AvailableSlotsClient = ({ doctor }: any) => {

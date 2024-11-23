@@ -1,11 +1,7 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import {
-  fetchDoctorByID,
-  fetchDoctors,
-  fetchPetClinics,
-} from "@/pages/api/api";
+import { fetchDoctorByID, fetchPetClinics } from "@/pages/api/api";
 import React from "react";
 import type { GetServerSideProps } from "next";
 import EditDoctorForm from "@/components/Forms/edit-doctor-form";
@@ -24,7 +20,7 @@ export const getServerSideProps: GetServerSideProps<{
   const { id } = context.params as { id: string };
   try {
     const doctor = await fetchDoctorByID(Number(id));
-    const petClinics = await fetchPetClinics();
+    const petClinics = await fetchPetClinics({});
     return { props: { doctor, petClinics } };
   } catch (error) {
     console.error("Error fetching cafe room:", error);

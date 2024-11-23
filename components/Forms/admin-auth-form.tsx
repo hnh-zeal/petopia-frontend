@@ -1,9 +1,8 @@
 "use client";
 import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import * as z from "zod";
@@ -14,6 +13,7 @@ import { adminLogin } from "@/pages/api/api";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import SubmitButton from "../submit-button";
 import { Password } from "../password";
+import Loading from "@/pages/loading";
 
 type adminLoginValue = z.infer<typeof AdminLoginSchema>;
 
@@ -26,6 +26,12 @@ export default function AdminAuthForm() {
   const form = useForm<adminLoginValue>({
     resolver: zodResolver(AdminLoginSchema),
   });
+
+  useEffect(() => {
+    if (auth) {
+      router.push("/admin/dashboard");
+    }
+  }, [auth, router]);
 
   const onSubmit = async (formValues: adminLoginValue) => {
     setIsLoading(true);
@@ -40,6 +46,7 @@ export default function AdminAuthForm() {
         setAuth({
           admin: data.admin,
           accessToken: data.accessToken,
+          role: data.admin.role,
         });
         router.push("/admin/dashboard");
       }

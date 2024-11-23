@@ -24,11 +24,11 @@ export default function Footer() {
             <span className="text-xl font-bold ml-2">Petopia</span>
           </div>
           <p className="text-gray-600">
-            848 King Street, Mesa, AZ 85201, Boston, USA
+            14th Street, Lanmadaw, Yangon, Myanmar
           </p>
-          <p className="text-gray-600">info@pawsitively.com</p>
+          <p className="text-gray-600">info@petopia.com</p>
           <p className="text-gray-600 mt-2">
-            &copy; 2022 Brand, Inc. &bull; <Link href="#">Privacy</Link> &bull;{" "}
+            &copy; 2024 Brand, Inc. &bull; <Link href="#">Privacy</Link> &bull;{" "}
             <Link href="#">Terms</Link> &bull; <Link href="#">Sitemap</Link>
           </p>
         </div>
@@ -38,27 +38,32 @@ export default function Footer() {
           <ul className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8">
             <li>
               <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Services
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className="text-gray-600 hover:text-gray-900">
+                Pet Clinic
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className="text-gray-600 hover:text-gray-900">
+                Pet Care Services
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className="text-gray-600 hover:text-gray-900">
+                Pet Cafe
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className="text-gray-600 hover:text-gray-900">
+                Packages
               </Link>
             </li>
             <li>
               <Link href="#" className="text-gray-600 hover:text-gray-900">
                 About us
-              </Link>
-            </li>
-            <li>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Location & hours
-              </Link>
-            </li>
-            <li>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Blog
-              </Link>
-            </li>
-            <li>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Contact
               </Link>
             </li>
           </ul>

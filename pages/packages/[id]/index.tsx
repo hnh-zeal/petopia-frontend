@@ -7,8 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { purchasePackage, fetchPackageByID } from "@/pages/api/api";
 import { Packages } from "@/types/api";
 import { GetServerSideProps } from "next";
@@ -19,10 +25,11 @@ import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDurationText } from "..";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 export const getServerSideProps: GetServerSideProps<{
   pkg: Packages;
@@ -40,14 +47,12 @@ export const getServerSideProps: GetServerSideProps<{
 };
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().optional(),
-  card: z.string().min(1, "Card information is required").optional(),
-  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV").optional(),
-  billingAddress: z.string().optional(),
-  billingCity: z.string().optional(),
-  billingState: z.string().optional(),
-  billingZip: z.string().optional(),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required"),
+  card: z.string().min(1, "Card information is required"),
+  year: z.number(),
+  month: z.number(),
+  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV"),
 });
 
 export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
@@ -87,6 +92,16 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!auth) {
+      router.push("/login");
+    }
+  }, [auth, router]);
+
+  if (!auth) {
+    return null;
+  }
 
   return (
     <>
@@ -147,21 +162,52 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-row gap-4">
-                        <CustomFormField
-                          fieldType={FormFieldType.INPUT}
+                        <FormField
                           control={form.control}
                           name="month"
-                          placeholder="09"
-                          label="MM"
-                          required={true}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="shad-input-label">
+                                Month <span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="01"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.valueAsNumber)
+                                  }
+                                  min={0}
+                                  max={12}
+                                />
+                              </FormControl>
+                              <FormMessage className="shad-error" />
+                            </FormItem>
+                          )}
                         />
-                        <CustomFormField
-                          fieldType={FormFieldType.INPUT}
+                        <FormField
                           control={form.control}
                           name="year"
-                          placeholder="28"
-                          label="YY"
-                          required={true}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="shad-input-label">
+                                Year <span className="text-red-400">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="2028"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.valueAsNumber)
+                                  }
+                                  min={2024}
+                                />
+                              </FormControl>
+                              <FormMessage className="shad-error" />
+                            </FormItem>
+                          )}
                         />
                       </div>
                       <CustomFormField
@@ -172,22 +218,6 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
                         label="CVV"
                         required={true}
                       />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Billing Address */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Billing address</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Input placeholder="22 Rhine Street" />
-                    <Input placeholder="Suite 1234A" />
-                    <Input placeholder="Austin" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="MS" />
-                      <Input placeholder="4300" />
                     </div>
                   </CardContent>
                 </Card>
@@ -220,7 +250,7 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
                     <Button
                       type="submit"
                       onClick={() => router.push(`/packages/${pkg.id}`)}
-                      className="w-full"
+                      className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
                     >
                       {loading ? "Purchasing" : "Confirm Purchase"}
                     </Button>

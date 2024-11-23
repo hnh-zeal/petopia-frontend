@@ -1,6 +1,4 @@
-"use client";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -12,8 +10,19 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateCafeRoomSchema } from "@/validations/formValidation";
 import { useState } from "react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { createCafeRoom } from "@/pages/api/api";
 import { ScrollArea } from "../ui/scroll-area";
+import { Input } from "../ui/input";
+import MultiImageUpload from "../MultiImageUpload";
+import ImageUpload from "../ImageUpload";
 
 type ServiceFormValue = z.infer<typeof CreateCafeRoomSchema>;
 
@@ -21,21 +30,30 @@ export default function CreateCafeRoomForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [mainImage, setMainImage] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
   const form = useForm<ServiceFormValue>({
     resolver: zodResolver(CreateCafeRoomSchema),
     defaultValues: {
       name: "",
       roomNo: "",
-      price: "",
       roomType: "",
       description: "",
+      mainImage: "",
+      images: [],
     },
   });
 
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await createCafeRoom(formValues);
+      const dataToSubmit = {
+        ...formValues,
+        mainImage,
+        images,
+      };
+
+      const data = await createCafeRoom(dataToSubmit);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -55,6 +73,8 @@ export default function CreateCafeRoomForm() {
 
   const onReset = () => {
     form.reset();
+    setMainImage("");
+    setImages([]);
   };
 
   return (
@@ -69,6 +89,40 @@ export default function CreateCafeRoomForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="p-2">
+                <ImageUpload
+                  image={mainImage}
+                  onImageUpload={(url: string) => {
+                    setMainImage(url);
+                  }}
+                  onImageRemove={() => {
+                    setMainImage("");
+                  }}
+                  label="Room Main Image"
+                  description="Upload an image"
+                />
+              </div>
+
+              <div className="p-2">
+                <MultiImageUpload
+                  images={images}
+                  onImageUpload={(newImages: string[]) => {
+                    setImages(newImages);
+                  }}
+                  onImageRemove={(index: number) => {
+                    const updatedImages = images.filter((_, i) => i !== index);
+                    setImages(updatedImages);
+                    if (index === 0) {
+                      setImages([]);
+                    }
+                  }}
+                  label="Other Images"
+                  description="Upload additional images for the cafe room"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -88,30 +142,35 @@ export default function CreateCafeRoomForm() {
             </div>
 
             <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Price"
+              <FormField
                 control={form.control}
                 name="price"
-                label="Price"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="shad-input-label">
+                      Price <span className="text-red-400">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Price"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        min={0}
+                      />
+                    </FormControl>
+                    <FormMessage className="shad-error" />
+                  </FormItem>
+                )}
               />
 
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
-                placeholder="Room Type."
+                placeholder="Contact No."
                 control={form.control}
-                name="roomType"
-                label="Room Type"
-              />
-            </div>
-
-            <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Facilities"
-                control={form.control}
-                name="facilities"
-                label="Facilities"
+                name="contact"
+                label="Contact No."
               />
             </div>
 
@@ -125,8 +184,7 @@ export default function CreateCafeRoomForm() {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
+            <div className="flex my-10 items-center justify-end space-x-4">
               <div className="flex items-center justify-around space-x-4">
                 <Button
                   disabled={loading}

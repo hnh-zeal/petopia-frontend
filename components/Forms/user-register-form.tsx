@@ -99,6 +99,7 @@ const UserRegisterForm = () => {
                 name="phone"
                 label="Phone Number"
                 placeholder="(555) 123-4567"
+                required={true}
               />
 
               <Password form={form} name="password" label="Password" />
@@ -189,7 +190,7 @@ const UserRegisterForm = () => {
           </section>
 
           <section className="space-y-6">
-            <SubmitButton isLoading={isLoading}>
+            <SubmitButton isLoading={isLoading} className="bg-[#00b2d8] w-full">
               Submit and Continue
             </SubmitButton>
           </section>

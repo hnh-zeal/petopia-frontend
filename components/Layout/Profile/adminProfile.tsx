@@ -1,198 +1,121 @@
 "use client";
-import { Heading } from "../../ui/heading";
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
-import { ScrollArea } from "../../ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Mail, User } from "lucide-react";
+import { format } from "date-fns";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
-import { formatDate } from "date-fns";
-import { useRouter } from "next/router";
 
 export default function AdminProfile() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const auth = useRecoilValue(adminAuthState);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || !auth) {
     return null;
   }
 
   return (
-    <>
-      <div className="flex items-start justify-between">
-        <Heading title="Profile" />
-        <Button onClick={() => router.push("/admin/profile/edit")}>Edit</Button>
-      </div>
-      <Separator />
-      <ScrollArea className="h-[calc(100vh-220px)] pr-4">
-        <Card className="my-3">
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <Avatar className="mr-4 h-20 w-20">
+    <div className="container mx-auto p-4 bg-gradient-to-br bg-gray-100 min-h-screen">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="mb-6">
+          <CardContent className="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-6 p-6">
+            <div className="w-full md:w-1/6 flex justify-center">
+              <Avatar className="w-24 h-24">
                 <AvatarImage
-                  src={auth?.admin.profileUrl}
-                  alt="Profile Picture"
+                  src={auth?.admin.profileUrl || "/default-admin.png"}
+                  alt={auth?.admin.name}
                 />
-                <AvatarFallback>Admin</AvatarFallback>
+                <AvatarFallback>{auth?.admin.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <div>
-                <h2 className="text-xl font-bold">{auth?.admin.name}</h2>
-                <p className="text-gray-600">
-                  Last Login on{" "}
-                  {formatDate(
-                    auth?.admin.lastLoginDate ?? "",
-                    "dd MMM yyyy, HH:mm a"
-                  )}
+            </div>
+            <div className="w-full md:w-4/6">
+              <h1 className="text-3xl font-bold text-black">
+                {auth?.admin.name}
+              </h1>
+              <div className="flex flex-wrap items-center mt-2 space-x-4">
+                <Badge
+                  variant={auth?.admin.isActive ? "success" : "destructive"}
+                  className="mb-2 md:mb-0"
+                >
+                  {auth?.admin.isActive ? "Active" : "Inactive"}
+                </Badge>
+                <span className="text-sm text-black">
+                  Member since{" "}
+                  {auth?.admin.createdAt
+                    ? format(
+                        new Date(auth?.admin.createdAt),
+                        "MMM d, yyyy HH:mm a"
+                      )
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+            <div className="w-full md:w-1/6 flex items-center justify-between">
+              <Button
+                onClick={() => console.log("Edit profile")}
+                className="bg-black hover:bg-black"
+              >
+                Edit Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Personal Information Tab */}
+        <Card className="p-2 my-6">
+          <CardContent className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-3">
+              <div className="flex flex-col gap-3">
+                <h3 className="text-lg font-bold flex items-center text-black-800">
+                  <User className="mr-2" /> About
+                </h3>
+                <p className="text-black-700 text-pretty">
+                  {auth?.admin.about || "No information provided."}
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <h3 className="text-lg font-bold flex items-center text-black-800">
+                  Contact Information
+                </h3>
+                <p className="text-black-700 text-pretty flex items-center">
+                  <Mail className="mr-2" /> {auth?.admin.email}
                 </p>
               </div>
             </div>
-          </CardHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-3">
+                <h3 className="text-lg font-bold text-black-800">Role</h3>
+                <p className="text-black-700">{auth?.admin.role}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <h3 className="text-lg font-bold text-black-800">
+                  Last Login Date
+                </h3>
+                <p className="text-black-700">
+                  {auth?.admin.lastLoginDate
+                    ? format(
+                        new Date(auth?.admin.lastLoginDate),
+                        "MMMM d, yyyy HH:mm"
+                      )
+                    : ""}
+                </p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
-        <Tabs defaultValue="personal-info">
-          <TabsList>
-            <TabsTrigger value="personal-info">
-              Personal Information
-            </TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          </TabsList>
-          <TabsContent value="personal-info">
-            <Card>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 my-4">
-                  <div>
-                    <p className="font-bold">Name</p>
-                    <p>{auth?.admin?.name}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Email</p>
-                    <p>{auth?.admin?.email}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Role</p>
-                    <p>{auth?.admin.isActive || "09420888219"}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Address</p>
-                    <p></p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="my-4">
-                  <h3 className="text-lg font-bold">About</h3>
-                  <p className="text-gray-600">{auth?.admin.about}</p>
-                </div>
-                <Separator />
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold">Experience</h3>
-                  <p className="text-gray-600">
-                    Lorem Ipsum Is Simply Dummy Text Of The Printing And
-                    Typesetting Industry. Lorem Ipsum Has Been The Industry
-                    Standard Dummy Text Ever Since The 1500s, When An Unknown
-                    Printer Took A Galley Of Type And Scrambled It To Make A
-                    Type Specimen Book. It Has Survived Not Only Five Centuries,
-                    But Also The Leap Into Electronic Typesetting, Remaining
-                    Essentially Unchanged.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="permissions">
-            <Card>
-              <CardContent>
-                <div className="my-4">
-                  <h3 className="text-lg font-bold">Permissions</h3>
-                  <p className="text-gray-600">{auth?.admin.about}</p>
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4 my-4">
-                  <div>
-                    <p className="font-bold">Name</p>
-                    <p>{auth?.admin?.name}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Email</p>
-                    <p>{auth?.admin?.email}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Role</p>
-                    <p>{auth?.admin.isActive || "09420888219"}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Address</p>
-                    <p></p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold">Experience</h3>
-                  <p className="text-gray-600">
-                    Lorem Ipsum Is Simply Dummy Text Of The Printing And
-                    Typesetting Industry. Lorem Ipsum Has Been The Industry
-                    Standard Dummy Text Ever Since The 1500s, When An Unknown
-                    Printer Took A Galley Of Type And Scrambled It To Make A
-                    Type Specimen Book. It Has Survived Not Only Five Centuries,
-                    But Also The Leap Into Electronic Typesetting, Remaining
-                    Essentially Unchanged.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="appointments">
-            <Card>
-              <CardContent>
-                <div className="my-4">
-                  <h3 className="text-lg font-bold">Permissions</h3>
-                  <p className="text-gray-600">{auth?.admin.about}</p>
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4 my-4">
-                  <div>
-                    <p className="font-bold">Name</p>
-                    <p>{auth?.admin?.name}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Email</p>
-                    <p>{auth?.admin?.email}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Role</p>
-                    <p>{auth?.admin.isActive || "09420888219"}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold">Address</p>
-                    <p></p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold">Experience</h3>
-                  <p className="text-gray-600">
-                    Lorem Ipsum Is Simply Dummy Text Of The Printing And
-                    Typesetting Industry. Lorem Ipsum Has Been The Industry
-                    Standard Dummy Text Ever Since The 1500s, When An Unknown
-                    Printer Took A Galley Of Type And Scrambled It To Make A
-                    Type Specimen Book. It Has Survived Not Only Five Centuries,
-                    But Also The Leap Into Electronic Typesetting, Remaining
-                    Essentially Unchanged.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </ScrollArea>
-    </>
+      </motion.div>
+    </div>
   );
 }

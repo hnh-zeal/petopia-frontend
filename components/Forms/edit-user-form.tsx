@@ -12,11 +12,7 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { UserSchema } from "@/validations/formValidation";
 import { useEffect, useState } from "react";
-import {
-  fetchUserByID,
-  fetchPetClinics,
-  updateUserByID,
-} from "@/pages/api/api";
+import { fetchUserByID, updateUserByID } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { UserDetails } from "@/types/api";

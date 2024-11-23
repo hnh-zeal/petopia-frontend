@@ -20,14 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
-import { CalendarIcon, ChevronDown } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import Pagination from "../pagination";
 import { Calendar } from "@/components/ui/calendar";

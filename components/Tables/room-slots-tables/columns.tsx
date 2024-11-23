@@ -1,32 +1,12 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdminCellAction, UserCellAction } from "./cell-action";
-import { Checkbox } from "@/components/ui/checkbox";
+import { UserCellAction } from "./cell-action";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 import { format } from "date-fns";
-import { CafeBooking } from "@/types/api";
+import { RoomSlot } from "@/types/api";
 
-export const columns: ColumnDef<CafeBooking>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select Row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+export const columns: ColumnDef<RoomSlot>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => <SortColumn column={column} title="Id" />,

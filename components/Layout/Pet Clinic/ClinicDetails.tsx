@@ -1,21 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  HeartPulse,
-  Syringe,
-  Users,
-  Package,
-  MessageCircle,
-  CalendarIcon,
-  Info,
-  Star,
-} from "lucide-react";
+import { HeartPulse, Syringe, Users, MessageCircle, Info } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Clinic, Doctor } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/router";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
   const router = useRouter();
@@ -23,18 +13,20 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
   return (
     <div className="container mx-auto px-4">
       <div className="sticky top-0 bg-white z-10 py-4">
-        <h1 className="text-3xl font-bold mb-6">{clinic.name}</h1>
+        <h1 className="text-3xl font-bold">{clinic.name}</h1>
       </div>
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-10 space-x-4">
         {/* Main Content */}
         <div className="w-full lg:w-2/3 xl:w-3/4 order-2 lg:order-1">
-          <Image
-            src="/PetClinic/cardiology.jpg?height=300&width=800"
-            alt="Cardiology Clinic"
-            width={800}
-            height={300}
-            className="w-full rounded-lg mb-6"
-          />
+          <section id="image" className="mb-8">
+            <Image
+              src={clinic.mainImage}
+              alt="Cardiology Clinic"
+              width={800}
+              height={300}
+              className="w-full rounded-lg mb-6"
+            />
+          </section>
 
           <section id="general-info" className="mb-8">
             <h2 className="text-2xl font-semibold mb-4 text-blue-800">
@@ -43,29 +35,23 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
             <p className="text-gray-700">{clinic.description}</p>
           </section>
 
-          <section id="diseases" className="mb-8">
+          <section id="treatments" className="mb-8">
             <h2 className="text-2xl font-semibold mb-4 text-blue-800">
-              Heart disease diagnosis services
+              Treatments and Tools
             </h2>
-            <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li>
-                Special external device examination, electrocardiogram,
-                echocardiography, exercise cardioversion, 24-hour heart rate
-                recording, and abnormal monitoring
-              </li>
-              <li>
-                Invasive procedures are diagnostic procedures that involve
-                inserting a catheter into the heart or blood vessels to diagnose
-                heart disease
-              </li>
-            </ul>
-            <div className="mt-4 space-x-4">
-              <Button className="bg-pink-600 hover:bg-pink-700">
-                Advanced Technology
-              </Button>
-              <Button className="bg-pink-600 hover:bg-pink-700">
-                Invasive Diagnostic Service
-              </Button>
+
+            <div className="grid grid-cols-2">
+              <ul className="list-disc list-inside text-gray-700 space-y-2">
+                {clinic.treatment?.map((treatment, index) => (
+                  <li key={index}>{treatment}</li>
+                ))}
+              </ul>
+
+              <ul className="list-disc list-inside text-gray-700 space-y-2 mt-4">
+                {clinic.tools?.map((tool, index) => (
+                  <li key={index}>{tool}</li>
+                ))}
+              </ul>
             </div>
           </section>
 
@@ -81,8 +67,8 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
                 SEE OTHER DOCTORS →
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clinic.doctors?.map((doctor: Doctor) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {clinic.doctors?.slice(0, 2).map((doctor: Doctor) => (
                 <Card
                   key={doctor.id}
                   className="overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -119,10 +105,6 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
                     </div>
                   </CardContent>
                   <CardFooter className="bg-gray-50 p-4 flex justify-end">
-                    {/* <Button variant="ghost">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    Book Appointment
-                  </Button> */}
                     <Button
                       variant="ghost"
                       onClick={() =>
@@ -181,7 +163,7 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
                       className="flex items-center text-gray-600 hover:underline"
                     >
                       <Syringe className="mr-2 h-5 w-5" />
-                      Diseases And Treatment
+                      Treatment and Tools
                     </Link>
                   </li>
                   <li>
@@ -206,7 +188,7 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
               </CardContent>
             </Card>
             <Button
-              className="w-full bg-blue-900 hover:bg-blue-800"
+              className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
               onClick={() => router.push("/pet-clinics/appointments")}
             >
               Make an appointment

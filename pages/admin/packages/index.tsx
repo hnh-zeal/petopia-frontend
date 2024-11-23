@@ -23,7 +23,7 @@ export const getServerSideProps: GetServerSideProps<{
     const packagesData = await fetchPackages({});
     return { props: { packagesData } };
   } catch (error) {
-    console.error("Error fetching doctor:", error);
+    console.error("Error fetching packages:", error);
     return {
       notFound: true,
     };

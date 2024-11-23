@@ -14,10 +14,9 @@ export const UserRegisterSchema = z.object({
   password: z.string().min(1, { message: "Password is required" }),
   phone: z
     .string()
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number")
-    .optional(),
+    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number"),
   birthDate: z.date().optional(),
-  gender: z.enum(["male", "female", "other"]),
+  gender: z.enum(["male", "female", "other"]).optional(),
   address: z.string().optional(),
   terms: z.boolean(),
   privacy: z.boolean(),
@@ -61,6 +60,7 @@ export const CreatePetClinicSchema = z.object({
   sections: z.array(sectionSchema).optional(),
   tools: z.any(z.string()).optional(),
   treatment: z.any(z.string()).optional(),
+  mainImage: z.any().optional(),
 });
 
 const addOnSchema = z.object({
@@ -83,7 +83,10 @@ export const CreateCafeRoomSchema = z.object({
   roomNo: z.string(),
   price: z.number(),
   roomType: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
+  contact: z.string().optional(),
+  mainImage: z.string().optional(),
+  images: z.any().optional(),
   // facilities: z.string(),
   // menus: z.string(),
 });
@@ -116,16 +119,16 @@ export const CreateAppointmentSchema = z.object({
 });
 
 const experienceSchema = z.object({
-  from_year: z.string(),
-  to_year: z.string(),
-  position: z.string(),
-  location: z.string(),
+  from_year: z.string().optional(),
+  to_year: z.string().optional(),
+  position: z.string().optional(),
+  location: z.string().optional(),
 });
 
 const educationSchema = z.object({
-  year: z.string(),
-  name: z.string(),
-  location: z.string(),
+  year: z.string().optional(),
+  name: z.string().optional(),
+  location: z.string().optional(),
 });
 
 const scheduleSchema = z.object({

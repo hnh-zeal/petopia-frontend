@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { truncate } from "@/utils/truncate";
-import { Filter, Search, Star } from "lucide-react";
+import { Search } from "lucide-react";
 import { CareService, CareServicesData } from "@/types/api";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -35,13 +35,13 @@ export default function CareServices({
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-4xl font-bold text-center text-indigo-900 mb-8"
+            className="text-4xl font-bold text-center text-black mb-8"
           >
             Pet Care Services
           </motion.h1>
@@ -56,16 +56,12 @@ export default function CareServices({
               <Input
                 type="text"
                 placeholder="Search services..."
-                className="w-full px-4 py-3 rounded-full border-2 border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-full border-2 border-[#00b2d8] focus:outline-none focus:ring-2 focus:ring-[#00b2d8] focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <Search className="absolute h-5 w-5 right-3 top-2.5 text-gray-400" />
             </div>
-            <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
-              <Filter className="mr-2 h-4 w-4" size={18} />
-              Filter
-            </Button>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -93,7 +89,7 @@ export default function CareServices({
                         {truncate(service.description, 200)}
                       </p>
 
-                      <div className="flex items-center mb-4">
+                      {/* <div className="flex items-center mb-4">
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <Star
@@ -115,11 +111,16 @@ export default function CareServices({
                         <span className="ml-2 text-gray-600">
                           {service.rating} ({service.reviews} reviews)
                         </span>
+                      </div> */}
+                      <div className="flex items-center text-gray-500 mb-2">
+                        <span className="text-lg font-bold">
+                          $ {service.price.toFixed(2)}
+                        </span>
                       </div>
                     </CardContent>
                     <CardFooter className="justify-end p-4 pt-0">
                       <Button
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
+                        className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6] text-white py-2 rounded-md"
                         onClick={() =>
                           router.push(`/pet-care/services/${service.id}`)
                         }

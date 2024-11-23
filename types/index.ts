@@ -1,4 +1,5 @@
 import { Icons } from "@/components/icons";
+import { Admin } from "./api";
 
 export interface NavItem {
   title: string;
@@ -10,16 +11,17 @@ export interface NavItem {
   icon?: keyof typeof Icons;
   label?: string;
   description?: string;
+  roles?: string[];
 }
 
 export interface SubNavItem {
   title: string;
   href: string;
-  disabled?: boolean;
-  external?: boolean;
   icon?: keyof typeof Icons;
   label?: string;
+  roles?: string[];
   description?: string;
+  disabled?: boolean;
 }
 
 export interface NavItemWithChildren extends NavItem {
@@ -59,16 +61,6 @@ type User = {
   updatedAt: string;
 };
 
-type Admin = {
-  id: number;
-  name: string;
-  email: string;
-  profileUrl: string;
-  about: string;
-  lastLoginDate: Date;
-  isActive: boolean;
-};
-
 export type CafePet = {
   id: number;
   name: string;
@@ -93,7 +85,15 @@ export type userLoggedInData = {
 export type adminLoggedInData = {
   admin: Admin;
   accessToken: string;
+  role: Role;
 };
+
+export enum Role {
+  SUPER = "Super Admin",
+  CLINIC = "Pet Clinic Admin",
+  CARE = "Pet Care Admin",
+  CAFE = "Pet Cafe Admin",
+}
 
 export type MainNavItem = NavItemWithOptionalChildren;
 

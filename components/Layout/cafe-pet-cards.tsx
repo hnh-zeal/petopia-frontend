@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -13,13 +7,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Cake,
   PawPrint,
-  Heart,
-  Plus,
+  PlusCircle,
   Edit,
-  Syringe,
-  FileText,
-  AlertTriangle,
   CalendarIcon,
+  Home,
 } from "lucide-react";
 import {
   Dialog,
@@ -27,10 +18,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { CafePet, CafePetData, CafeRoom } from "@/types/api";
+import { CafePet, CafeRoom } from "@/types/api";
 import { ScrollArea } from "../ui/scroll-area";
 import { Heading } from "../ui/heading";
 import Pagination from "../Tables/pagination";
@@ -50,33 +40,36 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { UpdateCafePetSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { breeds, GenderOptions, PetClinic, petTypes } from "@/constants/data";
-import { fetchCafeRooms, updateCafePetByID } from "@/pages/api/api";
+import { breeds, GenderOptions, petTypes } from "@/constants/data";
+import {
+  fetchCafePets,
+  fetchCafeRooms,
+  updateCafePetByID,
+} from "@/pages/api/api";
 import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "../ui/calendar";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
-
-interface CafePetsListProps {
-  petsData: CafePetData;
-}
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
+import { useFetchData } from "@/hooks/useFetchData";
+import Loading from "@/pages/loading";
 
 type CafePetFormValue = z.infer<typeof UpdateCafePetSchema>;
 
-const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
+const CafePetsCards: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const adminAuth = useRecoilValue(adminAuthState);
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<CafePet>(fetchCafePets, 1, 6, adminAuth?.accessToken);
 
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [cafePet, setCafePet] = useState<CafePet>();
   const [roomData, setRoomData] = useState<CafeRoom[]>();
   const form = useForm<CafePetFormValue>({
@@ -87,8 +80,8 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
     const getRooms = async () => {
       setLoading(true);
       try {
-        const data = await fetchCafeRooms();
-        setRoomData(data.rooms);
+        const data = await fetchCafeRooms({});
+        setRoomData(data.data);
       } catch (error) {
         console.error("Failed to fetch Pet Centers", error);
       } finally {
@@ -151,101 +144,90 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/pet-cafe/pets/create`)}
         >
-          <Plus className="mr-2 h-4 w-4" /> Add New
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New
         </Button>
       </div>
       <Separator />
       <ScrollArea className="h-[calc(100vh-220px)] rounded-md">
         <div className="container mx-auto p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {petsData.cafePets.length > 0 ? (
-              petsData.cafePets?.map((pet) => (
-                <Card
-                  key={pet.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                >
-                  <CardHeader className="relative p-0">
-                    <Image
-                      src={pet.imageUrl || `/default-cafe-pet.png`}
-                      alt={pet.name}
-                      width={400}
-                      height={300}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge
-                      className={`absolute top-2 right-2 ${pet.isActive ? "bg-green-500" : "bg-red-500"}`}
-                    >
-                      {pet.isActive ? "Active" : "Inactive"}
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <CardTitle className="text-xl mb-2 flex items-center justify-between">
-                      <span>{pet.name}</span>
-                      <Badge variant="secondary" className="capitalize">
-                        {pet.petType}
-                      </Badge>
-                    </CardTitle>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <Cake className="w-4 h-4 mr-2 text-gray-500" />
-                        <span>
-                          {pet.year} years, {pet.month} months old
-                        </span>
+          {loading ? (
+            <>
+              <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+                <Loading />
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {data.length > 0 ? (
+                data?.map((pet) => (
+                  <Card
+                    key={pet.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-white p-6"
+                  >
+                    <CardContent className="p-0">
+                      <div className="flex gap-6">
+                        {/* Left side - Avatar */}
+                        <div className="relative flex-shrink-0">
+                          <div className="h-24 w-24 rounded-full overflow-hidden">
+                            <Image
+                              src={pet.imageUrl || "/placeholder-pet.jpg"}
+                              alt={pet.name}
+                              layout="fill"
+                              className="rounded-full"
+                              objectFit="cover"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right side - Basic Info */}
+                        <div className="flex-grow">
+                          <div className="flex items-center justify-between mb-2">
+                            <h2 className="text-2xl font-bold">{pet.name}</h2>
+                            <Badge className="bg-[#00b2d8] hover:bg-[#2cc4e6]">
+                              <p className="capitalize">{pet.sex}</p>
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            <PawPrint className="h-4 w-4" />
+                            <span className="capitalize">
+                              {pet.petType} - {pet.breed}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Cake className="h-4 w-4" />
+                            <span>
+                              {pet.year} years {pet.month} months
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <PawPrint className="w-4 h-4 mr-2 text-gray-500" />
-                        <span className="capitalize">{pet.breed}</span>
+
+                      {/* Full width sections */}
+                      <div className="mt-6 space-y-4">
+                        <div>
+                          <h3 className="font-semibold mb-2">Description</h3>
+                          <p className="text-gray-600">{pet.description}</p>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 text-gray-600">
+                          <div className="flex flex-row items-center gap-2">
+                            <Home className="h-4 w-4" />
+                            <span>
+                              Room: {pet.room.name} ({pet.room.roomNo})
+                            </span>
+                          </div>
+                          <Button size="sm" onClick={() => onEdit(pet)}>
+                            <Edit className="w-4 h-4 mr-2" /> Edit
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Heart className="w-4 h-4 mr-2 text-gray-500" />
-                        <span className="capitalize">{pet.sex}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
-                        <span>
-                          Born: {new Date(pet.dateOfBirth).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                    <Separator className="my-3" />
-                    <p className="text-sm text-gray-600">{pet.description}</p>
-                  </CardContent>
-                  <CardFooter className="bg-gray-50 p-4 flex flex-col items-start">
-                    <div className="flex items-center mb-2">
-                      <Syringe className="w-4 h-4 mr-2 text-blue-500" />
-                      <span className="font-semibold">Medication:</span>
-                      <span className="ml-2">{pet.medication || "None"}</span>
-                    </div>
-                    <div className="flex items-center mb-2">
-                      <FileText className="w-4 h-4 mr-2 text-green-500" />
-                      <span className="font-semibold">Vaccination:</span>
-                      <span className="ml-2">
-                        {pet.vaccinationRecords || "Up to date"}
-                      </span>
-                    </div>
-                    {pet.specialNeeds && (
-                      <div className="flex items-center">
-                        <AlertTriangle className="w-4 h-4 mr-2 text-yellow-500" />
-                        <span className="font-semibold">Special Needs:</span>
-                        <span className="ml-2">{pet.specialNeeds}</span>
-                      </div>
-                    )}
-                    <Separator className="my-3 w-full" />
-                    <div className="flex items-center justify-between w-full">
-                      <span className="text-sm text-gray-500">
-                        Room: {pet.room?.name} (No. {pet.room?.roomNo})
-                      </span>
-                      <Button size="sm" onClick={() => onEdit(pet)}>
-                        <Edit className="mr-2 h-4 w-4" /> Edit
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <p>No pets found.</p>
-            )}
-          </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <p>No pets found.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
@@ -253,7 +235,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
           <div className="space-x-2">
             <Pagination
               currentPage={currentPage}
-              totalPages={petsData.totalPages}
+              totalPages={totalPages}
               onPageChange={handlePageChange}
             />
           </div>
@@ -422,7 +404,7 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                 <div></div>
                 <div className="flex items-center justify-between space-x-4">
                   <Button
-                    disabled={loading}
+                    disabled={isLoading}
                     variant="outline"
                     type="button"
                     className="ml-auto w-full"
@@ -430,7 +412,10 @@ const CafePetsCards: React.FC<CafePetsListProps> = ({ petsData }) => {
                   >
                     Cancel
                   </Button>
-                  <SubmitButton isLoading={loading} className="ml-auto w-full">
+                  <SubmitButton
+                    isLoading={isLoading}
+                    className="ml-auto w-full"
+                  >
                     Update
                   </SubmitButton>
                 </div>

@@ -27,6 +27,8 @@ import { CareService } from "@/types/api";
 import { Label } from "../ui/label";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
+import ImageUpload from "../ImageUpload";
+import MultiImageUpload from "../MultiImageUpload";
 
 export const serviceType = [
   { name: "Pet Sitting", value: "SITTING" },
@@ -40,6 +42,8 @@ export default function EditServiceForm({ service }: { service: CareService }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mainImage, setMainImage] = useState<string>(service.mainImage);
+  const [images, setImages] = useState<string[]>(service.images);
   const [categories, setCategories] = useState<any>([]);
   const router = useRouter();
   const form = useForm<ServiceFormValue>({
@@ -72,7 +76,13 @@ export default function EditServiceForm({ service }: { service: CareService }) {
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await updateCareService(service.id, formValues);
+      const formData = {
+        ...formValues,
+        mainImage,
+        images,
+      };
+
+      const data = await updateCareService(service.id, formData);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -123,6 +133,40 @@ export default function EditServiceForm({ service }: { service: CareService }) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="p-2">
+                <ImageUpload
+                  image={mainImage}
+                  onImageUpload={(url: string) => {
+                    setMainImage(url);
+                  }}
+                  onImageRemove={() => {
+                    setMainImage("");
+                  }}
+                  label="Room Main Image"
+                  description="Upload an image"
+                />
+              </div>
+
+              <div className="p-2">
+                <MultiImageUpload
+                  images={images}
+                  onImageUpload={(newImages: string[]) => {
+                    setImages(newImages);
+                  }}
+                  onImageRemove={(index: number) => {
+                    const updatedImages = images.filter((_, i) => i !== index);
+                    setImages(updatedImages);
+                    if (index === 0) {
+                      setImages([]);
+                    }
+                  }}
+                  label="Other Images"
+                  description="Upload additional images for the cafe room"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}

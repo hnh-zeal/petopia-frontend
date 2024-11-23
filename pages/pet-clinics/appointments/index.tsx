@@ -29,7 +29,7 @@ import { ConfirmationForm } from "@/components/Layout/Pet Clinic/ConfirmationFor
 const petSchema = z.object({
   name: z.string().optional(),
   petId: z.string().optional(),
-  petType: z.string().optional(),
+  petType: z.string(),
   age: z.number().min(0, "Year must be at least 0").optional(),
   month: z
     .number()
@@ -47,12 +47,8 @@ const appointmentSchema = z.object({
   description: z
     .string()
     .min(10, "Description must be at least 10 characters."),
-  date: z.date({
-    required_error: "A date is required.",
-  }),
-  time: z.string({
-    required_error: "A time slot is required.",
-  }),
+  date: z.date({ required_error: "A date is required." }),
+  time: z.string({ required_error: "A time slot is required." }),
   doctorId: z.string().optional(),
   clinicId: z.string().optional(),
 });
@@ -101,8 +97,8 @@ export const getServerSideProps: GetServerSideProps<{
   petClinicsData: PetClinicData;
 }> = async (context) => {
   try {
-    const doctorsData = await fetchDoctors();
-    const petClinicsData = await fetchPetClinics();
+    const doctorsData = await fetchDoctors({});
+    const petClinicsData = await fetchPetClinics({});
     return { props: { doctorsData, petClinicsData } };
   } catch (error) {
     console.error("Error fetching pet clinic:", error);
@@ -130,10 +126,6 @@ export default function ClinicAppointmentPage({
   const petForm = useForm<z.infer<typeof petSchema>>({
     resolver: zodResolver(petSchema),
     defaultValues: {
-      petType: "",
-      breed: "",
-      name: "",
-      sex: "",
       age: 0,
       month: 1,
     },
@@ -311,7 +303,11 @@ export default function ClinicAppointmentPage({
               </form>
             </Form>
           ) : (
-            <Button type="button" onClick={handleNextStep}>
+            <Button
+              type="button"
+              className="bg-[#00b2d8] hover:bg-[#2cc4e6]"
+              onClick={handleNextStep}
+            >
               Next <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           )}

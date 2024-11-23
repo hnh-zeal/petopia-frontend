@@ -1,11 +1,10 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { Doctor } from "@/constants/data";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
 import { truncate } from "@/utils/truncate";
+import { Doctor } from "@/types/api";
 
 export const columns: ColumnDef<Doctor>[] = [
   // {

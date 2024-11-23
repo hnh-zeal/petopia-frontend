@@ -12,16 +12,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SelectItem } from "@/components/ui/select";
 import { Doctors, GenderOptions, IdentificationTypes } from "@/constants/data";
-// import "react-datepicker/dist/react-datepicker.css";
 import "react-phone-number-input/style.css";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
-// import { FileUploader } from "../FileUploader";
 import { motion } from "framer-motion";
 import SubmitButton from "../submit-button";
 import { UserRegisterSchema } from "@/validations/formValidation";
 import { useToast } from "../ui/use-toast";
 import { Button } from "../ui/button";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { userRegister } from "@/pages/api/api";
 import { Password } from "../password";
 

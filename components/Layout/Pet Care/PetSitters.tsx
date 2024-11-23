@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { PetSitter } from "@/types/api";
-import { CalendarIcon, Filter, Info, Search, Star } from "lucide-react";
+import { Info, Search, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/router";
 
@@ -31,7 +31,7 @@ export default function PetSitters({ petSitters }: any) {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
@@ -58,10 +58,6 @@ export default function PetSitters({ petSitters }: any) {
               />
               <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
             </div>
-            <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
-              <Filter className="mr-2 h-4 w-4" size={18} />
-              Filter
-            </Button>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -89,9 +85,6 @@ export default function PetSitters({ petSitters }: any) {
                           <h2 className="text-xl font-semibold text-indigo-900">
                             {sitter.name}
                           </h2>
-                          <p className="text-gray-600 mb-2">
-                            {/* {sitter.services.name} */}
-                          </p>
                           <div className="flex items-center mb-2">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star

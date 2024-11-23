@@ -12,6 +12,8 @@ import { Packages } from "@/types/api";
 import { GetServerSideProps } from "next";
 import { fetchPackages } from "../api/api";
 import { useRouter } from "next/router";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
 
 export const getServerSideProps: GetServerSideProps<{
   packages: Packages;
@@ -37,6 +39,7 @@ export const getDiscountedPrice = (price: number, discountPercent: number) => {
 
 export default function PackagesPage({ packages }: { packages: Packages[] }) {
   const router = useRouter();
+  const auth = useRecoilValue(userAuthState);
 
   return (
     <div className="container mx-auto py-12">
@@ -80,8 +83,14 @@ export default function PackagesPage({ packages }: { packages: Packages[] }) {
             </CardContent>
             <CardFooter>
               <Button
-                onClick={() => router.push(`/packages/${pkg.id}`)}
-                className="w-full"
+                onClick={() => {
+                  if (!auth) {
+                    router.push("/login");
+                  } else {
+                    router.push(`/packages/${pkg.id}`);
+                  }
+                }}
+                className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
               >
                 Subscribe Now
               </Button>

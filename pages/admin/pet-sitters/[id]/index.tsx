@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import { fetchDoctorByID, fetchDoctors } from "@/pages/api/api";
+import { fetchDoctorByID } from "@/pages/api/api";
 import React from "react";
 import type { GetServerSideProps } from "next";
 import DoctorInfo from "@/components/Layout/Profile/DoctorInfo";
@@ -35,7 +35,7 @@ export default function DoctorDetails({ doctor }: { doctor: Doctor }) {
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-hidden pt-16">
-          <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
+          <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
             <Breadcrumbs items={breadcrumbItems(doctor)} />
             <DoctorInfo doctor={doctor} />
           </div>

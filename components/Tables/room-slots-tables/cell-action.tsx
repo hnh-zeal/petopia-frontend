@@ -8,14 +8,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Doctor } from "@/constants/data";
-import { CafeBooking } from "@/types/api";
+import { RoomSlot } from "@/types/api";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: CafeBooking;
+  data: RoomSlot;
 }
 
 export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {

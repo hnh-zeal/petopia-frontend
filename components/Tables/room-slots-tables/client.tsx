@@ -1,47 +1,19 @@
 "use client";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
-import { useEffect, useState } from "react";
 import { fetchRoomSlots } from "@/pages/api/api";
-import { CafeRoom } from "@/types/api";
+import { CafeRoom, RoomSlot } from "@/types/api";
+import Loading from "@/pages/loading";
+import { useFetchData } from "@/hooks/useFetchData";
+import { useCallback, useMemo } from "react";
 
 export const RoomSlotsClient = ({ cafeRoom }: { cafeRoom: CafeRoom }) => {
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [slotData, setSlotData] = useState({
-    slots: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 10,
-  });
+  const roomQuery = useMemo(() => ({ roomId: cafeRoom.id }), [cafeRoom.id]);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const fetchRoomSlotsMemoized = useCallback(fetchRoomSlots, []);
 
-  useEffect(() => {
-    const getData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchRoomSlots({
-          roomId: cafeRoom.id,
-          page: currentPage,
-          pageSize: slotData.pageSize,
-        });
-        setSlotData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch ", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getData();
-  }, [cafeRoom, currentPage, slotData.pageSize]);
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<RoomSlot>(fetchRoomSlotsMemoized, 1, 7, roomQuery);
 
   return (
     <div className="flex flex-col space-y-3">
@@ -49,14 +21,18 @@ export const RoomSlotsClient = ({ cafeRoom }: { cafeRoom: CafeRoom }) => {
         <DataTable
           searchKey="name"
           columns={columns}
-          data={slotData.slots}
+          data={data}
           // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={slotData.totalPages}
+          totalPages={totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </div>
   );
 };

@@ -14,7 +14,6 @@ import MultiSelect from "../multiple-selector";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,10 +21,18 @@ import {
 } from "../ui/form";
 import { ScrollArea } from "../ui/scroll-area";
 import { PetSitter } from "@/types/api";
-import { fetchServices, updatePetSitterByID } from "@/pages/api/api";
+import {
+  deleteFile,
+  fetchServices,
+  singleFileUpload,
+  updatePetSitterByID,
+} from "@/pages/api/api";
 import { CreatePetSitterSchema } from "./create-sitter-form";
 import { Input } from "../ui/input";
 import { Plus, Trash, Trash2 } from "lucide-react";
+import ProfilePictureUpload from "../Layout/profile-upload";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 type PetSitterFormValue = z.infer<typeof CreatePetSitterSchema>;
 interface EditPetSitterFormProps {
@@ -39,6 +46,7 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
   const [mounted, setMounted] = useState(false);
   const petServices = petSitter.services.map((service: any) => service.id);
   const router = useRouter();
+  const adminAuth = useRecoilValue(adminAuthState);
 
   const form = useForm<PetSitterFormValue>({
     resolver: zodResolver(CreatePetSitterSchema),
@@ -97,7 +105,39 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
   const onSubmit = async (formValues: PetSitterFormValue) => {
     setLoading(true);
     try {
-      const data = await updatePetSitterByID(petSitter.id, formValues);
+      const { profile, ...otherValues } = formValues;
+      let profileUrl;
+
+      if (profile instanceof File) {
+        // Delete the file first
+        if (petSitter.profileUrl) {
+          const key = petSitter.profileUrl.split("/").pop() as string;
+          await deleteFile(key, adminAuth?.accessToken as string);
+        }
+
+        // Upload
+        const fileData = await singleFileUpload(
+          { file: profile, isPublic: false },
+          adminAuth?.accessToken as string
+        );
+
+        if (fileData.error) {
+          toast({
+            variant: "destructive",
+            description: fileData.message,
+          });
+          return;
+        }
+
+        profileUrl = fileData.url;
+      }
+
+      const formData = {
+        ...otherValues,
+        profileUrl,
+      };
+
+      const data = await updatePetSitterByID(petSitter.id, formData);
 
       if (data.error) {
         toast({
@@ -132,6 +172,25 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <FormField
+              control={form.control}
+              name="profile"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="shad-input-label">
+                    Profile Picture
+                  </FormLabel>
+                  <FormControl>
+                    <ProfilePictureUpload
+                      field={field}
+                      defaultImage={petSitter.profileUrl}
+                    />
+                  </FormControl>
+                  <FormMessage className="shad-error" />
+                </FormItem>
+              )}
+            />
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}

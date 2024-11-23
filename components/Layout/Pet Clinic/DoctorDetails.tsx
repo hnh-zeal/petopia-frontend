@@ -24,6 +24,7 @@ import { Doctor } from "@/types/api";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
+import { format, parse } from "date-fns";
 
 const breadcrumbItems = (doctor: Doctor) => [
   { title: "Doctors", link: "/pet-clinics/doctors" },
@@ -50,13 +51,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
   );
 
   return (
-    <div className="mx-auto p-4 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div className="mx-auto p-4 bg-gradient-to-br bg-gray-100 min-h-screen">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-6">
           <Breadcrumbs items={breadcrumbItems(doctor)} />
         </div>
         <Card className="w-full max-w-4xl mx-auto overflow-hidden shadow-xl">
-          <CardHeader className="bg-indigo-600 text-white p-6">
+          <CardHeader className="bg-[#00b2d8] text-white p-6">
             <div className="flex items-center space-x-6">
               <div className="w-full md:w-1/5 flex flex-row justify-center">
                 <div className="relative w-28 h-28 rounded-full overflow-hidden bg-white border-4 border-indigo-200">
@@ -86,17 +87,18 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
           </CardHeader>
           <CardContent className="p-6">
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="experience">Experience</TabsTrigger>
                 <TabsTrigger value="clinic">Clinic</TabsTrigger>
                 <TabsTrigger value="schedule">Schedule</TabsTrigger>
               </TabsList>
-              <TabsContent value="about" className="mt-6">
-                <h3 className="text-xl font-semibold mb-4">
-                  About Dr. {doctor.name}
-                </h3>
-                <p className="text-gray-700 mb-4">{doctor.about}</p>
+              <TabsContent value="about" className="flex flex-col gap-4 mt-6">
+                <div className="px-4">
+                  <h3 className="text-xl font-semibold mb-4">
+                    About Dr. {doctor.name}
+                  </h3>
+                  <p className="text-gray-700 mb-4">{doctor.about}</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader>
@@ -133,8 +135,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
-              <TabsContent value="experience" className="mt-6">
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-xl font-semibold mb-4 flex items-center">
@@ -174,7 +174,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="clinic" className="mt-6">
+              <TabsContent value="clinic">
                 <h3 className="text-xl font-semibold mb-4">
                   Clinic Information
                 </h3>
@@ -219,31 +219,41 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ doctor }) => {
                   </Card>
                 </div>
               </TabsContent>
+
               <TabsContent value="schedule" className="mt-6">
                 <h3 className="text-xl font-semibold mb-4 flex items-center">
                   <Calendar className="w-6 h-6 mr-2 text-indigo-600" />
                   Weekly Schedule
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {sortedSchedules?.map((schedule, index) => (
-                    <Card key={index}>
-                      <CardContent className="p-4">
-                        <p className="font-semibold">{schedule.dow}</p>
-                        <div className="flex items-center text-gray-600">
-                          <Clock className="w-4 h-4 mr-2" />
-                          {schedule.startTime.slice(0, 5)} -{" "}
-                          {schedule.endTime.slice(0, 5)}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {sortedSchedules?.map((schedule, index) => {
+                    return (
+                      <Card key={index}>
+                        <CardContent className="p-4">
+                          <p className="font-semibold">
+                            {daysOrder[Number(schedule.dayOfWeek)]}
+                          </p>
+                          <div className="flex items-center text-gray-600">
+                            <Clock className="w-4 h-4 mr-2" />
+                            {`${format(
+                              parse(schedule.startTime, "HH:mm:ss", new Date()),
+                              "h:mm a"
+                            )} - ${format(
+                              parse(schedule.endTime, "HH:mm:ss", new Date()),
+                              "h:mm a"
+                            )}`}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </TabsContent>
             </Tabs>
           </CardContent>
           <CardFooter>
             <Button
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6] text-white"
               onClick={() => router.push(`/pet-clinics/appointments`)}
             >
               Book an Appointment

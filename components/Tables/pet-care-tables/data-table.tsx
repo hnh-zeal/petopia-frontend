@@ -118,12 +118,12 @@ export function DataTable<TData, TValue>({
       </div>
       <Table className="relative">
         <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
-          <TableHeader>
+          <TableHeader className="bg-zinc-300">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="text-black">
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-black">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -174,10 +174,10 @@ export function DataTable<TData, TValue>({
       </Table>
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+        {/* <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+        </div> */}
         <div className="space-x-2">
           <Pagination
             currentPage={currentPage}

@@ -11,17 +11,19 @@ import CustomFormField, { FormFieldType } from "../custom-form-field";
 import { useToast } from "../ui/use-toast";
 import { CreatePetClinicSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { CirclePlus, Plus, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
 import SubmitButton from "../submit-button";
 import { daysOfWeek } from "@/constants/data";
 import { Input } from "../ui/input";
+import ImageUpload from "../ImageUpload";
 
 type PetClinicFormValue = z.infer<typeof CreatePetClinicSchema>;
 
 export default function CreatePetClinicForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [sections, setSections] = useState([
     { dow: "", startTime: "", endTime: "" },
   ]);
@@ -71,7 +73,7 @@ export default function CreatePetClinicForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formValues),
+          body: JSON.stringify({ ...formValues, imageUrl }),
         }
       );
 
@@ -110,6 +112,20 @@ export default function CreatePetClinicForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="w-1/2">
+              <ImageUpload
+                image={""}
+                onImageUpload={(url: string) => {
+                  setImageUrl(url);
+                }}
+                onImageRemove={() => {
+                  setImageUrl("");
+                }}
+                label="Clinic Image"
+                description="Upload an image"
+              />
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -207,7 +223,7 @@ export default function CreatePetClinicForm() {
                     className="hover:cursor-pointer mt-7 px-2"
                     onClick={addSection}
                   >
-                    <Plus className="w-4 h-4" />
+                    <PlusCircle className="w-4 h-4" />
                   </Button>
                 </div>
               ))}
@@ -231,7 +247,7 @@ export default function CreatePetClinicForm() {
                           onClick={() => appendTreatment("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 
@@ -267,7 +283,7 @@ export default function CreatePetClinicForm() {
                           onClick={() => appendTools("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 

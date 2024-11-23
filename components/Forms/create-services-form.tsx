@@ -28,6 +28,8 @@ import { CirclePlus, Trash2 } from "lucide-react";
 import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
+import MultiImageUpload from "../MultiImageUpload";
+import ImageUpload from "../ImageUpload";
 
 export const serviceType = [
   { name: "Pet Sitting", value: "SITTING" },
@@ -45,6 +47,8 @@ export default function CreateServiceForm({
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [mainImage, setMainImage] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
   const [addOns, setAddOns] = useState([
     { name: "", description: "", price: 0 },
   ]);
@@ -63,7 +67,12 @@ export default function CreateServiceForm({
   const onSubmit = async (formValues: ServiceFormValue) => {
     setLoading(true);
     try {
-      const data = await createCareService(formValues);
+      const formData = {
+        ...formValues,
+        mainImage,
+        images,
+      };
+      const data = await createCareService(formData);
       if (data.error) {
         toast({
           variant: "destructive",
@@ -97,6 +106,40 @@ export default function CreateServiceForm({
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="p-2">
+                <ImageUpload
+                  image={mainImage}
+                  onImageUpload={(url: string) => {
+                    setMainImage(url);
+                  }}
+                  onImageRemove={() => {
+                    setMainImage("");
+                  }}
+                  label="Room Main Image"
+                  description="Upload an image"
+                />
+              </div>
+
+              <div className="p-2">
+                <MultiImageUpload
+                  images={images}
+                  onImageUpload={(newImages: string[]) => {
+                    setImages(newImages);
+                  }}
+                  onImageRemove={(index: number) => {
+                    const updatedImages = images.filter((_, i) => i !== index);
+                    setImages(updatedImages);
+                    if (index === 0) {
+                      setImages([]);
+                    }
+                  }}
+                  label="Other Images"
+                  description="Upload additional images for the cafe room"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -110,7 +153,7 @@ export default function CreateServiceForm({
                 fieldType={FormFieldType.SELECT}
                 control={form.control}
                 name="type"
-                label="Package Type"
+                label="Service Type"
                 placeholder="Select Type"
                 required={true}
               >

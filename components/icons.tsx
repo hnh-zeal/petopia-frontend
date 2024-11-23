@@ -42,6 +42,7 @@ import {
   CalendarCheck,
   DoorOpen,
   Cat,
+  Users,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -67,6 +68,7 @@ export const Icons = {
   ellipsis: MoreVertical,
   add: Plus,
   warning: AlertTriangle,
+  admin: Users,
   user: User,
   arrowDown: ArrowDown,
   arrowRight: ArrowRight,

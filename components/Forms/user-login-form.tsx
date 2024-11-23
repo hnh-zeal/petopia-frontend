@@ -98,7 +98,10 @@ export default function UserLoginForm() {
             </div>
           </section>
 
-          <SubmitButton isLoading={isLoading} className="ml-auto w-full">
+          <SubmitButton
+            isLoading={isLoading}
+            className="ml-auto w-full bg-[#00b2d8]"
+          >
             Login
           </SubmitButton>
         </form>

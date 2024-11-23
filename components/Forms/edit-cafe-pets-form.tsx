@@ -45,10 +45,10 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
     const getRooms = async () => {
       setLoading(true);
       try {
-        const data = await fetchCafeRooms();
+        const data = await fetchCafeRooms({});
         setRoomData((prevState) => ({
           ...prevState,
-          ...data,
+          ...data.data,
         }));
       } catch (error) {
         console.error("Failed to fetch Pet Centers", error);
@@ -161,24 +161,6 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
             </div>
 
             <div className="flex flex-col gap-6 xl:flex-row">
-              {/* <CustomFormField
-                fieldType={FormFieldType.SELECT}
-                placeholder="Pet Type"
-                control={form.control}
-                name="petType"
-                label="Pet Type"
-              />
-
-              <CustomFormField
-                fieldType={FormFieldType.SELECT}
-                placeholder="Age"
-                control={form.control}
-                name="dateOfBirth"
-                label="Breed"
-              /> */}
-            </div>
-
-            <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.TEXTAREA}
                 placeholder="About"
@@ -188,8 +170,7 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
+            <div className="flex mt-10 items-center justify-end space-x-4">
               <div className="flex items-center justify-between space-x-4">
                 <Button
                   disabled={loading}

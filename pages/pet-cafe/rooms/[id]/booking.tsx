@@ -103,18 +103,10 @@ const formSchema = z.object({
   startTime: z.string().min(1, "A time is required"),
   endTime: z.string().min(1, "A time is required"),
   guests: z.number().min(1, "At least one guest is required"),
-  card: z.string().min(1, "Card information is required").optional(),
-  month: z
-    .string()
-    .min(2, "Month is required")
-    .max(2, "Invalid month")
-    .optional(),
-  year: z.string().min(2, "Year is required").max(2, "Invalid year").optional(),
-  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV").optional(),
-  // billingAddress: z.string().min(1, "Billing address is required"),
-  // billingCity: z.string().min(1, "City is required"),
-  // billingState: z.string().min(1, "State is required"),
-  // billingZip: z.string().min(1, "ZIP code is required"),
+  card: z.string().min(1, "Card information is required"),
+  month: z.string().min(2, "Month is required").max(2, "Invalid month"),
+  year: z.string().min(2, "Year is required").max(2, "Invalid year"),
+  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV"),
 });
 
 export default function ReservationConfirmation({
@@ -213,10 +205,9 @@ export default function ReservationConfirmation({
 
   const handleDateChange = async (date: Date | undefined) => {
     if (date) {
-      setIsLoading(true);
       try {
         const fetchedTimeSlots = await fetchRoomSlots({
-          roomId: cafeRoom?.id,
+          roomId: cafeRoom.id,
           status: true,
           date,
         });
@@ -228,8 +219,6 @@ export default function ReservationConfirmation({
       } catch (error) {
         console.error("Error fetching time slots:", error);
         setTimeSlots([]);
-      } finally {
-        setIsLoading(false);
       }
     } else {
       setTimeSlots(defaultTimeSlots);
@@ -356,40 +345,8 @@ export default function ReservationConfirmation({
                         )}
                       />
                     </div>
-                    <div className="flex flex-row gap-3 ">
-                      {/* <FormField
-                        control={form.control}
-                        name="duration"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Duration</FormLabel>
-                            <FormControl>
-                              <RadioGroup
-                                onValueChange={field.onChange}
-                                defaultValue={duration}
-                                className="flex !mt-4 gap-3 disabled:opacity-100"
-                                disabled={!isEditing}
-                              >
-                                {durationList.map((d) => (
-                                  <FormItem
-                                    key={d.value}
-                                    className="flex items-center space-x-3"
-                                  >
-                                    <FormControl>
-                                      <RadioGroupItem value={d.value} />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">
-                                      {d.label}
-                                    </FormLabel>
-                                  </FormItem>
-                                ))}
-                              </RadioGroup>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      /> */}
 
+                    <div className="flex flex-row gap-3 ">
                       <FormField
                         control={form.control}
                         name="startTime"
@@ -407,11 +364,18 @@ export default function ReservationConfirmation({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {timeSlots.map((slot) => (
-                                  <SelectItem key={slot} value={slot}>
-                                    {slot}
-                                  </SelectItem>
-                                ))}
+                                {timeSlots.length > 0 ? (
+                                  timeSlots.map((slot) => (
+                                    <SelectItem key={slot} value={slot}>
+                                      {slot}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <p className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                                    No Slots Available. Please choose other
+                                    date.
+                                  </p>
+                                )}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -436,11 +400,18 @@ export default function ReservationConfirmation({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {endTimeSlots.map((slot) => (
-                                  <SelectItem key={slot} value={slot}>
-                                    {slot}
-                                  </SelectItem>
-                                ))}
+                                {endTimeSlots.length > 0 ? (
+                                  endTimeSlots.map((slot) => (
+                                    <SelectItem key={slot} value={slot}>
+                                      {slot}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <p className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                                    No Slots Available. Please choose other
+                                    date.
+                                  </p>
+                                )}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -505,22 +476,6 @@ export default function ReservationConfirmation({
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Billing Address */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Billing address</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input placeholder="22 Rhine Street" />
-                  <Input placeholder="Suite 1234A" />
-                  <Input placeholder="Austin" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input placeholder="MS" />
-                    <Input placeholder="4300" />
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -559,20 +514,20 @@ export default function ReservationConfirmation({
                           <h3 className="font-semibold">Price details</h3>
                           <div className="flex justify-between text-sm">
                             <span>
-                              ฿ {cafeRoom?.price} x {guests} guests x {duration}{" "}
+                              $ {cafeRoom?.price} x {guests} guests x {duration}{" "}
                               h
                             </span>
                             <span>
-                              ฿ {Number(cafeRoom?.price) * guests * duration}
+                              $ {Number(cafeRoom?.price) * guests * duration}
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span>Discount Package ({discountPercent} %)</span>
-                            <span>฿ {discount}</span>
+                            <span>$ {discount}</span>
                           </div>
                           <div className="flex justify-between font-semibold pt-2 border-t">
                             <span>Total</span>
-                            <span>฿ {totalPrice}</span>
+                            <span>$ {totalPrice}</span>
                           </div>
                         </div>
 
@@ -594,7 +549,11 @@ export default function ReservationConfirmation({
                     </CardContent>
                   </Card>
 
-                  <Button type="submit" disabled={isEditing}>
+                  <Button
+                    type="submit"
+                    disabled={isEditing}
+                    className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                  >
                     {isLoading ? "Submitting" : "Submit Booking"}
                   </Button>
                 </>

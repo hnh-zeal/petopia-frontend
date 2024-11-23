@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Doctor } from "@/types/api";
-import { CalendarIcon, Filter, Info, Search, Star } from "lucide-react";
+import { Filter, Info, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
@@ -15,34 +15,27 @@ import { useRouter } from "next/router";
 export default function Doctors({
   doctorsData,
 }: {
-  doctorsData: { doctors: Doctor[] };
+  doctorsData: { data: Doctor[] };
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const [doctors, setDoctors] = useState(doctorsData.doctors || []);
+  const [doctors, setDoctors] = useState(doctorsData.data || []);
 
   useEffect(() => {
-    const filteredDoctors = doctorsData.doctors.filter((doctor: any) => {
-      return (
-        doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        doctor.specialty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        doctor.expertise?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ""
-      );
+    const filteredDoctors = doctorsData.data.filter((doctor: Doctor) => {
+      return doctor.name?.toLowerCase().includes(searchTerm.toLowerCase());
     });
     setDoctors(filteredDoctors);
-  }, [searchTerm, doctorsData.doctors]);
+  }, [searchTerm, doctorsData.data]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-bold text-center text-indigo-900 mb-8"
+          className="text-4xl font-bold text-center text-black-500 mb-8"
         >
           Find Your Perfect Pet Doctor
         </motion.h1>
@@ -57,16 +50,16 @@ export default function Doctors({
             <Input
               type="text"
               placeholder="Search clinics..."
-              className="w-full px-4 py-3 rounded-full border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-full border-2 border-[#00b2d8] focus:outline-none focus:ring-2 focus:ring-[#00b2d8] focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
+            <Search className="absolute h-5 w-5 right-3 top-2.5 text-[#00b2d8]" />
           </div>
-          <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
+          {/* <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
             <Filter className="mr-2 h-4 w-4" size={18} />
             Filter
-          </Button>
+          </Button> */}
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -97,24 +90,13 @@ export default function Doctors({
                         <p className="text-gray-600 mb-2">
                           {doctor.clinic.name}
                         </p>
-                        {/* <div className="flex items-center mb-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className="h-4 w-4 text-yellow-400 fill-current"
-                            />
-                          ))}
-                          <span className="ml-2 text-sm text-gray-600">
-                            (48 reviews)
-                          </span>
-                        </div> */}
                         <div className="flex flex-wrap gap-2">
                           {doctor.specialties?.map(
                             (specialty: string, index: number) => (
                               <Badge
                                 key={index}
                                 variant="default"
-                                className="bg-indigo-100 text-indigo-800 hover:text-white hover:bg-black"
+                                className="bg-[#00b2d8] hover:bg-[#2cc4e6] text-white hover:text-white "
                               >
                                 {specialty}
                               </Badge>

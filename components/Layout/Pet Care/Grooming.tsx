@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
-import { CareService, PetSitter } from "@/types/api";
+import { CareService } from "@/types/api";
 import {
   createCareAppointment,
   fetchDiscountPackage,

@@ -7,7 +7,7 @@ export const getServerSideProps: GetServerSideProps<{
   doctorsData: DoctorData;
 }> = async (context) => {
   try {
-    const doctorsData = await fetchDoctors();
+    const doctorsData = await fetchDoctors({});
     return { props: { doctorsData } };
   } catch (error) {
     console.error("Error fetching doctor:", error);
@@ -22,9 +22,5 @@ export default function DoctorsPage({
 }: {
   doctorsData: DoctorData;
 }) {
-  return (
-    <>
-      <Doctors doctorsData={doctorsData} />
-    </>
-  );
+  return <Doctors doctorsData={doctorsData} />;
 }

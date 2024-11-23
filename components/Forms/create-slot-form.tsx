@@ -16,7 +16,7 @@ import { useToast } from "../ui/use-toast";
 import { CreateSlotSchema } from "@/validations/formValidation";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { createRoomSlots } from "@/pages/api/api";
+import { createDateSchedule, createRoomSlots } from "@/pages/api/api";
 import {
   Popover,
   PopoverContent,
@@ -41,9 +41,9 @@ export default function CreateScheduleForm({ onCancel }: any) {
     try {
       const formData = {
         ...formValues,
-        roomId: Number(id),
+        doctorId: Number(id),
       };
-      const data = await createRoomSlots(formData);
+      const data = await createDateSchedule(formData);
 
       if (data.error) {
         toast({

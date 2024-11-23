@@ -2,7 +2,6 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Phone, Mail, Languages, Scissors, Star } from "lucide-react";
@@ -27,14 +26,14 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
           <Breadcrumbs items={breadcrumbItems(sitter)} />
         </div>
         <Card className="w-full max-w-4xl mx-auto overflow-hidden shadow-xl">
-          <CardHeader className="bg-indigo-600 text-white p-6">
+          <CardHeader className="bg-[#00b2d8] text-white p-6">
             <div className="flex items-center space-x-6">
               <div className="w-full md:w-1/5 flex flex-row justify-center">
                 <div className="relative w-28 h-28 rounded-full overflow-hidden bg-white border-4 border-indigo-200">
                   <Image
                     src={sitter.profileUrl || "/default-pet-sitter.png"}
                     alt={sitter.name}
-                    layout="fill"
+                    fill
                     className="rounded-full"
                   />
                 </div>
@@ -110,18 +109,16 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                   {sitter.services?.map((service) => (
                     <Card key={service.id} className="overflow-hidden">
                       <div className="md:flex">
-                        <div className="md:w-1/3">
-                          <div className="relative w-24 h-24 rounded-full overflow-hidden">
+                        <div className="md:w-3/7">
+                          <div className="relative w-80 h-80 overflow-hidden">
                             <Image
-                              src={sitter.profileUrl || "/default-doctor.png"}
+                              src={service.mainImage || "/default-doctor.png"}
                               alt={sitter.name}
-                              layout="fill"
-                              objectFit="cover"
-                              className="rounded-full"
+                              fill
                             />
                           </div>
                         </div>
-                        <div className="p-6 md:w-2/3">
+                        <div className="p-6 md:w-4/7">
                           <h4 className="text-lg font-semibold mb-2">
                             {service.name}
                           </h4>
@@ -173,11 +170,6 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                     </div>
                   </CardContent>
                 </Card>
-                <div className="mt-6">
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                    Book an Appointment
-                  </Button>
-                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

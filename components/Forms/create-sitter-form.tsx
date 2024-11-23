@@ -17,18 +17,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
 import { ScrollArea } from "../ui/scroll-area";
 import React from "react";
-import { createPetSitter, fetchServices } from "@/pages/api/api";
+import {
+  createPetSitter,
+  fetchServices,
+  singleFileUpload,
+} from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
+import ProfilePictureUpload from "../Layout/profile-upload";
 
-// Schema for validation using zod
 export const CreatePetSitterSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -36,10 +40,8 @@ export const CreatePetSitterSchema = z.object({
   serviceIds: z.array(z.any()).nonempty("Please select at least one service."),
   specialties: z.any(z.string()).optional(),
   languages: z.any(z.string()).optional(),
-  about: z
-    .string()
-    .min(1, { message: "About section is required." })
-    .optional(),
+  profile: z.any().optional(),
+  about: z.any().optional(),
 });
 
 type DoctorFormValue = z.infer<typeof CreatePetSitterSchema>;
@@ -49,7 +51,7 @@ export default function CreatePetSitterForm() {
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
   const router = useRouter();
-  const auth = useRecoilValue(userAuthState);
+  const adminAuth = useRecoilValue(userAuthState);
 
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreatePetSitterSchema),
@@ -96,9 +98,34 @@ export default function CreatePetSitterForm() {
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
     try {
+      const { profile, ...otherValues } = formValues;
+      let profileUrl;
+
+      if (profile instanceof File) {
+        const fileData = await singleFileUpload(
+          { file: profile, isPublic: false },
+          adminAuth?.accessToken as string
+        );
+
+        if (fileData.error) {
+          toast({
+            variant: "destructive",
+            description: fileData.message,
+          });
+          return;
+        }
+
+        profileUrl = fileData.url;
+      }
+
+      const formData = {
+        ...otherValues,
+        profileUrl,
+      };
+
       const data = await createPetSitter(
-        formValues,
-        auth?.accessToken as string
+        formData,
+        adminAuth?.accessToken as string
       );
       if (data.error) {
         toast({
@@ -133,6 +160,22 @@ export default function CreatePetSitterForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <FormField
+              control={form.control}
+              name="profile"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="shad-input-label">
+                    Profile Picture
+                  </FormLabel>
+                  <FormControl>
+                    <ProfilePictureUpload field={field} defaultImage={""} />
+                  </FormControl>
+                  <FormMessage className="shad-error" />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -202,11 +245,11 @@ export default function CreatePetSitterForm() {
                       {index === specialtiesFields.length - 1 && (
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => appendSpecialty("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 
@@ -214,11 +257,11 @@ export default function CreatePetSitterForm() {
                       {specialtiesFields.length > 1 && (
                         <Button
                           type="button"
-                          variant="destructive"
+                          variant="ghost"
                           onClick={() => removeSpecialty(index)}
                           className="px-2"
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
@@ -241,11 +284,11 @@ export default function CreatePetSitterForm() {
                       {index === languagesFields.length - 1 && (
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => appendLanguage("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 
@@ -253,11 +296,11 @@ export default function CreatePetSitterForm() {
                       {languagesFields.length > 1 && (
                         <Button
                           type="button"
-                          variant="destructive"
+                          variant="ghost"
                           onClick={() => removeLanguage(index)}
                           className="px-2"
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
@@ -273,12 +316,10 @@ export default function CreatePetSitterForm() {
                 control={form.control}
                 name="about"
                 label="About"
-                required={true}
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
+            <div className="flex mt-10 items-center justify-end space-x -4">
               <div className="flex items-center justify-between space-x-4">
                 <Button
                   disabled={loading}

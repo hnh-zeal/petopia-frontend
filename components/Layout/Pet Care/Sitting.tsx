@@ -77,12 +77,16 @@ const formSchema = z.object({
   time: z.string(),
   duration: z.number().min(1).optional(),
   petName: z.string().min(1, "Pet name is required"),
-  petType: z.string(),
-  breed: z.string(),
+  petType: z.string().optional(),
+  breed: z.string().optional(),
   description: z.string().optional(),
   location: z.enum(["Client's Home", "Sitter's Home"]).optional(),
   address: z.string().optional(),
   addOns: z.any().optional(),
+  card: z.string().min(1, "Card information is required"),
+  month: z.string().min(2, "Month is required").max(2, "Invalid month"),
+  year: z.string().min(2, "Year is required").max(2, "Invalid year"),
+  cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV"),
 });
 
 type CreateCareFormValue = z.infer<typeof formSchema>;
@@ -615,6 +619,51 @@ export default function SittingAppointment({
                 </CardContent>
               </Card>
 
+              {/* Credit Card Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pay with Credit or Debit Card</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <CustomFormField
+                    fieldType={FormFieldType.INPUT}
+                    control={form.control}
+                    name="card"
+                    placeholder="Card"
+                    label="Credit or Debit Card"
+                    required={true}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-row gap-4">
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="month"
+                        placeholder="09"
+                        label="MM"
+                        required={true}
+                      />
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="year"
+                        placeholder="28"
+                        label="YY"
+                        required={true}
+                      />
+                    </div>
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="cvv"
+                      placeholder="866"
+                      label="CVV"
+                      required={true}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <CardTitle>Appointment Summary</CardTitle>
@@ -623,7 +672,7 @@ export default function SittingAppointment({
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Base Price</span>
-                      <span>฿ {service.price}</span>
+                      <span>$ {service.price}</span>
                     </div>
 
                     {watchFields.addOns?.map((addOnId: any) => {
@@ -643,16 +692,20 @@ export default function SittingAppointment({
 
                     <div className="flex justify-between text-sm">
                       <span>Discount Package ({discountPercent} %)</span>
-                      <span>฿ {discount}</span>
+                      <span>$ {discount}</span>
                     </div>
                     <div className="flex justify-between font-semibold pt-2 border-t">
                       <span>Total</span>
-                      <span>฿ {totalPrice}</span>
+                      <span>$ {totalPrice}</span>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full" type="submit" disabled={isLoading}>
+                  <Button
+                    className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                    type="submit"
+                    disabled={isLoading}
+                  >
                     {isLoading ? "Processing..." : "Confirm Booking"}
                   </Button>
                 </CardFooter>

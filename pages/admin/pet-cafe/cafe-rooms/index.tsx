@@ -14,20 +14,6 @@ const breadcrumbItems = [
   { title: "Cafe Rooms", link: "/admin/cafe-rooms" },
 ];
 
-export const getServerSideProps: GetServerSideProps<{
-  roomData: RoomsData;
-}> = async (context) => {
-  try {
-    const roomData = await fetchCafeRooms(1, 6);
-    return { props: { roomData } };
-  } catch (error) {
-    console.error("Error fetching doctor:", error);
-    return {
-      notFound: true,
-    };
-  }
-};
-
 export default function CafeRoomsPage({ roomData }: { roomData: RoomsData }) {
   return (
     <>
@@ -38,7 +24,7 @@ export default function CafeRoomsPage({ roomData }: { roomData: RoomsData }) {
           <ScrollArea className="h-[calc(80vh-220px)]">
             <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
               <Breadcrumbs items={breadcrumbItems} />
-              <CafeRooms roomData={roomData} />
+              <CafeRooms />
             </div>
             <div>
               <Toaster />

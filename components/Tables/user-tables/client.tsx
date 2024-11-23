@@ -2,51 +2,18 @@
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { DataTable } from "./data-table";
-import { useRouter } from "next/navigation";
 import { columns } from "./columns";
-import { useEffect, useState } from "react";
 import { fetchUsers } from "@/pages/api/api";
-import { adminAuthState } from "@/states/auth";
+import Loading from "@/pages/loading";
+import { User } from "@/types/api";
+import { useFetchData } from "@/hooks/useFetchData";
 import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 export const UserClient = () => {
-  const [usersData, setUsersData] = useState({
-    users: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const auth = useRecoilValue(adminAuthState);
-
-  useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchUsers(
-          auth?.accessToken as string,
-          currentPage,
-          usersData.pageSize
-        );
-        setUsersData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch users", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUsers();
-  }, [currentPage, usersData.pageSize, auth?.accessToken]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const adminAuth = useRecoilValue(adminAuthState);
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<User>(fetchUsers, 1, 5, adminAuth?.accessToken);
 
   return (
     <>
@@ -58,14 +25,18 @@ export const UserClient = () => {
         <DataTable
           searchKey="name"
           columns={columns}
-          data={usersData.users}
+          data={data}
           // onClickRow={(id) => router.push(`/admin/users/${id}`)}
-          totalPages={usersData.totalPages}
+          totalPages={totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </>
   );
 };

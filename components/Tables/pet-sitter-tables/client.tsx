@@ -2,12 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchPetSitters } from "@/pages/api/api";
+import Loading from "@/pages/loading";
 
 export const PetSitterClient = () => {
   const router = useRouter();
@@ -56,7 +57,7 @@ export const PetSitterClient = () => {
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/pet-sitters/create`)}
         >
-          <Plus className="mr-2 h-4 w-4" /> Add New
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New
         </Button>
       </div>
       <Separator />
@@ -71,7 +72,11 @@ export const PetSitterClient = () => {
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
     </>
   );
 };

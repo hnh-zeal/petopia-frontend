@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { truncate } from "@/utils/truncate";
-import { Clock, Filter, Phone, Search, Star } from "lucide-react";
+import { Clock, Phone, Search } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Clinic, PetClinicData } from "@/types/api";
@@ -18,25 +18,25 @@ export default function PetClinics({
   clinicData: PetClinicData;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [clinics, setClinics] = useState(clinicData.clinics || []);
+  const [clinics, setClinics] = useState(clinicData.data || []);
 
   useEffect(() => {
-    const filteredClinics = clinicData.clinics.filter((clinic: Clinic) =>
+    const filteredClinics = clinicData.data.filter((clinic: Clinic) =>
       clinic.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setClinics(filteredClinics);
-  }, [searchTerm, clinicData.clinics]);
+  }, [searchTerm, clinicData.data]);
 
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-bold text-center text-indigo-900 mb-8"
+          className="text-4xl font-bold text-center text-black mb-8"
         >
           Pet Centers and Clinics
         </motion.h1>
@@ -51,16 +51,16 @@ export default function PetClinics({
             <Input
               type="text"
               placeholder="Search clinics..."
-              className="w-full px-4 py-3 rounded-full border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-3 rounded-full border-2 border-[#00b2d8] focus:outline-none focus:ring-2 focus:ring-[#00b2d8] focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
+            <Search className="absolute h-5 w-5 right-3 top-2.5 text-[#00b2d8]" />
           </div>
-          <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
+          {/* <Button className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition duration-300 flex items-center">
             <Filter className="mr-2 h-4 w-4" size={18} />
             Filter
-          </Button>
+          </Button> */}
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -81,7 +81,7 @@ export default function PetClinics({
                     className="w-full h-48 object-cover"
                   />
                   <CardContent className="p-6">
-                    <h2 className="text-xl font-semibold text-indigo-700 mb-1">
+                    <h2 className="text-xl font-semibold text-black mb-1">
                       {clinic.name}
                     </h2>
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">
@@ -107,10 +107,10 @@ export default function PetClinics({
                   </CardContent>
                   <CardFooter className="bg-gray-50 p-4">
                     <Button
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
+                      className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6] text-white py-2 rounded-md"
                       onClick={() => router.push(`/pet-clinics/${clinic.id}`)}
                     >
-                      View Details
+                      View details
                     </Button>
                   </CardFooter>
                 </Card>

@@ -228,10 +228,17 @@ export const Navbar = () => {
                 <UserAvatar />
               ) : (
                 <>
-                  <Button variant="ghost" onClick={handleLogin}>
+                  <Button
+                    variant="ghost"
+                    className="rounded-3xl"
+                    onClick={handleLogin}
+                  >
                     Login
                   </Button>
-                  <Button className="rounded-3xl" onClick={handleRegister}>
+                  <Button
+                    className="rounded-3xl bg-[#00b2d8]"
+                    onClick={handleRegister}
+                  >
                     Register
                   </Button>
                 </>

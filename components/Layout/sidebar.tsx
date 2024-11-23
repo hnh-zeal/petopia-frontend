@@ -20,12 +20,13 @@ export default function Sidebar({ className }: SidebarProps) {
     toggle();
     setTimeout(() => setStatus(false), 500);
   };
+
   return (
     <nav
       className={cn(
         `relative hidden h-screen flex-none border-r z-10 pt-20 md:block`,
         status && "duration-500",
-        !isMinimized ? "w-[250px]" : "w-[90px]", // Update this line to adjust the expanded width
+        !isMinimized ? "w-[250px]" : "w-[90px]",
         className
       )}
     >

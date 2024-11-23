@@ -29,13 +29,15 @@ export default function Landing() {
           pet
         </p>
         <div className="space-y-4 md:space-y-0 md:space-x-4">
-          <Button className="w-full md:w-2/5 rounded-3xl">
+          <Button
+            onClick={() => router.push(`/pet-clinics/appointments`)}
+            className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8]"
+          >
             Make an appointment
           </Button>
-          {/* Conditionally render based on whether the component has mounted */}
           {mounted && auth && (
             <Button
-              className="w-full md:w-2/5 rounded-3xl"
+              className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8]"
               onClick={() => {
                 router.push("/profile/appointments");
               }}

@@ -1,11 +1,10 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-import { User } from "@/constants/data";
-import { Checkbox } from "@/components/ui/checkbox";
 import SortColumn from "../sortColumn";
 import { formatDate } from "date-fns";
 import ToggleActive from "../toggle";
+import { User } from "@/types/api";
 
 export const columns: ColumnDef<User>[] = [
   // {
@@ -34,6 +33,7 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => <SortColumn column={column} title="Name" />,
+    cell: ({ row }) => <span>{row.original.name}</span>,
   },
   {
     accessorKey: "email",

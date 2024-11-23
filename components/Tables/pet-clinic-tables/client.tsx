@@ -2,51 +2,20 @@
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { DataTable } from "./data-table";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
-import { useEffect, useState } from "react";
 import { fetchPetClinics } from "@/pages/api/api";
+import Loading from "@/pages/loading";
+import { useFetchData } from "@/hooks/useFetchData";
+import { Clinic } from "@/types/api";
 
 export const PetClinicClient = () => {
   const router = useRouter();
 
-  const [petClinicsData, setPetClinicsData] = useState({
-    clinics: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchPetClinics(
-          currentPage,
-          petClinicsData.pageSize
-        );
-        setPetClinicsData((prevState) => ({
-          ...prevState,
-          ...data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUsers();
-  }, [currentPage, petClinicsData.pageSize]);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<Clinic>(fetchPetClinics, 1, 6);
 
   return (
     <>
@@ -56,22 +25,26 @@ export const PetClinicClient = () => {
           className="text-xs md:text-sm"
           onClick={() => router.push(`/admin/pet-clinic/pet-centers/create`)}
         >
-          <Plus className="mr-2 h-4 w-4" /> Add New
+          <PlusCircle className="mr-2 h-4 w-4" /> Add New
         </Button>
       </div>
       <Separator />
+      {loading && (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
       {!loading && (
         <DataTable
           searchKey="name"
           columns={columns}
-          data={petClinicsData.clinics}
+          data={data}
           // onClickRow={(id) => router.push(`/admin/petClinics/${id}`)}
-          totalPages={petClinicsData.totalPages}
+          totalPages={totalPages}
           currentPage={currentPage}
           onPageChange={handlePageChange}
         />
       )}
-      {loading && <div>Loading...</div>}
     </>
   );
 };

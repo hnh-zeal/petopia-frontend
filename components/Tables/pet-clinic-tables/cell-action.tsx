@@ -8,13 +8,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PetClinic } from "@/constants/data";
+import { Clinic } from "@/types/api";
 import { Edit, Eye, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: PetClinic;
+  data: Clinic;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {

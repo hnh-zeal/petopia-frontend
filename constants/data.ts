@@ -39,6 +39,7 @@ export type User = {
   verified: boolean;
   isActive: string;
   status: string;
+  profileUrl: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -84,24 +85,11 @@ export type PetSitter = {
   isActive: string;
 };
 
-export type Employee = {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  gender: string;
-  date_of_birth: string; // Consider using a proper date type if possible
-  street: string;
-  city: string;
-  state: string;
-  country: string;
-  zipcode: string;
-  longitude?: number; // Optional field
-  latitude?: number; // Optional field
-  job: string;
-  profile_picture?: string | null; // Profile picture can be a string (URL) or null (if no picture)
-};
+export const adminRoles = [
+  { name: "Pet Clinic", value: "CLINIC" },
+  { name: "Pet Care", value: "CARE" },
+  { name: "Pet Cafe", value: "CAFE" },
+];
 
 export const navItems: NavItem[] = [
   {
@@ -109,24 +97,35 @@ export const navItems: NavItem[] = [
     href: "/admin/dashboard",
     icon: "dashboard",
     label: "Dashboard",
+    roles: ["CLINIC", "CARE", "CAFE", "SUPER"],
+  },
+  {
+    title: "Admins",
+    href: "/admin/admins",
+    icon: "admin",
+    label: "Admins",
+    roles: ["SUPER"],
   },
   {
     title: "Users",
     href: "/admin/users",
     icon: "user",
     label: "user",
+    roles: ["CLINIC", "CARE", "CAFE", "SUPER"],
   },
   {
     title: "Doctors",
     href: "/admin/doctors",
     icon: "doctor",
     label: "doctor",
+    roles: ["CLINIC", "SUPER"],
   },
   {
     title: "Pet Sitters",
     href: "/admin/pet-sitters",
     icon: "petSitter",
     label: "pet-sitters",
+    roles: ["CARE", "SUPER"],
   },
   {
     title: "Pet Clinic",
@@ -147,10 +146,10 @@ export const navItems: NavItem[] = [
     ],
     icon: "petClinic",
     label: "petClinic",
+    roles: ["CLINIC", "SUPER"],
   },
   {
     title: "Pet Care",
-    // href: "/admin/pet-care",
     subMenu: true,
     subMenuItems: [
       {
@@ -168,10 +167,10 @@ export const navItems: NavItem[] = [
     ],
     icon: "petCare",
     label: "petCare",
+    roles: ["CARE", "SUPER"],
   },
   {
     title: "Pet Cafe",
-    // href: "/admin/pet-cafe",
     subMenu: true,
     subMenuItems: [
       {
@@ -195,12 +194,14 @@ export const navItems: NavItem[] = [
     ],
     icon: "petCafe",
     label: "petCafe",
+    roles: ["CAFE", "SUPER"],
   },
   {
     title: "Packages",
     href: "/admin/packages",
     icon: "packages",
     label: "packages",
+    roles: ["SUPER"],
   },
   {
     title: "Reports",
@@ -214,18 +215,21 @@ export const navItems: NavItem[] = [
         href: "/admin/reports/pet-clinic-report",
         icon: "clinicReport",
         label: "clinicReport",
+        roles: ["CLINIC", "SUPER"],
       },
       {
         title: "Pet Care Report",
         href: "/admin/reports/pet-care-report",
         icon: "careReport",
         label: "careReport",
+        roles: ["CARE", "SUPER"],
       },
       {
         title: "Pet Cafe Report",
         href: "/admin/reports/pet-cafe-report",
         icon: "cafeReport",
         label: "cafeReport",
+        roles: ["CAFE", "SUPER"],
       },
     ],
   },

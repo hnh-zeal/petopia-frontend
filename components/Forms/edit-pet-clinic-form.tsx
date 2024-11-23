@@ -13,12 +13,13 @@ import { useEffect, useState } from "react";
 import { Form, FormLabel } from "../ui/form";
 import { ScrollArea } from "../ui/scroll-area";
 import { Clinic } from "@/types/api";
-import { updatePetSitterByID } from "@/pages/api/api";
+import { updatePetClinicByID } from "@/pages/api/api";
 import { Input } from "../ui/input";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, PlusCircle, Trash2 } from "lucide-react";
 import { CreatePetClinicSchema } from "@/validations/formValidation";
 import { daysOfWeek } from "@/constants/data";
 import { SelectItem } from "../ui/select";
+import ImageUpload from "../ImageUpload";
 
 type PetSitterFormValue = z.infer<typeof CreatePetClinicSchema>;
 
@@ -29,6 +30,7 @@ export default function EditPetClinicForm({
 }) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [mainImage, setMainImage] = useState<string>(petClinic.mainImage);
   const [sections, setSections] = useState([
     { dow: "", startTime: "", endTime: "" },
   ]);
@@ -84,7 +86,14 @@ export default function EditPetClinicForm({
   const onSubmit = async (formValues: PetSitterFormValue) => {
     setLoading(true);
     try {
-      const data = await updatePetSitterByID(petClinic.id, formValues);
+      const { sections, ...values } = formValues;
+      const formData = {
+        ...values,
+        operatingHours: sections,
+        mainImage,
+      };
+
+      const data = await updatePetClinicByID(petClinic.id, formData);
 
       if (data.error) {
         toast({
@@ -119,6 +128,20 @@ export default function EditPetClinicForm({
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5 px-2"
           >
+            <div className="w-1/2 p-2">
+              <ImageUpload
+                image={mainImage}
+                onImageUpload={(url: string) => {
+                  setMainImage(url);
+                }}
+                onImageRemove={() => {
+                  setMainImage("");
+                }}
+                label="Clinic Image"
+                description="Upload an image"
+              />
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -216,7 +239,7 @@ export default function EditPetClinicForm({
                     className="hover:cursor-pointer mt-7 px-2"
                     onClick={addSection}
                   >
-                    <Plus className="w-4 h-4" />
+                    <PlusCircle className="w-4 h-4" />
                   </Button>
                 </div>
               ))}

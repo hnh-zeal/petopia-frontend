@@ -5,25 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 
 export default function Login() {
   return (
-    <div className="flex h-full">
-      <section className="h-screen w-full grid grid-cols-1 lg:grid-cols-2 place-items-center gap-5">
-        {/* Left Side: Image and Logo */}
-        <div className="relative hidden lg:flex h-full flex-col bg-muted text-white dark:border-r">
-          <div className="relative w-full h-full">
-            <Image
-              src="/pet-owner-login.jpg"
-              width={750}
-              height={750}
-              alt="Admin Login"
-              className="object-cover h-full w-full"
-            />
-            {/* <div className="absolute top-0 left-0 m-12 flex items-center space-x-2">
-              <Image src="/logo.ico" width={35} height={35} alt="Logo" />
-              <p className="text-lg text-black font-medium">Petopia</p>
-            </div> */}
-          </div>
-        </div>
+    <div className="flex h-screen">
+      {/* Left Image Section */}
+      <div className="flex-1 bg-blue-500 flex items-center justify-center relative"></div>
 
+      {/* Right Form Section */}
+      <div className="flex-1 flex items-center justify-center bg-gray-100">
         {/* Right Side: Login Form */}
         <div className="w-full m-10 flex flex-col justify-center space-y-6 sm:w-[450px]">
           <div className="flex flex-col space-y-2 text-center">
@@ -43,8 +30,8 @@ export default function Login() {
           </div>
           <AdminAuthForm />
         </div>
-        <Toaster />
-      </section>
+      </div>
+      <Toaster />
     </div>
   );
 }
