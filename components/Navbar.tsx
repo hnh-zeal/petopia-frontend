@@ -15,13 +15,11 @@ import { ChevronDown, Menu } from "lucide-react";
 import { Button, buttonVariants } from "./ui/button";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ModeToggle } from "./modetoggle";
 import { cn } from "@/lib/utils";
 import { userAuthState } from "@/states/auth";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { UserAvatar } from "./Layout/user-avatar";
 import { fetchUserWithToken } from "@/pages/api/api";
-import { User } from "@/constants/data";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
@@ -236,7 +234,7 @@ export const Navbar = () => {
                     Login
                   </Button>
                   <Button
-                    className="rounded-3xl bg-[#00b2d8]"
+                    className="rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6]"
                     onClick={handleRegister}
                   >
                     Register

@@ -9,10 +9,47 @@ import { Mail, User } from "lucide-react";
 import { format } from "date-fns";
 import { Admin } from "@/types/api";
 import { useRouter } from "next/router";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/use-toast";
+import { updateAdminByID } from "@/pages/api/api";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 export default function AdminInfo({ admin }: { admin: Admin }) {
   const router = useRouter();
+  const auth = useRecoilValue(adminAuthState);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [adminData, setAdminData] = useState(admin);
+  const [isActive, setIsActive] = useState(admin.isActive);
+
+  const handleStatusToggle = async () => {
+    setLoading(true);
+    try {
+      const data = await updateAdminByID(
+        admin.id,
+        {
+          isActive: !isActive,
+        },
+        auth?.accessToken as string
+      );
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
+        setAdminData(data.data);
+      }
+    } finally {
+      setLoading(false);
+    }
+    setIsActive(!isActive);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -36,6 +73,7 @@ export default function AdminInfo({ admin }: { admin: Admin }) {
                 <AvatarImage
                   src={admin.profileUrl || "/default-admin.png"}
                   alt={admin.name}
+                  className="object-cover"
                 />
                 <AvatarFallback>{admin.name.charAt(0)}</AvatarFallback>
               </Avatar>
@@ -44,10 +82,10 @@ export default function AdminInfo({ admin }: { admin: Admin }) {
               <h1 className="text-3xl font-bold text-black">{admin.name}</h1>
               <div className="flex flex-wrap items-center mt-2 space-x-4">
                 <Badge
-                  variant={admin.isActive ? "success" : "destructive"}
+                  variant={isActive ? "success" : "destructive"}
                   className="mb-2 md:mb-0"
                 >
-                  {admin.isActive ? "Active" : "Inactive"}
+                  {adminData.isActive ? "Active" : "Inactive"}
                 </Badge>
                 <span className="text-sm text-black">
                   Member since{" "}
@@ -58,11 +96,11 @@ export default function AdminInfo({ admin }: { admin: Admin }) {
               </div>
             </div>
             <div className="w-full md:w-1/6 flex items-center justify-between">
-              {/* <Switch
-                checked={admin.isActive}
+              <Switch
+                checked={adminData.isActive}
                 disabled={loading}
                 onCheckedChange={handleStatusToggle}
-              /> */}
+              />
               <Button
                 onClick={() => router.push(`/admin/admins/${admin.id}/edit`)}
                 className="bg-black hover:bg-black"

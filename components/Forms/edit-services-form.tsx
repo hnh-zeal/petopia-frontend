@@ -156,9 +156,10 @@ export default function EditServiceForm({ service }: { service: CareService }) {
                   }}
                   onImageRemove={(index: number) => {
                     const updatedImages = images.filter((_, i) => i !== index);
-                    setImages(updatedImages);
-                    if (index === 0) {
+                    if (updatedImages.length === 0) {
                       setImages([]);
+                    } else {
+                      setImages(updatedImages);
                     }
                   }}
                   label="Other Images"
@@ -328,19 +329,21 @@ export default function EditServiceForm({ service }: { service: CareService }) {
               ))}
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end space-x-4">
+              <div className="flex flex-row mt-10 items-center justify-between space-x-4">
                 <Button
                   type="button"
                   disabled={loading}
                   variant="outline"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={() => router.push(`/admin/pet-care/services`)}
                 >
                   Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

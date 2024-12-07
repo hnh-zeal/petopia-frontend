@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Heading } from "../ui/heading";
@@ -29,7 +29,7 @@ import {
 } from "@/pages/api/api";
 import { CreatePetSitterSchema } from "./create-sitter-form";
 import { Input } from "../ui/input";
-import { Plus, Trash, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import ProfilePictureUpload from "../Layout/profile-upload";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
@@ -47,6 +47,7 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
   const petServices = petSitter.services.map((service: any) => service.id);
   const router = useRouter();
   const adminAuth = useRecoilValue(adminAuthState);
+  const [imageUrl, setImageUrl] = useState(petSitter.profileUrl);
 
   const form = useForm<PetSitterFormValue>({
     resolver: zodResolver(CreatePetSitterSchema),
@@ -184,6 +185,7 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
                     <ProfilePictureUpload
                       field={field}
                       defaultImage={petSitter.profileUrl}
+                      setImageUrl={setImageUrl}
                     />
                   </FormControl>
                   <FormMessage className="shad-error" />
@@ -325,19 +327,21 @@ export default function EditSitterForm({ petSitter }: EditPetSitterFormProps) {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end">
+              <div className="flex flex-row items-center gap-4 mb-4">
                 <Button
                   disabled={loading}
                   type="button"
                   variant="outline"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onCancel}
                 >
                   Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

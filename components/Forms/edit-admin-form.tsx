@@ -186,7 +186,6 @@ export default function EditAdminForm({ admin }: { admin: Admin }) {
                 control={form.control}
                 name="password"
                 label="Password"
-                required={true}
               />
             </div>
 

@@ -13,7 +13,7 @@ import { adminAuthState } from "@/states/auth";
 export const UserClient = () => {
   const adminAuth = useRecoilValue(adminAuthState);
   const { data, totalPages, loading, currentPage, handlePageChange } =
-    useFetchData<User>(fetchUsers, 1, 5, adminAuth?.accessToken);
+    useFetchData<User>(fetchUsers, 1, 6, adminAuth?.accessToken);
 
   return (
     <>

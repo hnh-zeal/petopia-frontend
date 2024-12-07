@@ -30,7 +30,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
-import { updateCareAppointment } from "@/pages/api/api";
+import { updateCareAppointment, updateRoomBooking } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 import { useForm } from "react-hook-form";
@@ -66,7 +66,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
     setIsCancelDialogOpen(false);
     setLoading(true);
     try {
-      const apiData = await updateCareAppointment(
+      const apiData = await updateRoomBooking(
         data.id,
         {
           status: "CANCELLED",
@@ -123,7 +123,7 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+            <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to cancel this appointment? This action
               cannot be undone.
@@ -164,21 +164,56 @@ export const UserCellAction: React.FC<CellActionProps> = ({ data }) => {
     </>
   );
 };
-export const AdminCellAction: React.FC<CellActionProps> = ({ data }) => {
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const router = useRouter();
 
-  const onConfirm = async () => {};
+export const AdminCellActions: React.FC<CellActionProps> = ({ data }) => {
+  const auth = useRecoilValue(userAuthState);
+  const [loading, setLoading] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
+  const cancelForm = useForm<CancelFormValues>({
+    resolver: zodResolver(cancelSchema),
+    defaultValues: {
+      reason: "",
+    },
+  });
+
+  const handleCancel = async (values: CancelFormValues) => {
+    setIsCancelDialogOpen(false);
+    setLoading(true);
+    try {
+      const apiData = await updateRoomBooking(
+        data.id,
+        {
+          status: "REJECTED",
+          reason: values.reason,
+        },
+        auth?.accessToken as string
+      );
+      if (apiData.error) {
+        toast({
+          variant: "destructive",
+          description: `${apiData.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: "Appointment rejected successfully.",
+        });
+        window.location.reload();
+      }
+    } finally {
+      setLoading(false);
+      cancelForm.reset();
+    }
+  };
+
+  const onCancel = () => {
+    setIsCancelDialogOpen(false);
+    cancelForm.reset();
+  };
 
   return (
     <>
-      <AlertModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        onConfirm={onConfirm}
-        loading={loading}
-      />
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -188,17 +223,59 @@ export const AdminCellAction: React.FC<CellActionProps> = ({ data }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
           <DropdownMenuItem
-            onClick={() => router.push(`/admin/doctors/${data.id}/edit`)}
+            className="hover:cursor-pointer"
+            onClick={() => setIsCancelDialogOpen(true)}
           >
-            <Edit className="mr-2 h-4 w-4 hover:cursor-pointer" /> Approve
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setOpen(true)}>
-            <Trash className="mr-2 h-4 w-4 hover:cursor-pointer" /> Reject
+            <Ban className="mr-2 h-4 w-4" /> Reject
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog
+        open={isCancelDialogOpen}
+        onOpenChange={setIsCancelDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Booking</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reject this appointment? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Form {...cancelForm}>
+            <form
+              onSubmit={cancelForm.handleSubmit(handleCancel)}
+              className="space-y-4"
+            >
+              <FormField
+                control={cancelForm.control}
+                name="reason"
+                render={({ field }) => (
+                  <FormItem>
+                    <Label htmlFor="reason">Reason for Rejection</Label>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Enter the reason for cancellation (minimum 10 characters)"
+                        className="mt-2"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <AlertDialogFooter>
+                <Button variant="ghost" type="button" onClick={onCancel}>
+                  Cancel
+                </Button>
+                <Button type="submit">Submit</Button>
+              </AlertDialogFooter>
+            </form>
+          </Form>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

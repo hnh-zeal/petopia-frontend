@@ -138,7 +138,7 @@ export default function AboutUs() {
       </section>
 
       {/* Reviews */}
-      <section className="bg-gray-100 py-10">
+      {/* <section className="bg-gray-100 py-10">
         <div className="container">
           <h2 className=" text-2xl font-bold mb-6 text-center">
             Customer Reviews
@@ -164,7 +164,7 @@ export default function AboutUs() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

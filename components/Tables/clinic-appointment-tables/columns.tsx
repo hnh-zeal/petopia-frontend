@@ -26,6 +26,19 @@ export const userColumns: ColumnDef<ClinicAppointment>[] = [
     cell: ({ row }) => <DoctorRow row={row} />,
   },
   {
+    accessorKey: "type",
+    header: ({ column }) => <SortColumn column={column} title="Type" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.type === "RECOMMEND" ? (
+          <span>Recommend doctor</span>
+        ) : (
+          <span>Choose Doctor</span>
+        )}
+      </>
+    ),
+  },
+  {
     accessorKey: "date",
     header: ({ column }) => <SortColumn column={column} title="Date" />,
     cell: ({ row }) => (

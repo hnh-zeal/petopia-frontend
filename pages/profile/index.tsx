@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Cat, Dog, Bird, Edit, Save } from "lucide-react";
+import { Cat, Dog, Bird, Edit, Save, Rabbit } from "lucide-react";
 import { useRecoilValue } from "recoil";
 import { userAuthState } from "@/states/auth";
 import { fetchUserWithToken, updatePetWithToken } from "../api/api";
@@ -25,6 +25,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import Loading from "../loading";
+
+export const petIcons = {
+  cat: <Cat className="w-10 h-10" />,
+  dog: <Dog className="w-10 h-10" />,
+  bird: <Bird className="w-10 h-10" />,
+  rabbit: <Rabbit className="w-10 h-10" />,
+};
 
 const PetCard: React.FC<{ pet: Pet; onUpdatePet: (pet: Pet) => void }> = ({
   pet,
@@ -68,56 +75,58 @@ const PetCard: React.FC<{ pet: Pet; onUpdatePet: (pet: Pet) => void }> = ({
     }
   };
 
-  const petIcons = {
-    cat: <Cat className="w-6 h-6" />,
-    dog: <Dog className="w-6 h-6" />,
-    bird: <Bird className="w-6 h-6" />,
-  };
-
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            {pet.imageUrl ? (
-              <Avatar className="w-20 h-20">
-                <AvatarImage
-                  src={pet.imageUrl || "/default-pet.png"}
-                  alt={pet.name}
-                />
-                <AvatarFallback>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 flex items-center justify-center rounded-full bg-gray-100">
+              {pet.imageUrl ? (
+                <Avatar className="w-full h-full">
+                  <AvatarImage
+                    src={pet.imageUrl || "/default-pet.png"}
+                    alt={pet.name}
+                  />
+                  <AvatarFallback>
+                    {petIcons[pet.petType as keyof typeof petIcons]}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="text-gray-500">
                   {petIcons[pet.petType as keyof typeof petIcons]}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full">
-                {petIcons[pet.petType as keyof typeof petIcons]}
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
               {isEditing ? (
                 <Input
                   value={editedPet.name}
                   onChange={(e) =>
                     setEditedPet({ ...editedPet, name: e.target.value })
                   }
-                  className="font-semibold text-lg"
+                  className="text-lg font-semibold"
                 />
               ) : (
-                <h3 className="font-semibold text-lg">{pet.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {pet.name}
+                </h3>
               )}
             </div>
           </div>
+
           {!isEditing && (
             <Button
               variant="ghost"
               size="icon"
+              className="text-gray-500 hover:text-gray-700"
               onClick={() => setIsEditing(true)}
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-5 w-5" />
             </Button>
           )}
         </div>
+
         {isEditing ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -216,21 +225,37 @@ const PetCard: React.FC<{ pet: Pet; onUpdatePet: (pet: Pet) => void }> = ({
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            <p>
-              <span className="font-semibold">Type:</span> {pet.petType}
-            </p>
-            <p>
-              <span className="font-semibold">Breed:</span> {pet.breed}
-            </p>
-            <p>
-              <span className="font-semibold">Age:</span>{" "}
-              {pet.age ? `${pet.age} years` : ""}{" "}
-              {pet.month ? `${pet.month} months` : ""}
-            </p>
-            <p>
-              <span className="font-semibold">Sex:</span> {pet.sex}
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col space-y-2">
+              <p className="font-semibold text-gray-700">
+                Type:{" "}
+                <span className="capitalize font-normal text-gray-500">
+                  {pet.petType}
+                </span>
+              </p>
+              <p className="font-semibold text-gray-700">
+                Breed:{" "}
+                <span className="capitalize font-normal text-gray-500">
+                  {pet.breed}
+                </span>
+              </p>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <p className="font-semibold text-gray-700">
+                Age:{" "}
+                <span className="font-normal text-gray-500">
+                  {pet.age ? `${pet.age} years ` : ""}
+                  {pet.month ? `${pet.month} months` : ""}
+                </span>
+              </p>
+              <p className="font-semibold text-gray-700">
+                Sex:{" "}
+                <span className="capitalize font-normal text-gray-500">
+                  {pet.sex}
+                </span>
+              </p>
+            </div>
           </div>
         )}
       </CardContent>
@@ -254,7 +279,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       if (auth) {
-        const user = await fetchUserWithToken(auth?.accessToken as string);
+        const user = await fetchUserWithToken(auth.accessToken as string);
         setUser(user);
         setUserPets(user?.pets || []);
       }
@@ -265,7 +290,11 @@ export default function ProfilePage() {
   }, [auth]);
 
   if (!mounted) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+        <Loading />
+      </div>
+    );
   }
 
   return (

@@ -73,6 +73,7 @@ export default function AdminAuthForm() {
               required={true}
             />
 
+            {/* Email & Password */}
             <Password form={form} name="password" label="Password" />
           </section>
 

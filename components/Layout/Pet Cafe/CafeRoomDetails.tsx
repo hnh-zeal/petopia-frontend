@@ -95,9 +95,9 @@ export default function CafeRoomDetails({ cafeRoom }: CafeRoomDetailProps) {
               <span className="text-2xl font-bold">
                 Price: ${cafeRoom.price.toFixed(2)}
               </span>
-              <span className="text-lg text-gray-500 line-through ml-2">
+              {/* <span className="text-lg text-gray-500 line-through ml-2">
                 ${cafeRoom.price.toFixed(2)}
-              </span>
+              </span> */}
               <span className="text-sm text-green-600">
                 {cafeRoom.promotion}
               </span>

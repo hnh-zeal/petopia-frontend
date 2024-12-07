@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { createCafePets, fetchCafeRooms } from "@/pages/api/api";
 import { SelectItem } from "../ui/select";
 import { useRecoilValue } from "recoil";
@@ -24,41 +24,20 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon, X } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
-import { UploadButton } from "@/utils/uploadthing";
-import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import ImageUpload from "../ImageUpload";
-
-export const durationType = [
-  { name: "Days", value: "days" },
-  { name: "Weeks", value: "weeks" },
-  { name: "Months", value: "months" },
-  { name: "Years", value: "years" },
-];
-
-export const discountPercents = [
-  { name: "10 %", value: 10 },
-  { name: "20 %", value: 20 },
-  { name: "25 %", value: 25 },
-  { name: "30 %", value: 30 },
-  { name: "40 %", value: 40 },
-  { name: "50 %", value: 50 },
-  { name: "60 %", value: 60 },
-  { name: "75 %", value: 75 },
-  { name: "80 %", value: 80 },
-];
+import { useFetchList } from "@/hooks/useFetchList";
 
 const CreatePetSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   petType: z.string().min(1, { message: "Pet Type is required." }),
   breed: z.string().min(1, { message: "Breed is required." }),
-  description: z.string().optional(),
-  roomId: z.string(),
-  dateOfBirth: z.date().optional(),
+  roomId: z.string().min(1, { message: "Cafe Room is required." }),
+  dateOfBirth: z.date(),
   year: z.number().optional(),
   month: z.number().optional(),
-  sex: z.any().optional(),
-  medication: z.string().optional(),
+  sex: z.string().min(1, { message: "Gender is required." }),
+  description: z.string().optional(),
   imageUrl: z.string().optional(),
 });
 
@@ -67,11 +46,10 @@ type PackagesFormValue = z.infer<typeof CreatePetSchema>;
 export default function CreateCafePetsForm() {
   const auth = useRecoilValue(adminAuthState);
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [date, setDate] = useState<Date>();
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [rooms, setRooms] = useState<CafeRoom[]>();
 
   const form = useForm<PackagesFormValue>({
     resolver: zodResolver(CreatePetSchema),
@@ -88,24 +66,11 @@ export default function CreateCafePetsForm() {
     },
   });
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchCafeRooms({});
-        setRooms(data.data);
-      } catch (error) {
-        console.error("Failed to fetch Cafe Rooms", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, []);
+  const fetchRooms = useCallback(() => fetchCafeRooms({}), []);
+  const { data, loading, error } = useFetchList(fetchRooms);
 
   const onSubmit = async (formValues: PackagesFormValue) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const dataToSubmit = {
         ...formValues,
@@ -124,12 +89,12 @@ export default function CreateCafePetsForm() {
       } else {
         toast({
           variant: "success",
-          description: "Pet created.",
+          description: "Pet created successfully.",
         });
         router.push("/admin/pet-cafe/pets");
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -182,7 +147,7 @@ export default function CreateCafePetsForm() {
                 placeholder="Select Room"
                 required={true}
               >
-                {rooms?.map((room, i) => (
+                {data?.data?.map((room: CafeRoom, i: number) => (
                   <SelectItem key={i} value={`${room.id}`}>
                     <div className="flex cursor-pointer items-center gap-2">
                       <p>{room.name}</p>
@@ -295,24 +260,6 @@ export default function CreateCafePetsForm() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Enter pet's vaccination"
-                control={form.control}
-                name="vaccinationRecords"
-                label="Vaccination Records"
-              />
-
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Enter pet's medication"
-                control={form.control}
-                name="medication"
-                label="Medication"
-              />
-            </div>
-
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.TEXTAREA}
@@ -323,17 +270,21 @@ export default function CreateCafePetsForm() {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-end space-x-4">
-              <div className="flex items-center justify-end space-x-4">
+            <div className="flex mt-10 items-center justify-end">
+              <div className="flex flex-row items-center gap-4 mb-4">
                 <Button
-                  disabled={loading}
+                  disabled={isLoading}
+                  type="button"
                   variant="outline"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onReset}
                 >
                   Reset
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={isLoading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Create
                 </SubmitButton>
               </div>

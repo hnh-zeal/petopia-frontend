@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +11,38 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import { Switch } from "@/components/ui/switch";
+import { updateCareService } from "@/pages/api/api";
+import { toast } from "@/components/ui/use-toast";
 
 const ServiceInfo: React.FC<{ service: CareService }> = ({ service }) => {
   const router = useRouter();
+  const [active, setActive] = useState(service.isActive);
+
+  const [loading, setLoading] = useState(false);
+
+  const handleStatusToggle = async () => {
+    setLoading(true);
+    try {
+      const data = await updateCareService(service.id, {
+        isActive: !active,
+      });
+      if (data.error) {
+        toast({
+          variant: "destructive",
+          description: `${data.message}`,
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: `${data.message}`,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+    setActive(!active);
+  };
 
   return (
     <ScrollArea className="h-[calc(100vh-140px)]">
@@ -59,10 +88,8 @@ const ServiceInfo: React.FC<{ service: CareService }> = ({ service }) => {
                     {service.name}
                   </CardTitle>
                   <div>
-                    <Badge
-                      variant={service.isActive ? "success" : "destructive"}
-                    >
-                      {service.isActive ? "Active" : "Inactive"}
+                    <Badge variant={active ? "success" : "destructive"}>
+                      {active ? "Active" : "Inactive"}
                     </Badge>
                   </div>
                 </div>
@@ -70,13 +97,20 @@ const ServiceInfo: React.FC<{ service: CareService }> = ({ service }) => {
                   Type: {service.type}
                 </p>
               </div>
-              <Button
-                onClick={() =>
-                  router.push(`/admin/pet-care/services/${service.id}/edit`)
-                }
-              >
-                <Edit className="h-4 w-4 mr-2" /> Edit
-              </Button>
+              <div className="flex flex-row gap-4 items-center justify-between">
+                <Switch
+                  checked={active}
+                  disabled={loading}
+                  onCheckedChange={handleStatusToggle}
+                />
+                <Button
+                  onClick={() =>
+                    router.push(`/admin/pet-care/services/${service.id}/edit`)
+                  }
+                >
+                  <Edit className="h-4 w-4 mr-2" /> Edit
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -149,14 +183,19 @@ const ServiceInfo: React.FC<{ service: CareService }> = ({ service }) => {
                 {service.petSitters?.map((sitter) => (
                   <Card key={sitter.id}>
                     <CardContent className="p-4 flex items-start space-x-4">
-                      <Avatar className="w-16 h-16">
-                        <AvatarImage
-                          src={sitter.profileUrl || `/default-pet-sitter.png`}
-                          alt={sitter.name}
-                        />
-                        <AvatarFallback>{sitter.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
+                      <div className="w-1/5 justify-center flex items-center">
+                        <div className="relative w-24 h-24 rounded-full overflow-hidden">
+                          <Image
+                            src={sitter.profileUrl || "/default-pet-sitter.png"}
+                            alt={sitter.name}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-full"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="w-4/5">
                         <h4 className="font-semibold">{sitter.name}</h4>
                         <p className="text-sm text-gray-500">{sitter.email}</p>
                         <p className="text-sm text-gray-500">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, addDays, startOfDay } from "date-fns";
+import { format, addDays, startOfDay, addHours } from "date-fns";
 import { useRouter } from "next/router";
 import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
@@ -51,7 +51,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CalendarIcon, PawPrint, Scissors, Sparkles, Star } from "lucide-react";
+import { CalendarIcon, PawPrint, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { breeds, GenderOptions, petTypes } from "@/constants/data";
 import CustomFormField, { FormFieldType } from "@/components/custom-form-field";
@@ -92,7 +92,7 @@ export default function GroomingAppointment({
   const router = useRouter();
   const auth = useRecoilValue(userAuthState);
   const [isLoading, setIsLoading] = useState(false);
-  const [timeSlots, setTimeSlots] = useState<string[]>([]);
+  const [timeSlots, setTimeSlots] = useState<string[]>();
   const [totalPrice, setTotalPrice] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [discount, setDiscount] = useState(0);
@@ -314,11 +314,16 @@ export default function GroomingAppointment({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {timeSlots.map((slot) => (
-                                <SelectItem key={slot} value={slot}>
-                                  {slot}
-                                </SelectItem>
-                              ))}
+                              {Array.from({ length: 9 }, (_, i) => i + 9).map(
+                                (hour) => (
+                                  <SelectItem key={hour} value={`${hour}:00`}>
+                                    {format(
+                                      addHours(startOfDay(new Date()), hour),
+                                      "h:mm a"
+                                    )}
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />

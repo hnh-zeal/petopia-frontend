@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
@@ -10,14 +9,16 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { UpdateCafePetSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { useEffect, useState } from "react";
-import { PetClinic } from "@/constants/data";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import {
   fetchCafePetByID,
   fetchCafeRooms,
   updateCafePetByID,
 } from "@/pages/api/api";
+import { useFetchList } from "@/hooks/useFetchList";
+import { CafeRoom } from "@/types/api";
+import ImageUpload from "../ImageUpload";
 
 type CafePetFormValue = z.infer<typeof UpdateCafePetSchema>;
 interface EditCafePetFormProps {
@@ -27,36 +28,18 @@ interface EditCafePetFormProps {
 
 export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
   const { toast } = useToast();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
   const [cafePet, setCafePet] = useState({});
-  const [roomData, setRoomData] = useState({
-    rooms: [],
-    count: 0,
-    totalPages: 0,
-    page: 1,
-    pageSize: 5,
-  });
+
+  const fetchRooms = useCallback(() => fetchCafeRooms({}), []);
+  const { data } = useFetchList(fetchRooms);
+
   const form = useForm<CafePetFormValue>({
     resolver: zodResolver(UpdateCafePetSchema),
   });
 
   useEffect(() => {
-    const getRooms = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchCafeRooms({});
-        setRoomData((prevState) => ({
-          ...prevState,
-          ...data.data,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch Pet Centers", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const getCafePet = async () => {
       setLoading(true);
       try {
@@ -65,6 +48,7 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
           ...prevState,
           ...data,
         }));
+        setImageUrl(data.imageUrl);
         form.reset(data);
       } catch (error) {
         console.error("Failed to fetch Cafe Pet", error);
@@ -74,7 +58,6 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
     };
 
     getCafePet();
-    getRooms();
   }, [id, form]);
 
   const onSubmit = async (formValues: CafePetFormValue) => {
@@ -117,12 +100,27 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="w-full space-y-5"
           >
+            <div className="w-1/2 p-2">
+              <ImageUpload
+                image={imageUrl}
+                onImageUpload={(url: string) => {
+                  setImageUrl(url);
+                }}
+                onImageRemove={() => {
+                  setImageUrl("");
+                }}
+                label="Clinic Image"
+                description="Upload an image"
+              />
+            </div>
+
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
                 control={form.control}
                 name="name"
                 label="Name"
+                required={true}
               />
 
               <CustomFormField
@@ -131,8 +129,9 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
                 control={form.control}
                 name="roomId"
                 label="Room"
+                required={true}
               >
-                {roomData.rooms.map((room: PetClinic, i) => (
+                {data.data.map((room: CafeRoom, i: number) => (
                   <SelectItem key={room.name + i} value={`${room.id}`}>
                     <div className="flex cursor-pointer items-center gap-2">
                       <p>{room.name}</p>
@@ -145,18 +144,11 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
             <div className="flex flex-col gap-6 xl:flex-row">
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
+                required={true}
                 placeholder="Birth Date"
                 control={form.control}
                 name="dateOfBirth"
                 label="Birth Date"
-              />
-
-              <CustomFormField
-                fieldType={FormFieldType.INPUT}
-                placeholder="Age"
-                control={form.control}
-                name="age"
-                label="Age"
               />
             </div>
 
@@ -170,18 +162,21 @@ export default function EditCafePetForm({ id, onClose }: EditCafePetFormProps) {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-end space-x-4">
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end">
+              <div className="flex flex-row items-center gap-4 mb-4">
                 <Button
-                  disabled={loading}
+                  disabled={isLoading}
                   variant="outline"
                   type="button"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onCancel}
                 >
                   Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={isLoading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

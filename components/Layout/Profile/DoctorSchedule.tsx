@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { format, parse } from "date-fns";
 import {
   Table,
@@ -24,14 +24,19 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { updateDoctorScheduleByID, addDoctorSchedule } from "@/pages/api/api";
-import { useToast } from "@/components/ui/use-toast";
+import {
+  updateDoctorScheduleByID,
+  addDoctorSchedule,
+  fetchDoctorSchedule,
+} from "@/pages/api/api";
+import { toast, useToast } from "@/components/ui/use-toast";
 import { Schedule } from "@/types/api";
 import { useRouter } from "next/router";
+import { useFetchList } from "@/hooks/useFetchList";
+import Loading from "@/pages/loading";
 
-const getDayName = (dayOfWeek: string) => {
+export const getDayName = (dayOfWeek: string | number) => {
   const days = [
     "Sunday",
     "Monday",
@@ -42,120 +47,6 @@ const getDayName = (dayOfWeek: string) => {
     "Saturday",
   ];
   return days[+dayOfWeek];
-};
-
-const DoctorSchedule = ({
-  schedules: initialSchedules,
-}: {
-  schedules: Schedule[];
-}) => {
-  const router = useRouter();
-  const { id } = router.query;
-  const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
-
-  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleScheduleUpdate = (updatedSchedule: Schedule) => {
-    setSchedules((prevSchedules) => {
-      const scheduleIndex = prevSchedules.findIndex(
-        (s) => s.id === updatedSchedule.id
-      );
-      if (scheduleIndex !== -1) {
-        const updatedSchedules = [...prevSchedules];
-        updatedSchedules[scheduleIndex] = updatedSchedule;
-        return updatedSchedules;
-      }
-
-      return [...prevSchedules, updatedSchedule];
-    });
-  };
-
-  const handleCloseDialog = useCallback(() => {
-    setEditingSchedule(null);
-    setIsDialogOpen(false);
-  }, []);
-
-  const openAddDialog = () => {
-    setEditingSchedule(null);
-    setIsDialogOpen(true);
-  };
-
-  const openEditDialog = (schedule: Schedule) => {
-    setEditingSchedule(schedule);
-    setIsDialogOpen(true);
-  };
-
-  return (
-    <div className="w-full space-y-8">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex flex-row justify-between items-center">
-          <h2 className="text-2xl font-bold mb-4">Weekly Schedule</h2>
-          <Button className="mb-4" onClick={openAddDialog}>
-            Add Schedule
-          </Button>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center">Day of Week</TableHead>
-              <TableHead className="text-center">Start Time</TableHead>
-              <TableHead className="text-center">End Time</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {schedules.map((schedule) => (
-              <TableRow key={schedule.id}>
-                <TableCell className="text-center">
-                  {getDayName(schedule.dayOfWeek)}
-                </TableCell>
-                <TableCell className="text-center">
-                  {format(
-                    parse(schedule.startTime, "HH:mm:ss", new Date()),
-                    "h:mm a"
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  {format(
-                    parse(schedule.endTime, "HH:mm:ss", new Date()),
-                    "h:mm a"
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  <ScheduleSwitch schedule={schedule} />
-                </TableCell>
-                <TableCell className="text-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => openEditDialog(schedule)}
-                  >
-                    Edit
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingSchedule ? "Edit Schedule" : "Add Schedule"}
-              </DialogTitle>
-            </DialogHeader>
-            <ScheduleForm
-              schedule={editingSchedule}
-              doctorId={`${id}`}
-              onClose={handleCloseDialog}
-              onScheduleUpdate={handleScheduleUpdate}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
-  );
 };
 
 const ScheduleSwitch = ({ schedule }: { schedule: Schedule }) => {
@@ -216,44 +107,66 @@ const ScheduleForm = ({
   );
   const [startTime, setStartTime] = useState(schedule?.startTime || "");
   const [endTime, setEndTime] = useState(schedule?.endTime || "");
-  const [isActive, setIsActive] = useState(schedule?.isActive);
-  const { toast } = useToast();
+  const [errors, setErrors] = useState({
+    dayOfWeek: "",
+    startTime: "",
+    endTime: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Reset errors
+    setErrors({ dayOfWeek: "", startTime: "", endTime: "" });
+
+    let hasError = false;
+    const newErrors: any = {};
+
+    // Validation: Ensure all fields are filled
+    if (!dayOfWeek) {
+      newErrors.dayOfWeek = "Day of Week is required.";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
+      return;
+    }
+
     const payload: any = {
+      ...(!schedule && { doctorId }),
       dayOfWeek: parseInt(dayOfWeek),
       startTime,
       endTime,
-      isActive: isActive ?? true,
+      isActive: schedule ? schedule.isActive : true,
     };
 
-    if (!schedule) {
-      payload.doctorId = +doctorId;
-    }
-
-    onClose();
     try {
+      console.log(schedule);
       const data = schedule
         ? await updateDoctorScheduleByID(schedule.id, payload)
         : await addDoctorSchedule(payload);
 
+      console.log("DATA", data);
       if (data.error) {
         toast({
           variant: "destructive",
-          description: data.message,
+          description: `${data.message}`,
         });
       } else {
         onScheduleUpdate(data.data);
         toast({
           variant: "success",
-          description: data.message,
+          description: `${data.message}`,
         });
       }
+
+      onClose();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        description: "An error occurred. Please try again.",
+      setErrors({
+        dayOfWeek: "An error occurred. Please try again.",
+        startTime: "",
+        endTime: "",
       });
     }
   };
@@ -287,34 +200,176 @@ const ScheduleForm = ({
             ))}
           </SelectContent>
         </Select>
+        {errors.dayOfWeek && (
+          <p className="text-red-500 text-sm">{errors.dayOfWeek}</p>
+        )}
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="startTime">Start Time</Label>
-        <Input
-          id="startTime"
-          type="time"
-          value={startTime.slice(0, 5)}
-          onChange={(e) => setStartTime(`${e.target.value}:00`)}
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="endTime">End Time</Label>
-        <Input
-          id="endTime"
-          type="time"
-          value={endTime.slice(0, 5)}
-          onChange={(e) => setEndTime(`${e.target.value}:00`)}
-          required
-        />
+      <div className="flex flex-row gap-2">
+        <div className="w-full space-y-2">
+          <Label htmlFor="startTime">Start Time</Label>
+          <Input
+            id="startTime"
+            type="time"
+            value={startTime.slice(0, 5)}
+            onChange={(e) => setStartTime(`${e.target.value}:00`)}
+            required
+          />
+          {errors.startTime && (
+            <p className="text-red-500 text-sm">{errors.startTime}</p>
+          )}
+        </div>
+        <div className="w-full space-y-2">
+          <Label htmlFor="endTime">End Time</Label>
+          <Input
+            id="endTime"
+            type="time"
+            value={endTime.slice(0, 5)}
+            onChange={(e) => setEndTime(`${e.target.value}:00`)}
+            required
+          />
+          {errors.endTime && (
+            <p className="text-red-500 text-sm">{errors.endTime}</p>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Button type="submit" className="justify-end">
-          {schedule ? "Update" : "Add"} Schedule
-        </Button>
+      <div className="space-y-2 flex justify-end">
+        <Button type="submit">{schedule ? "Update" : "Add"} Schedule</Button>
       </div>
     </form>
+  );
+};
+
+const DoctorSchedule = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const fetchSchedule = useCallback(
+    () => fetchDoctorSchedule({ doctorId: id }),
+    [id]
+  );
+  const { data, loading } = useFetchList(fetchSchedule);
+
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+
+  useEffect(() => {
+    if (data?.data) {
+      setSchedules(data.data);
+    }
+  }, [data]);
+
+  const handleScheduleUpdate = (updatedSchedule: Schedule) => {
+    setSchedules((prevSchedules) => {
+      const scheduleIndex = prevSchedules.findIndex(
+        (s) => s.id === updatedSchedule.id
+      );
+      if (scheduleIndex !== -1) {
+        const updatedSchedules = [...prevSchedules];
+        updatedSchedules[scheduleIndex] = updatedSchedule;
+        return updatedSchedules;
+      }
+
+      return [...prevSchedules, updatedSchedule];
+    });
+  };
+
+  const handleCloseDialog = useCallback(() => {
+    setEditingSchedule(null);
+    setIsDialogOpen(false);
+  }, []);
+
+  const openAddDialog = () => {
+    setEditingSchedule(null);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (schedule: Schedule) => {
+    setEditingSchedule(schedule);
+    setIsDialogOpen(true);
+  };
+
+  return (
+    <div className="w-full space-y-8">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <div className="flex flex-row justify-between items-center">
+          <h2 className="text-2xl font-bold mb-4">Weekly Schedule</h2>
+          <Button className="mb-4" onClick={openAddDialog}>
+            Add Schedule
+          </Button>
+        </div>
+        <Table>
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <Loading />
+            </div>
+          ) : (
+            <>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Day of Week</TableHead>
+                  <TableHead className="text-center">Start Time</TableHead>
+                  <TableHead className="text-center">End Time</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedules?.map((schedule) => (
+                  <TableRow key={schedule.id}>
+                    <TableCell className="text-center">
+                      {getDayName(schedule.dayOfWeek)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {format(
+                        parse(schedule.startTime, "HH:mm:ss", new Date()),
+                        "h:mm a"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {format(
+                        parse(schedule.endTime, "HH:mm:ss", new Date()),
+                        "h:mm a"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <ScheduleSwitch schedule={schedule} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => openEditDialog(schedule)}
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </>
+          )}
+        </Table>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {editingSchedule ? "Edit Schedule" : "Add Schedule"}
+              </DialogTitle>
+            </DialogHeader>
+            <ScheduleForm
+              schedule={editingSchedule}
+              doctorId={`${id}`}
+              onClose={handleCloseDialog}
+              onScheduleUpdate={(editingSchedule) =>
+                handleScheduleUpdate(editingSchedule)
+              }
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 };
 

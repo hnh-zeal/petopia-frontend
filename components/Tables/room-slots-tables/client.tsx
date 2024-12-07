@@ -6,14 +6,23 @@ import { CafeRoom, RoomSlot } from "@/types/api";
 import Loading from "@/pages/loading";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useCallback, useMemo } from "react";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 export const RoomSlotsClient = ({ cafeRoom }: { cafeRoom: CafeRoom }) => {
   const roomQuery = useMemo(() => ({ roomId: cafeRoom.id }), [cafeRoom.id]);
 
   const fetchRoomSlotsMemoized = useCallback(fetchRoomSlots, []);
 
+  const adminAuth = useRecoilValue(adminAuthState);
   const { data, totalPages, loading, currentPage, handlePageChange } =
-    useFetchData<RoomSlot>(fetchRoomSlotsMemoized, 1, 7, roomQuery);
+    useFetchData<RoomSlot>(
+      fetchRoomSlotsMemoized,
+      1,
+      7,
+      adminAuth?.accessToken,
+      roomQuery
+    );
 
   return (
     <div className="flex flex-col space-y-3">

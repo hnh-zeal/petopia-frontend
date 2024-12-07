@@ -7,7 +7,7 @@ export const getServerSideProps: GetServerSideProps<{
   doctorsData: DoctorData;
 }> = async (context) => {
   try {
-    const doctorsData = await fetchDoctors({});
+    const doctorsData = await fetchDoctors({ isActive: true });
     return { props: { doctorsData } };
   } catch (error) {
     console.error("Error fetching doctor:", error);

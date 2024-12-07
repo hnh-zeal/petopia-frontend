@@ -8,6 +8,7 @@ import { Phone, Mail, Languages, Scissors, Star } from "lucide-react";
 import Image from "next/image";
 import { PetSitter } from "@/types/api";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { truncate } from "@/utils/truncate";
 
 const breadcrumbItems = (sitter: PetSitter) => [
   { title: "Pet Sitters", link: "/pet-care/pet-sitters" },
@@ -20,7 +21,7 @@ interface PetSitterProps {
 
 const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
   return (
-    <div className="mx-auto p-4 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div className="mx-auto p-4 bg-gradient-to-br bg-gray-100 min-h-screen">
       <div className="container mx-auto max-w-4xl">
         <div className="mb-6">
           <Breadcrumbs items={breadcrumbItems(sitter)} />
@@ -34,6 +35,7 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                     src={sitter.profileUrl || "/default-pet-sitter.png"}
                     alt={sitter.name}
                     fill
+                    objectFit="cover"
                     className="rounded-full"
                   />
                 </div>
@@ -56,48 +58,71 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
           </CardHeader>
           <CardContent className="p-6">
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
               </TabsList>
-              <TabsContent value="about" className="mt-6">
-                <h3 className="text-xl font-semibold mb-4">
-                  About {sitter.name}
-                </h3>
-                <p className="text-gray-700 mb-4">{sitter.about}</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TabsContent value="about" className="flex flex-col gap-6 mt-6">
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">
+                    About {sitter.name}
+                  </h3>
+                  <p className="text-gray-700 mb-4">{sitter.about}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Star className="w-5 h-5 mr-2 text-indigo-600" />
+                          Specialties
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {sitter.specialties?.map(
+                            (specialty: string, index) => (
+                              <Badge key={index} variant="secondary">
+                                {specialty.trim()}
+                              </Badge>
+                            )
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center">
+                          <Languages className="w-5 h-5 mr-2 text-indigo-600" />
+                          Languages
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {sitter.languages?.map((language, index) => (
+                            <Badge key={index} variant="outline">
+                              {language.trim()}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">
+                    Contact Information
+                  </h3>
                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center">
-                        <Star className="w-5 h-5 mr-2 text-indigo-600" />
-                        Specialties
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {sitter.specialties?.map((specialty: string, index) => (
-                          <Badge key={index} variant="secondary">
-                            {specialty.trim()}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center">
-                        <Languages className="w-5 h-5 mr-2 text-indigo-600" />
-                        Languages
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {sitter.languages?.map((language, index) => (
-                          <Badge key={index} variant="outline">
-                            {language.trim()}
-                          </Badge>
-                        ))}
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center">
+                          <Phone className="w-5 h-5 mr-3 text-indigo-600" />
+                          <span>{sitter.phoneNumber}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Mail className="w-5 h-5 mr-3 text-indigo-600" />
+                          <span>{sitter.email}</span>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -115,6 +140,7 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                               src={service.mainImage || "/default-doctor.png"}
                               alt={sitter.name}
                               fill
+                              className="object-cover"
                             />
                           </div>
                         </div>
@@ -123,7 +149,7 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                             {service.name}
                           </h4>
                           <p className="text-gray-600 mb-4">
-                            {service.description}
+                            {truncate(service.description, 100)}
                           </p>
                           <div className="flex justify-between items-center mb-4">
                             <Badge variant="secondary">{service.type}</Badge>
@@ -151,25 +177,6 @@ const PetSitterDetails: React.FC<PetSitterProps> = ({ sitter }) => {
                     </Card>
                   ))}
                 </div>
-              </TabsContent>
-              <TabsContent value="contact" className="mt-6">
-                <h3 className="text-xl font-semibold mb-4">
-                  Contact Information
-                </h3>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center">
-                        <Phone className="w-5 h-5 mr-3 text-indigo-600" />
-                        <span>{sitter.phoneNumber}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="w-5 h-5 mr-3 text-indigo-600" />
-                        <span>{sitter.email}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           </CardContent>

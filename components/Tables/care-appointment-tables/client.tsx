@@ -1,20 +1,22 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
 import { DataTable } from "./data-table";
-import { useRouter } from "next/navigation";
-import { adminColumns, userColumns } from "./columns";
+import { adminColumns, sitterColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchCareAppointments } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState, userAuthState } from "@/states/auth";
 import Loading from "@/pages/loading";
+import { PetSitter } from "@/types/api";
 
-export const CareAppointmentClient = ({ isAdmin = false }) => {
-  const router = useRouter();
-
+export const CareAppointmentClient = ({
+  isAdmin = false,
+  petSitter,
+}: {
+  isAdmin: Boolean;
+  petSitter?: PetSitter;
+}) => {
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
   const [appointmentsData, setAppointmentsData] = useState({
@@ -22,7 +24,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     count: 0,
     totalPages: 0,
     page: 1,
-    pageSize: 5,
+    pageSize: 6,
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,16 +33,18 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     const getAppointments = async () => {
       setLoading(true);
       try {
+        const adminToken = adminAuth?.accessToken;
         const userId = userAuth?.user?.id || null;
         const userToken = userAuth?.accessToken;
-        const adminToken = adminAuth?.accessToken;
+        const petSitterId = petSitter ? petSitter.id : null;
         const data = await fetchCareAppointments(
           {
             page: currentPage,
             pageSize: appointmentsData.pageSize,
-            userId,
+            ...(petSitterId && { petSitterId }),
+            ...(userId && { userId }),
           },
-          userToken || (adminToken as string)
+          (adminToken as string) || userToken
         );
 
         setAppointmentsData((prevState) => ({
@@ -55,7 +59,7 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
     };
 
     getAppointments();
-  }, [userAuth, adminAuth, currentPage, appointmentsData.pageSize]);
+  }, [userAuth, adminAuth, currentPage, petSitter, appointmentsData.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));
@@ -63,30 +67,38 @@ export const CareAppointmentClient = ({ isAdmin = false }) => {
 
   return (
     <>
-      {isAdmin && (
-        <>
-          <div className="flex items-start justify-between">
-            <Heading title="Care Appointments" />
+      <div className="flex flex-col space-y-3">
+        {isAdmin && (
+          <>
+            {!petSitter && (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <Heading title="Care Appointments" />
+                </div>
+                <Separator />
+              </>
+            )}
+          </>
+        )}
+        {!loading && (
+          <DataTable
+            searchKey="name"
+            columns={
+              petSitter ? sitterColumns : isAdmin ? adminColumns : userColumns
+            }
+            data={appointmentsData.careAppointments}
+            // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
+            totalPages={appointmentsData.totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        )}
+        {loading && (
+          <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+            <Loading />
           </div>
-          <Separator />
-        </>
-      )}
-      {!loading && (
-        <DataTable
-          searchKey="name"
-          columns={isAdmin ? adminColumns : userColumns}
-          data={appointmentsData.careAppointments}
-          // onClickRow={(id) => router.push(`/admin/doctors/${id}`)}
-          totalPages={appointmentsData.totalPages}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-        />
-      )}
-      {loading && (
-        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
-          <Loading />
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 };

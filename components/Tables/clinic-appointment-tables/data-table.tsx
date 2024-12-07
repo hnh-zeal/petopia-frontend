@@ -22,14 +22,8 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, ChevronDown, Filter } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import * as React from "react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Pagination from "../pagination";
 import {
   Popover,
@@ -39,7 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { fetchClinicAppointments, fetchRoomBooking } from "@/pages/api/api";
+import { fetchClinicAppointments } from "@/pages/api/api";
 import { useRouter } from "next/router";
 
 interface DataTableProps<TData, TValue> {

@@ -36,6 +36,7 @@ export default function AdminProfile() {
                 <AvatarImage
                   src={auth?.admin.profileUrl || "/default-admin.png"}
                   alt={auth?.admin.name}
+                  className="object-cover"
                 />
                 <AvatarFallback>{auth?.admin.name.charAt(0)}</AvatarFallback>
               </Avatar>
@@ -63,12 +64,12 @@ export default function AdminProfile() {
               </div>
             </div>
             <div className="w-full md:w-1/6 flex items-center justify-between">
-              <Button
+              {/* <Button
                 onClick={() => console.log("Edit profile")}
                 className="bg-black hover:bg-black"
               >
                 Edit Profile
-              </Button>
+              </Button> */}
             </div>
           </CardContent>
         </Card>

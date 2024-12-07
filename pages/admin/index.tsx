@@ -6,9 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 export default function Login() {
   return (
     <div className="flex h-screen">
-      {/* Left Image Section */}
-      <div className="flex-1 bg-blue-500 flex items-center justify-center relative"></div>
-
       {/* Right Form Section */}
       <div className="flex-1 flex items-center justify-center bg-gray-100">
         {/* Right Side: Login Form */}
@@ -31,6 +28,12 @@ export default function Login() {
           <AdminAuthForm />
         </div>
       </div>
+
+      {/* Left Image Section */}
+      <div className="flex-1 bg-blue-500 flex items-center justify-center relative">
+        <Image src="/login.jpg" alt="Login" fill />
+      </div>
+
       <Toaster />
     </div>
   );

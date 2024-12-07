@@ -43,8 +43,10 @@ export const VerifyOTPSchema = z.object({
 });
 
 export const ChangePasswordSchema = z.object({
-  new_password: z.string(),
-  confirm_password: z.string(),
+  new_password: z.string().min(1, { message: "New Password is required." }),
+  confirm_password: z
+    .string()
+    .min(1, { message: "Confirm Password is required." }),
 });
 
 const sectionSchema = z.object({
@@ -72,23 +74,22 @@ const addOnSchema = z.object({
 export const CreateServiceSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   type: z.enum(["SITTING", "GROOMING", "TRAINING"]),
-  description: z.string(),
+  description: z.string().min(1, { message: "Name is required." }),
   price: z.number(),
-  categoryIds: z.any(),
+  categoryIds: z
+    .array(z.any())
+    .nonempty("Please select at least one category."),
   addOns: z.array(addOnSchema).optional(),
 });
 
 export const CreateCafeRoomSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
-  roomNo: z.string(),
+  roomNo: z.string().min(1, { message: "Room No. is required." }),
   price: z.number(),
-  roomType: z.string(),
-  description: z.string().optional(),
-  contact: z.string().optional(),
+  description: z.string().min(1, { message: "Description is required." }),
+  contact: z.string(),
   mainImage: z.string().optional(),
   images: z.any().optional(),
-  // facilities: z.string(),
-  // menus: z.string(),
 });
 
 export const CreateCafePetSchema = z.object({
@@ -105,6 +106,7 @@ export const UpdateCafePetSchema = z.object({
   roomId: z.any().optional(),
   dateOfBirth: z.date().optional(),
   sex: z.any().optional(),
+  imageUrl: z.any().optional(),
 });
 
 export const CreateAppointmentSchema = z.object({
@@ -160,11 +162,6 @@ export const CreateDoctorSchema = z.object({
       return ACCEPTED_IMAGE_TYPES.includes(file.type);
     }, "Only .jpg, .jpeg, .png and .webp formats are supported.")
     .optional(),
-  // .refine((file) => {
-  //   file?.size < MAX_FILE_SIZE;
-  // }, `Max image size is 5MB.`)
-  // specialties: z.array(z.string()),
-  // languages: z.array(z.string()),
 });
 
 export const ScheduleAppointmentSchema = z.object({
@@ -198,7 +195,6 @@ export function getAppointmentSchema(type: string) {
 }
 
 export const CreateSlotSchema = z.object({
-  doctorId: z.number(),
   startDate: z.date(),
   endDate: z.date(),
 });

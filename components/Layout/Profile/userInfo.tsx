@@ -14,6 +14,7 @@ import {
   Cat,
   Dog,
   Bird,
+  Edit,
 } from "lucide-react";
 import {
   CafeBooking,
@@ -30,6 +31,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { fetchUserByID, updateUserByID } from "@/pages/api/api";
+import { petIcons } from "@/pages/profile";
 
 const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
   const router = useRouter();
@@ -38,12 +40,6 @@ const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
   const [isActive, setIsActive] = useState(user.isActive);
   const [mounted, setMounted] = useState(false);
   const [userData, setUserData] = useState<UserDetails>(user);
-
-  const petIcons = {
-    cat: <Cat className="w-4 h-4" />,
-    dog: <Dog className="w-4 h-4" />,
-    bird: <Bird className="w-4 h-4" />,
-  };
 
   useEffect(() => {
     setMounted(true);
@@ -121,7 +117,7 @@ const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
               <Button
                 onClick={() => router.push(`/admin/users/${userData.id}/edit`)}
               >
-                Edit
+                <Edit className="w-4 h-4 mr-2" /> Edit
               </Button>
             </div>
           </CardContent>
@@ -146,31 +142,39 @@ const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
                   <Mail className="w-5 h-5 mr-2 text-gray-500" />
                   <span>{userData.email}</span>
                 </div>
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 mr-2 text-gray-500" />
-                  <span>{userData.phone}</span>
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                  <span>{`${userData.address}, ${userData.city}, ${userData.country}`}</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="w-5 h-5 mr-2 text-gray-500" />
-                  <span>
-                    Date of Birth:{" "}
-                    {format(new Date(userData.birthDate), "MMMM d, yyyy")}
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <Smartphone className="w-5 h-5 mr-2 text-gray-500" />
-                  <span>
-                    Last login:{" "}
-                    {format(
-                      new Date(userData.lastLoginDate),
-                      "MMMM d, yyyy hh:mm:ss a"
-                    )}
-                  </span>
-                </div>
+                {userData.phone && (
+                  <div className="flex items-center">
+                    <Phone className="w-5 h-5 mr-2 text-gray-500" />
+                    <span>{userData.phone}</span>
+                  </div>
+                )}
+                {userData.address && (
+                  <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-gray-500" />
+                    <span>{`${userData.address}`}</span>
+                  </div>
+                )}
+                {userData.birthDate && (
+                  <div className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-gray-500" />
+                    <span>
+                      Date of Birth:{" "}
+                      {format(new Date(userData.birthDate), "MMMM d, yyyy")}
+                    </span>
+                  </div>
+                )}
+                {userData.lastLoginDate && (
+                  <div className="flex items-center">
+                    <Smartphone className="w-5 h-5 mr-2 text-gray-500" />
+                    <span>
+                      Last login:{" "}
+                      {format(
+                        new Date(userData.lastLoginDate),
+                        "MMMM d, yyyy hh:mm:ss a"
+                      )}
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -183,11 +187,18 @@ const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
                   {userData.pets?.map((pet: Pet) => (
                     <Card key={pet.id}>
                       <CardContent className="flex items-center space-x-4 p-4">
-                        {petIcons[pet.petType as keyof typeof petIcons]}
+                        <div className="w-full md:w-1/3 flex flex-row justify-center">
+                          <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full">
+                            {petIcons[pet.petType as keyof typeof petIcons]}
+                          </div>
+                        </div>
                         <div>
                           <h3 className="font-semibold">{pet.name}</h3>
+                          <p className="text-sm capitalize text-gray-500">
+                            {pet.breed}, {pet.sex},
+                          </p>
                           <p className="text-sm text-gray-500">
-                            {pet.breed}, {pet.sex}, {pet.age ?? pet.month}{" "}
+                            {pet.age ?? pet.month}{" "}
                             {pet.age ? "years" : "months"} old
                           </p>
                         </div>
@@ -288,8 +299,15 @@ const UserInfo: React.FC<{ user: UserDetails | any }> = ({ user }) => {
                 {user.packageHistory?.map((pkg: PackageHistory) => (
                   <Card key={pkg.id} className="mb-4">
                     <CardContent className="flex justify-between items-center p-4">
-                      <div>
-                        <h3 className="font-semibold">{pkg.package.name}</h3>
+                      <div className="flex flex-col gap-2 justify-center">
+                        <div className="flex flex-row gap-2 items-center">
+                          <h3 className="font-semibold">{pkg.package.name}</h3>
+                          {new Date(pkg.expiredDate) < new Date() ? (
+                            <Badge variant={"destructive"}>Expired</Badge>
+                          ) : (
+                            <Badge variant={"success"}>Active</Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">
                           Expires on{" "}
                           {format(new Date(pkg.expiredDate), "MMMM d, yyyy")}

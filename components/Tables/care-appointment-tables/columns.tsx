@@ -161,3 +161,74 @@ export const adminColumns: ColumnDef<CareAppointment>[] = [
     cell: ({ row }) => <AdminCellAction data={row.original} />,
   },
 ];
+
+export const sitterColumns: ColumnDef<CareAppointment>[] = [
+  {
+    accessorKey: "id",
+    header: ({ column }) => <SortColumn column={column} title="Id" />,
+  },
+  {
+    accessorKey: "user",
+    header: ({ column }) => <SortColumn column={column} title="User" />,
+    cell: ({ row }) => <UserRow row={row} />,
+  },
+  {
+    accessorKey: "pet",
+    header: ({ column }) => <SortColumn column={column} title="Pet" />,
+    cell: ({ row }) => <PetRow row={row} />,
+  },
+  {
+    accessorKey: "service",
+    header: ({ column }) => <SortColumn column={column} title="Service" />,
+    cell: ({ row }) => (
+      <p>{row.original.service ? row.original.service.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "categoryId",
+    header: ({ column }) => <SortColumn column={column} title="Category" />,
+    cell: ({ row }) => (
+      <p>{row.original.categoryId ? row.original.categoryId.name : ""}</p>
+    ),
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => <SortColumn column={column} title="Date" />,
+    cell: ({ row }) => (
+      <span>{format(row.original.date, "dd MMM yyyy, HH:mm a")}</span>
+    ),
+  },
+  {
+    accessorKey: "totalPrice",
+    header: ({ column }) => <SortColumn column={column} title="Price" />,
+    cell: ({ row }) => <span>฿ {row.original.totalPrice}</span>,
+  },
+  // {
+  //   accessorKey: "createdAt",
+  //   header: ({ column }) => <SortColumn column={column} title="Submitted on" />,
+  //   cell: ({ row }) => (
+  //     <span>{format(row.original.createdAt, "dd MMM yyyy, HH:mm a")}</span>
+  //   ),
+  // },
+  {
+    accessorKey: "status",
+    header: ({ column }) => <SortColumn column={column} title="Status" />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "ACCEPTED" ? (
+          <Badge className="bg-green-500">Accepted</Badge>
+        ) : row.original?.status === "PENDING" ? (
+          <Badge className="bg-orange-500">Pending</Badge>
+        ) : row.original?.status === "CANCELLED" ? (
+          <Badge className="bg-gray-500">Cancelled</Badge>
+        ) : (
+          <Badge variant="destructive">Rejected</Badge>
+        )}
+      </>
+    ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => <AdminCellAction data={row.original} />,
+  },
+];

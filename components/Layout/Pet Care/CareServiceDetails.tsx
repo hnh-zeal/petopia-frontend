@@ -13,9 +13,24 @@ import {
 import { useRouter } from "next/router";
 import { CareService, PetSitter } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
+import { useEffect, useState } from "react";
 
 export default function ServiceDetails({ service }: { service: CareService }) {
+  const [isClient, setIsClient] = useState(false);
+
   const router = useRouter();
+  const userAuth = useRecoilValue(userAuthState);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4">
       <div className="sticky top-0 bg-white z-10 py-4">
@@ -265,7 +280,7 @@ export default function ServiceDetails({ service }: { service: CareService }) {
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2">
+        <div className="w-full lg:w-1/3 xl:w-1/4 order-1 lg:order-2 lg:p-0 pr-5">
           <div className="lg:sticky lg:top-24 space-y-4">
             <Card>
               <CardContent className="p-4">
@@ -310,14 +325,25 @@ export default function ServiceDetails({ service }: { service: CareService }) {
               </CardContent>
             </Card>
 
-            <Button
-              className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
-              onClick={() =>
-                router.push(`/pet-care/services/${service.id}/appointment`)
-              }
-            >
-              Make an appointment
-            </Button>
+            {userAuth === undefined ? (
+              <Button
+                className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                onClick={() => {
+                  router.push("/register");
+                }}
+              >
+                Register to make an appointment
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                onClick={() =>
+                  router.push(`/pet-care/services/${service.id}/appointment`)
+                }
+              >
+                Make an appointment
+              </Button>
+            )}
           </div>
         </div>
       </div>

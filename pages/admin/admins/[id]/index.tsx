@@ -1,6 +1,6 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import Header from "@/components/Layout/header";
-import AdminInfo from "@/components/Layout/Profile/adminInfo";
+import AdminInfo from "@/components/Layout/Profile/AdminInfo";
 import Sidebar from "@/components/Layout/sidebar";
 import { useFetchDetails } from "@/hooks/useFetchDetails";
 import { fetchAdminByID } from "@/pages/api/api";

@@ -49,12 +49,16 @@ export default function CreateDoctorForm() {
   const router = useRouter();
   const adminAuth = useRecoilValue(adminAuthState);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   const fetchClinics = useCallback(() => fetchPetClinics({}), []);
   const { data, loading, error } = useFetchList(fetchClinics);
 
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreateDoctorSchema),
+    defaultValues: {
+      about: "",
+    },
   });
 
   const { handleSubmit, reset } = useForm<DoctorFormValue>({
@@ -147,7 +151,7 @@ export default function CreateDoctorForm() {
       }
 
       const formData = {
-        ...formValues,
+        ...otherValues,
         profileUrl,
         ...{ clinicId: Number(formValues.clinicId) },
       };
@@ -175,6 +179,7 @@ export default function CreateDoctorForm() {
 
   const onReset = () => {
     form.reset();
+    router.push("/admin/doctors");
   };
 
   return (
@@ -240,7 +245,11 @@ export default function CreateDoctorForm() {
                         Profile Picture
                       </FormLabel>
                       <FormControl>
-                        <ProfilePictureUpload field={field} defaultImage={""} />
+                        <ProfilePictureUpload
+                          field={field}
+                          defaultImage={imageUrl}
+                          setImageUrl={setImageUrl}
+                        />
                       </FormControl>
                       <FormMessage className="shad-error" />
                     </FormItem>
@@ -255,6 +264,7 @@ export default function CreateDoctorForm() {
                     control={form.control}
                     name="name"
                     label="Name"
+                    required={true}
                   />
 
                   <CustomFormField
@@ -263,6 +273,7 @@ export default function CreateDoctorForm() {
                     control={form.control}
                     name="email"
                     label="Email"
+                    required={true}
                   />
                 </div>
 
@@ -272,6 +283,7 @@ export default function CreateDoctorForm() {
                     fieldType={FormFieldType.SELECT}
                     control={form.control}
                     name="clinicId"
+                    required={true}
                     label="Pet Center"
                     placeholder="Select Pet Center"
                   >
@@ -490,6 +502,7 @@ export default function CreateDoctorForm() {
                                 control={form.control}
                                 placeholder="Choose days of week"
                                 label="Days of week"
+                                required={true}
                                 {...field}
                               >
                                 {daysOfWeek.map((day, i) => (
@@ -512,6 +525,7 @@ export default function CreateDoctorForm() {
                                 fieldType={FormFieldType.TIME}
                                 placeholder="Start Time"
                                 label="Start Time"
+                                required={true}
                                 {...field}
                               />
                             )}
@@ -526,23 +540,26 @@ export default function CreateDoctorForm() {
                                 fieldType={FormFieldType.TIME}
                                 placeholder="End Time"
                                 label="End Time"
+                                required={true}
                                 {...field}
                               />
                             )}
                           />
 
-                          {schedule.length > 1 && (
-                            <Trash2
+                          <div className="flex flex-row gap-4">
+                            {schedule.length > 1 && (
+                              <Trash2
+                                type="button"
+                                className="h-5 w-5 hover:cursor-pointer"
+                                onClick={() => removeSchedule(index)}
+                              />
+                            )}
+                            <CirclePlus
                               type="button"
                               className="h-5 w-5 hover:cursor-pointer"
-                              onClick={() => removeSchedule(index)}
+                              onClick={addSchedule}
                             />
-                          )}
-                          <CirclePlus
-                            type="button"
-                            className="h-5 w-5 hover:cursor-pointer"
-                            onClick={addSchedule}
-                          />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -552,7 +569,7 @@ export default function CreateDoctorForm() {
             )}
 
             {/* Navigation */}
-            <div className="mt-8 pt-5">
+            <div className="my-8 pt-5">
               <div className="flex justify-between">
                 <Button
                   type="button"
@@ -602,20 +619,20 @@ export default function CreateDoctorForm() {
 
                 {/* Create Button */}
                 {currentStep === 2 && (
-                  <div className="flex mt-10 items-center justify-between space-x-4">
-                    <div></div>
-                    <div className="flex items-center justify-between space-x-4">
+                  <div className="flex mt-10 items-center justify-end space-x-4">
+                    <div className="flex flex-row mt-10 items-center justify-between space-x-4">
                       <Button
                         disabled={isLoading}
                         variant="outline"
-                        className="ml-auto w-full"
+                        type="button"
+                        className="ml-auto w-full sm:w-auto"
                         onClick={onReset}
                       >
-                        Reset
+                        Cancel
                       </Button>
                       <SubmitButton
                         isLoading={isLoading}
-                        className="ml-auto w-full"
+                        className="ml-auto w-full sm:w-auto"
                       >
                         Create
                       </SubmitButton>

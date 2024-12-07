@@ -3,18 +3,14 @@ import CafeRooms from "@/components/Layout/cafe-pet-rooms";
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { fetchCafeRooms } from "@/pages/api/api";
-import { RoomsData } from "@/types/api";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
-
-import type { GetServerSideProps } from "next";
 
 const breadcrumbItems = [
   { title: "Dashboard", link: "/admin/dashboard" },
   { title: "Cafe Rooms", link: "/admin/cafe-rooms" },
 ];
 
-export default function CafeRoomsPage({ roomData }: { roomData: RoomsData }) {
+export default function CafeRoomsPage() {
   return (
     <>
       <Header />

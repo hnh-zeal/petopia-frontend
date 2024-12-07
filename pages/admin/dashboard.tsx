@@ -1,6 +1,6 @@
 import Header from "@/components/Layout/header";
 import Sidebar from "@/components/Layout/sidebar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,8 @@ ChartJS.register(
 );
 
 const breadcrumbItems = [{ title: "Dashboard", link: "/admin/dashboard" }];
+const currentYear = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
 
 export const getServerSideProps: GetServerSideProps<{
   overviewData: OverviewData;
@@ -73,7 +75,11 @@ export const getServerSideProps: GetServerSideProps<{
 }> = async (context) => {
   try {
     const overviewData = await fetchOverviewReport({ date: new Date() });
-    const pieData = await fetchPieData({ month: 10, year: 2024 });
+    const pieData = await fetchPieData({
+      month: currentMonth,
+      year: currentYear,
+    });
+
     return { props: { overviewData, pieData } };
   } catch (error) {
     console.error("Error fetching doctor:", error);
@@ -87,7 +93,7 @@ const statusConfig: any = {
   PENDING: { color: "bg-yellow-500", label: "Pending" },
   ACCEPTED: { color: "bg-green-500", label: "Accepted" },
   true: { color: "bg-green-500", label: "Booked" },
-  false: { color: "bg-green-500", label: "Unavailable" },
+  false: { color: "bg-red-500", label: "Cancelled" },
   REJECTED: { color: "bg-red-700", label: "Rejected" },
   CANCELLED: { color: "bg-gray-500 ", label: "Cancelled" },
 };
@@ -207,12 +213,12 @@ export default function Dashboard({
   const handleMonthChange = async (value: string) => {
     const monthIndex = months.indexOf(value) + 1;
 
-    setSelectedMonth(monthIndex); // Update selected month
+    setSelectedMonth(monthIndex);
 
     try {
       const fetchedPieData = await fetchPieData({
         month: monthIndex,
-        year: 2024,
+        year: currentYear,
       });
 
       setPieChartData({
@@ -441,7 +447,7 @@ export default function Dashboard({
                             </Select>
                           </CardHeader>
                           <CardContent>
-                            <div className="h-[350px] flex items-center justify-center">
+                            <div className="h-[385px] flex items-center justify-center">
                               <Pie
                                 data={pieChartData}
                                 options={{
@@ -511,9 +517,15 @@ export default function Dashboard({
                               </div>
                               <Button
                                 variant={"ghost"}
-                                onClick={() =>
-                                  router.push(`/admin/pet-${type}/appointments`)
-                                }
+                                onClick={() => {
+                                  type === "cafe"
+                                    ? router.push(
+                                        `/admin/pet-cafe/room-booking`
+                                      )
+                                    : router.push(
+                                        `/admin/pet-${type}/appointments`
+                                      );
+                                }}
                                 className="text-sm text-blue-500"
                               >
                                 View All

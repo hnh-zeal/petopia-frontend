@@ -31,7 +31,7 @@ const PetServices = () => {
                 got you covered.
               </p>
               <Link href="/pet-clinics">
-                <Button className="rounded-3xl bg-[#00b2d8] text-white">
+                <Button className="rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6] text-white">
                   Learn more ➔
                 </Button>
               </Link>
@@ -50,7 +50,7 @@ const PetServices = () => {
                 to make sure your pet feels loved and cared for.
               </p>
               <Link href="/pet-care">
-                <Button className="rounded-3xl bg-[#00b2d8] text-white">
+                <Button className="rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6] text-white">
                   Learn more ➔
                 </Button>
               </Link>
@@ -69,7 +69,7 @@ const PetServices = () => {
                 friend.
               </p>
               <Link href="/pet-cafe/rooms">
-                <Button className="rounded-3xl bg-[#00b2d8] text-white">
+                <Button className="rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6] text-white">
                   Learn more ➔
                 </Button>
               </Link>

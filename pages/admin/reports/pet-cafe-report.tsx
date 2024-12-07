@@ -76,8 +76,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const auth = useRecoilValue(adminAuthState);
   const [date, setDate] = useState<DateRange | undefined>({
-    from: addDays(new Date(), -20),
-    to: new Date(),
+    from: addDays(new Date(), -7),
+    to: addDays(new Date(), 7),
   });
 
   useEffect(() => {
@@ -85,7 +85,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const data = await fetchCafeReport(
-          { date_from: addDays(new Date(), -20), date_to: new Date() },
+          { date_from: date?.from, date_to: date?.to },
           token
         );
         setCafeData(data);
@@ -99,7 +99,7 @@ const Dashboard = () => {
     if (auth?.accessToken) {
       fetchReport(auth.accessToken);
     }
-  }, [auth]);
+  }, [auth, date]);
 
   const handleDateChange = async (
     date_from: Date | undefined,
@@ -199,7 +199,7 @@ const Dashboard = () => {
                       color="text-red-700"
                     />
                     <DashboardCard
-                      title="Price"
+                      title="Total Income"
                       value={cafeData?.countData?.total_price}
                       icon={<DollarSign size={24} />}
                       color="text-grey-400"

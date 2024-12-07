@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SelectItem } from "@/components/ui/select";
@@ -26,10 +26,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { User } from "@/types/api";
 
 interface PetFormProps {
   form: UseFormReturn<any>;
-  user: any;
+  user: User;
   onSubmit: () => void;
 }
 

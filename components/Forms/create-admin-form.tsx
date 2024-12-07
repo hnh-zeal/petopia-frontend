@@ -39,6 +39,7 @@ type AdminFormValue = z.infer<typeof CreateAdminSchema>;
 
 export default function CreateAdminForm() {
   const auth = useRecoilValue(adminAuthState);
+  const [imageUrl, setImageUrl] = useState("");
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -118,7 +119,11 @@ export default function CreateAdminForm() {
                     Profile Picture
                   </FormLabel>
                   <FormControl>
-                    <ProfilePictureUpload field={field} defaultImage={""} />
+                    <ProfilePictureUpload
+                      field={field}
+                      defaultImage={imageUrl}
+                      setImageUrl={setImageUrl}
+                    />
                   </FormControl>
                   <FormMessage className="shad-error" />
                 </FormItem>

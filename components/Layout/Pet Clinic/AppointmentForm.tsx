@@ -94,6 +94,8 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   };
 
   const handleSelectDate = async (date: Date | undefined) => {
+    form.setValue("date", date as Date);
+    form.setValue("time", "");
     if (date) {
       const doctorId = form.getValues("doctorId");
       if (doctorId) {
@@ -120,7 +122,6 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
     } else {
       setTimeSlots(defaultTimeSlots);
     }
-    form.setValue("date", date as Date);
   };
 
   return (
@@ -243,46 +244,71 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             )}
 
             <div className="grid grid-cols-2 place-content-center gap-6 xl:flex-row mt-6">
-              <div className="flex flex-col gap-2">
-                <Label className="flex items-center gap-2 mb-2">
-                  <CalendarIcon className="w-4 h-4" />
-                  Select Date
-                </Label>
-                <div className="flex flex-col items-center">
-                  <Calendar
-                    mode="single"
-                    selected={form.watch("date")}
-                    onSelect={handleSelectDate}
-                    disabled={(date) =>
-                      date < new Date() ||
-                      date >
-                        new Date(new Date().setMonth(new Date().getMonth() + 2))
-                    }
-                  />
-                </div>
-              </div>
+              <FormField
+                name="date"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-2">
+                    <Label className="flex items-center gap-2 mb-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      Select Date
+                    </Label>
+                    <div className="flex flex-col items-center">
+                      <Calendar
+                        mode="single"
+                        selected={form.watch("date")}
+                        onSelect={handleSelectDate}
+                        disabled={(date) =>
+                          date < new Date() ||
+                          date >
+                            new Date(
+                              new Date().setMonth(new Date().getMonth() + 2)
+                            )
+                        }
+                      />
+                      <FormMessage />
+                    </div>
+                  </div>
+                )}
+              />
 
-              <div className="flex flex-col gap-3 p-3">
-                <Label className="flex items-center gap-3 mb-2">
-                  <Clock className="w-4 h-4" />
-                  Select Time
-                </Label>
-                <div className="grid grid-cols-3 gap-3 px-5">
-                  {timeSlots.map((slot) => (
-                    <Button
-                      key={slot}
-                      type="button"
-                      variant={
-                        form.watch("time") === slot ? "default" : "outline"
-                      }
-                      className="rounded-3xl"
-                      onClick={() => form.setValue("time", slot)}
-                    >
-                      {slot}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              {/* Time Slots */}
+              <FormField
+                name="time"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-3 p-3">
+                    <Label className="flex items-center gap-3 mb-2">
+                      <Clock className="w-4 h-4" />
+                      Select Time
+                    </Label>
+                    {timeSlots.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-3 px-5">
+                        {timeSlots.map((slot) => (
+                          <Button
+                            key={slot}
+                            type="button"
+                            variant={
+                              form.watch("time") === slot
+                                ? "default"
+                                : "outline"
+                            }
+                            className="rounded-3xl"
+                            onClick={() => form.setValue("time", slot)}
+                          >
+                            {slot}
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-500">
+                        No slots available. Please select another date.
+                      </p>
+                    )}
+                    <FormMessage />
+                  </div>
+                )}
+              />
             </div>
 
             <div className="mt-6">

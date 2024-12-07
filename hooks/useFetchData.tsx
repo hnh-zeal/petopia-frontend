@@ -23,8 +23,8 @@ export const useFetchData = <
   ) => Promise<PaginatedData<T>>,
   initialPage: number = 1,
   pageSize: number = 5,
-  additionalQueryData?: Q,
-  token?: string
+  token?: string,
+  additionalQueryData?: Q
 ): UseFetchPaginatedDataResult<T> => {
   const [data, setData] = useState<T[]>([]);
   const [totalPages, setTotalPages] = useState<number>(0);

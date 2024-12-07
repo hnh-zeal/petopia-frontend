@@ -31,7 +31,7 @@ export const ClinicAppointmentClient = ({
     count: 0,
     totalPages: 0,
     page: 1,
-    pageSize: 5,
+    pageSize: 6,
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,13 +77,14 @@ export const ClinicAppointmentClient = ({
       <div className="flex flex-col space-y-3">
         {isAdmin && (
           <>
-            <div className="flex items-start justify-between gap-3">
-              {!doctor && <Heading title="Clinic Appointments" />}
-              {doctor && (
-                <h2 className="text-lg font-bold">Clinic Appointments</h2>
-              )}
-            </div>
-            <Separator />
+            {!doctor && (
+              <>
+                <div className="flex items-start justify-between gap-3">
+                  <Heading title="Clinic Appointments" />
+                </div>
+                <Separator />
+              </>
+            )}
           </>
         )}
         {!loading && (

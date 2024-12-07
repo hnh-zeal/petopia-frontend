@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,8 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
-import { User } from "@/types/api";
+import { Clinic, Doctor, User } from "@/types/api";
+import { fetchDoctorByID, fetchPetClinicByID } from "@/pages/api/api";
 
 interface ConfirmationFormProps {
   form: UseFormReturn<any>;
@@ -24,8 +25,38 @@ export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
   appointmentId,
   user,
 }) => {
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [clinic, setClinic] = useState<Clinic | null>(null);
   const petId = form.getValues("petId");
   const pet = user?.pets?.find((pet) => pet.id === Number(petId));
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const doctorData = await fetchDoctorByID(form.getValues("doctorId"));
+        setDoctor(doctorData);
+      } catch (error) {
+        console.log("Error fetching doctor:", error);
+      }
+    };
+
+    const fetchPetClinic = async () => {
+      try {
+        const clinicData = await fetchPetClinicByID(form.getValues("clinicId"));
+        setClinic(clinicData);
+      } catch (error) {
+        console.log("Error fetching clinic:", error);
+      }
+    };
+
+    if (form.getValues("doctorId")) {
+      fetchDoctor();
+    }
+
+    if (form.getValues("clinicId")) {
+      fetchPetClinic();
+    }
+  }, [form]);
 
   return (
     <div className="space-y-6">
@@ -87,7 +118,7 @@ export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
                 <div className="flex items-center space-x-2">
                   <PawPrint className="h-4 w-4" />
                   <p className="text-sm text-muted-foreground">
-                    {form.getValues("clinicId")}
+                    {clinic?.name}
                   </p>
                 </div>
               </div>
@@ -96,7 +127,7 @@ export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
                 <div className="flex items-center space-x-2">
                   <MessageCircle className="h-4 w-4" />
                   <span className="text-sm text-muted-foreground">
-                    {form.getValues("doctorId")}
+                    {doctor?.name}
                   </span>
                 </div>
               </div>
@@ -152,7 +183,7 @@ export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
                 <h4 className="font-semibold mb-2">Pet Type & Breed</h4>
                 <div className="flex items-center space-x-2">
                   <PawPrint className="h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="capitalize text-sm text-muted-foreground">
                     {pet
                       ? `${pet.petType} / ${pet.breed}`
                       : `${form.getValues("petType")} / ${form.getValues("breed")}`}
@@ -175,7 +206,7 @@ export const ConfirmationForm: React.FC<ConfirmationFormProps> = ({
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Sex</h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="capitalize text-sm text-muted-foreground">
                   {pet ? pet.sex : form.getValues("sex")}
                 </p>
               </div>

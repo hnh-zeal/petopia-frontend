@@ -6,9 +6,13 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Clinic, Doctor } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/router";
+import { useRecoilValue } from "recoil";
+import { userAuthState } from "@/states/auth";
 
 export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
   const router = useRouter();
+
+  const userAuth = useRecoilValue(userAuthState);
 
   return (
     <div className="container mx-auto px-4">
@@ -187,12 +191,24 @@ export default function ClinicDetails({ clinic }: { clinic: Clinic }) {
                 </ul>
               </CardContent>
             </Card>
-            <Button
-              className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
-              onClick={() => router.push("/pet-clinics/appointments")}
-            >
-              Make an appointment
-            </Button>
+
+            {userAuth === undefined ? (
+              <Button
+                className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                onClick={() => {
+                  router.push("/register");
+                }}
+              >
+                Register to make an appointment
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-[#00b2d8] hover:bg-[#2cc4e6]"
+                onClick={() => router.push("/pet-clinics/appointments")}
+              >
+                Make an appointment
+              </Button>
+            )}
           </div>
         </div>
       </div>

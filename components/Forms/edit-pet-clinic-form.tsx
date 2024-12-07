@@ -15,7 +15,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Clinic } from "@/types/api";
 import { updatePetClinicByID } from "@/pages/api/api";
 import { Input } from "../ui/input";
-import { Plus, PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { CreatePetClinicSchema } from "@/validations/formValidation";
 import { daysOfWeek } from "@/constants/data";
 import { SelectItem } from "../ui/select";
@@ -31,9 +31,7 @@ export default function EditPetClinicForm({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [mainImage, setMainImage] = useState<string>(petClinic.mainImage);
-  const [sections, setSections] = useState([
-    { dow: "", startTime: "", endTime: "" },
-  ]);
+  const [sections, setSections] = useState(petClinic.operatingHours);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
@@ -263,7 +261,7 @@ export default function EditPetClinicForm({
                           onClick={() => appendTreatment("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 
@@ -299,7 +297,7 @@ export default function EditPetClinicForm({
                           onClick={() => appendTools("")}
                           className="px-2"
                         >
-                          <Plus className="w-4 h-4" />
+                          <PlusCircle className="w-4 h-4" />
                         </Button>
                       )}
 
@@ -319,29 +317,21 @@ export default function EditPetClinicForm({
               </div>
             </div>
 
-            <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.TEXTAREA}
-                placeholder="Description"
-                control={form.control}
-                name="description"
-                label="Description"
-              />
-            </div>
-
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end space-x-4">
+              <div className="flex flex-row mt-10 items-center justify-between space-x-4">
                 <Button
                   disabled={loading}
-                  type="button"
                   variant="outline"
-                  className="ml-auto w-full"
+                  type="button"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onCancel}
                 >
                   Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

@@ -14,9 +14,9 @@ import * as z from "zod";
 import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateSlotSchema } from "@/validations/formValidation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
-import { createDateSchedule, createRoomSlots } from "@/pages/api/api";
+import { createDateSchedule } from "@/pages/api/api";
 import {
   Popover,
   PopoverContent,
@@ -34,7 +34,9 @@ export default function CreateScheduleForm({ onCancel }: any) {
   const router = useRouter();
   const { id } = router.query;
   const [loading, setLoading] = useState(false);
-  const form = useForm<CreateSlotFormValue>({});
+  const form = useForm<CreateSlotFormValue>({
+    resolver: zodResolver(CreateSlotSchema),
+  });
 
   const onSubmit = async (formValues: CreateSlotFormValue) => {
     setLoading(true);

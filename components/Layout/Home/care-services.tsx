@@ -13,7 +13,7 @@ export default function PetCareServices() {
         </h3>
         <Link href="/pet-care">
           <div className="space-y-4 md:space-y-0 md:space-x-4">
-            <Button className="text-white rounded-3xl bg-[#00b2d8] w-1/4">
+            <Button className="text-white rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6] w-1/4">
               View more
             </Button>
           </div>
@@ -24,7 +24,7 @@ export default function PetCareServices() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Service Card 1 */}
         <div className="border border-gray-300 rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
-          <FaPaw className="text-teal-400 text-3xl mb-4" />
+          <FaPaw className="text-blue-600 text-3xl mb-4" />
           <h3 className="text-xl font-semibold">Physical Exam</h3>
           <p className="text-gray-600 mt-2">
             Excepteur culpa velit non desedder

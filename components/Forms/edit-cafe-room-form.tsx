@@ -20,14 +20,8 @@ import { CreateCafeRoomSchema } from "@/validations/formValidation";
 import { useState } from "react";
 import { updateCafeRoomByID } from "@/pages/api/api";
 import { ScrollArea } from "../ui/scroll-area";
-import { SelectItem } from "../ui/select";
-import { roomType } from "@/constants/data";
 import { Input } from "../ui/input";
 import { CafeRoom } from "@/types/api";
-import Image from "next/image";
-import { Label } from "../ui/label";
-import { UploadButton } from "@/utils/uploadthing";
-import { X } from "lucide-react";
 import ImageUpload from "../ImageUpload";
 import MultiImageUpload from "../MultiImageUpload";
 
@@ -46,7 +40,7 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
       name: cafeRoom?.name || "",
       roomNo: cafeRoom?.roomNo || "",
       price: cafeRoom?.price,
-      roomType: cafeRoom?.roomType || "",
+      contact: cafeRoom?.contact,
       description: cafeRoom?.description || "",
       mainImage: cafeRoom?.mainImage || "",
       images: cafeRoom?.images || [],
@@ -61,8 +55,6 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
         mainImage,
         images,
       };
-
-      console.log(dataToSubmit);
 
       const data = await updateCafeRoomByID(cafeRoom.id, dataToSubmit);
       if (data.error) {
@@ -175,21 +167,12 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
               />
 
               <CustomFormField
-                fieldType={FormFieldType.SELECT}
+                fieldType={FormFieldType.INPUT}
+                placeholder="Contact No."
                 control={form.control}
-                name="roomType"
-                label="Room Type"
-                placeholder="Select Room Type"
-                required={true}
-              >
-                {roomType?.map((type, i) => (
-                  <SelectItem key={i} value={`${type}`}>
-                    <div className="flex cursor-pointer items-center gap-2">
-                      <p>{type}</p>
-                    </div>
-                  </SelectItem>
-                ))}
-              </CustomFormField>
+                name="contact"
+                label="Contact No."
+              />
             </div>
 
             <div className="flex flex-col gap-6 xl:flex-row">
@@ -202,18 +185,21 @@ export default function EditCafeRoomForm({ cafeRoom }: { cafeRoom: CafeRoom }) {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-end space-x-4">
-              <div className="flex items-center justify-around space-x-4">
+            <div className="flex mt-10 items-center justify-end mb-4 space-x-4">
+              <div className="flex flex-row gap-4 mb-4">
                 <Button
                   disabled={loading}
                   variant="outline"
                   type="button"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onReset}
                 >
                   Reset
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

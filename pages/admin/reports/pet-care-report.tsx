@@ -81,8 +81,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const auth = useRecoilValue(adminAuthState);
   const [date, setDate] = useState<DateRange | undefined>({
-    from: addDays(new Date(), -20),
-    to: new Date(),
+    from: addDays(new Date(), -7),
+    to: addDays(new Date(), 7),
   });
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const data = await fetchCareReport(
-          { date_from: addDays(new Date(), -20), date_to: new Date() },
+          { date_from: date?.from, date_to: date?.to },
           token
         );
         setCareData(data);
@@ -104,7 +104,7 @@ const Dashboard = () => {
     if (auth?.accessToken) {
       fetchReport(auth.accessToken);
     }
-  }, [auth]);
+  }, [auth, date]);
 
   const handleDateChange = async (
     date_from: Date | undefined,

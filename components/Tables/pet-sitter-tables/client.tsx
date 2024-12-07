@@ -18,7 +18,7 @@ export const PetSitterClient = () => {
     count: 0,
     totalPages: 0,
     page: 1,
-    pageSize: 5,
+    pageSize: 6,
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);

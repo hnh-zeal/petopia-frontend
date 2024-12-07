@@ -37,7 +37,7 @@ export default function PetSitters({ petSitters }: any) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-4xl font-bold text-center text-indigo-900 mb-8"
+            className="text-4xl font-bold text-center text-black mb-8"
           >
             Find a Pet Sitter
           </motion.h1>
@@ -52,11 +52,11 @@ export default function PetSitters({ petSitters }: any) {
               <Input
                 type="text"
                 placeholder="Search clinics..."
-                className="w-full px-4 py-3 rounded-full border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-full border-2 border-[#00b2d8] focus:outline-none focus:ring-2 focus:ring-[#00b2d8] focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute h-5 w-5 right-3 top-2.5 text-indigo-400" />
+              <Search className="absolute h-5 w-5 right-3 top-2.5 text-[#00b2d8]" />
             </div>
           </motion.div>
 
@@ -86,7 +86,7 @@ export default function PetSitters({ petSitters }: any) {
                             {sitter.name}
                           </h2>
                           <div className="flex items-center mb-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
+                            {/* {[1, 2, 3, 4, 5].map((star) => (
                               <Star
                                 key={star}
                                 className="h-4 w-4 text-yellow-400 fill-current"
@@ -94,7 +94,7 @@ export default function PetSitters({ petSitters }: any) {
                             ))}
                             <span className="ml-2 text-sm text-gray-600">
                               (48 reviews)
-                            </span>
+                            </span> */}
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {sitter.specialties?.map(
@@ -102,7 +102,7 @@ export default function PetSitters({ petSitters }: any) {
                                 <Badge
                                   key={index}
                                   variant="default"
-                                  className="bg-indigo-100 text-indigo-800 hover:text-white hover:bg-black"
+                                  className="bg-[#00b2d8] hover:bg-[#2cc4e6] text-white hover:text-white "
                                 >
                                   {specialty}
                                 </Badge>

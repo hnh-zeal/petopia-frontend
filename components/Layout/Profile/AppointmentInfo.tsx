@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   FileText,
-  PawPrint,
   Info,
 } from "lucide-react";
 import {
@@ -62,6 +61,9 @@ import {
 } from "@/components/ui/select";
 import { getDayName } from "./DoctorSchedule";
 import { AppointmentSlot } from "@/constants/data";
+import SubmitButton from "@/components/submit-button";
+import { petIcons } from "@/pages/profile";
+import Image from "next/image";
 
 interface AppointmentDetailsProps {
   appointment: ClinicAppointment;
@@ -87,8 +89,10 @@ export default function AppointmentInfo({
   const auth = useRecoilValue(adminAuthState);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [status, setStatus] = useState(appointment.status);
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
 
   const rejectForm = useForm<RejectFormValues>({
@@ -106,7 +110,7 @@ export default function AppointmentInfo({
   });
 
   const handleApprove = async (values: ApproveFormValues) => {
-    setIsLoading(true);
+    setApproveLoading(true);
     try {
       if (values.doctorId === "undefined") {
         throw new Error("Please assign a doctor to approve.");
@@ -133,7 +137,7 @@ export default function AppointmentInfo({
           variant: "success",
           description: "Appointment approved successfully.",
         });
-        window.location.reload();
+        setStatus("ACCEPTED");
       }
     } catch (error: any) {
       toast({
@@ -141,7 +145,7 @@ export default function AppointmentInfo({
         description: error.message,
       });
     } finally {
-      setIsLoading(false);
+      setApproveLoading(false);
     }
   };
 
@@ -154,7 +158,6 @@ export default function AppointmentInfo({
   };
 
   const handleReject = async (values: RejectFormValues) => {
-    setIsRejectDialogOpen(false);
     setIsLoading(true);
     try {
       const data = await updateClinicAppointment(
@@ -175,10 +178,11 @@ export default function AppointmentInfo({
           variant: "success",
           description: "Appointment rejected successfully.",
         });
-        window.location.reload();
+        setStatus("REJECTED");
       }
     } finally {
       setIsLoading(false);
+      setIsRejectDialogOpen(false);
       rejectForm.reset();
     }
   };
@@ -224,18 +228,18 @@ export default function AppointmentInfo({
                 <h1 className="text-3xl font-bold">
                   Appointment #{appointment.id}
                 </h1>
-                {appointment.status === "ACCEPTED" ? (
+                {status === "ACCEPTED" ? (
                   <Badge className="bg-green-500">Accepted</Badge>
-                ) : appointment.status === "PENDING" ? (
+                ) : status === "PENDING" ? (
                   <Badge className="bg-orange-500">Pending</Badge>
-                ) : appointment.status === "REJECTED" ? (
+                ) : status === "REJECTED" ? (
                   <Badge variant="destructive">Rejected</Badge>
                 ) : (
                   <Badge className="bg-gray-500">Cancelled</Badge>
                 )}
               </div>
               <div className="flex justify-end space-x-4">
-                {appointment.status === "PENDING" && (
+                {status === "PENDING" && (
                   <>
                     <Button
                       variant="outline"
@@ -249,12 +253,12 @@ export default function AppointmentInfo({
                       type="button"
                       onClick={onApproveClick}
                       disabled={
-                        isLoading ||
+                        approveLoading ||
                         (!appointment.doctor && !approveForm.formState.isValid)
                       }
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      {isLoading ? "Approving..." : "Approve"}
+                      {approveLoading ? "Approving..." : "Approve"}
                     </Button>
                   </>
                 )}
@@ -319,9 +323,13 @@ export default function AppointmentInfo({
                   <CardContent className="flex flex-col gap-5">
                     <div className="flex flex-row items-center space-x-4">
                       <div className="w-full md:w-1/3 flex flex-row justify-center">
-                        <Avatar className="w-24 h-24 bg-blue-100">
-                          <PawPrint className="w-8 h-8 text-blue-500" />
-                        </Avatar>
+                        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-full">
+                          {
+                            petIcons[
+                              appointment.pet.petType as keyof typeof petIcons
+                            ]
+                          }
+                        </div>
                       </div>
                       <div className="w-full md:w-2/3 flex flex-col gap-2">
                         <h2 className="text-xl font-semibold">
@@ -516,8 +524,9 @@ export default function AppointmentInfo({
                             <AvatarImage
                               src={appointment.user.profileUrl}
                               alt={appointment.user.name}
+                              className="object-cover"
                             />
-                            <AvatarFallback>
+                            <AvatarFallback suppressHydrationWarning>
                               {appointment.user.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
@@ -555,6 +564,7 @@ export default function AppointmentInfo({
                             <AvatarImage
                               src={appointment.doctor?.profileUrl}
                               alt={appointment.doctor?.name}
+                              className="object-cover"
                             />
                             <AvatarFallback>
                               {appointment.doctor?.name.charAt(0)}
@@ -593,6 +603,7 @@ export default function AppointmentInfo({
                             <AvatarImage
                               src={appointment.user.profileUrl}
                               alt={appointment.user.name}
+                              className="object-cover"
                             />
                             <AvatarFallback>
                               {appointment.user.name.charAt(0)}
@@ -657,10 +668,12 @@ export default function AppointmentInfo({
                   )}
                 />
                 <AlertDialogFooter>
-                  <Button type="button" variant="outline" onClick={onCancel}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Reject</Button>
+                  <div className="flex flex-row justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={onCancel}>
+                      Cancel
+                    </Button>
+                    <SubmitButton isLoading={isLoading}>Reject</SubmitButton>
+                  </div>
                 </AlertDialogFooter>
               </form>
             </Form>

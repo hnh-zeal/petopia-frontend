@@ -25,11 +25,12 @@ import { PetForm } from "@/components/Layout/Pet Clinic/PetForm";
 import { AppointmentForm } from "@/components/Layout/Pet Clinic/AppointmentForm";
 import { toast } from "@/components/ui/use-toast";
 import { ConfirmationForm } from "@/components/Layout/Pet Clinic/ConfirmationForm";
+import SubmitButton from "@/components/submit-button";
 
-const petSchema = z.object({
+export const petSchema = z.object({
   name: z.string().optional(),
   petId: z.string().optional(),
-  petType: z.string(),
+  petType: z.string().optional(),
   age: z.number().min(0, "Year must be at least 0").optional(),
   month: z
     .number()
@@ -47,8 +48,8 @@ const appointmentSchema = z.object({
   description: z
     .string()
     .min(10, "Description must be at least 10 characters."),
-  date: z.date({ required_error: "A date is required." }),
-  time: z.string({ required_error: "A time slot is required." }),
+  date: z.date(),
+  time: z.string(),
   doctorId: z.string().optional(),
   clinicId: z.string().optional(),
 });
@@ -123,6 +124,22 @@ export default function ClinicAppointmentPage({
   const [appointmentId, setAppointmentId] = useState<string>("");
   const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    if (!auth) {
+      router.push("/register");
+    }
+
+    const fetchUser = async () => {
+      // const user = await fetchUserWithToken(auth?.accessToken as string);
+      setUser(auth?.user);
+    };
+
+    if (auth) {
+      fetchUser();
+    }
+    setMounted(true);
+  }, [auth, user, router]);
+
   const petForm = useForm<z.infer<typeof petSchema>>({
     resolver: zodResolver(petSchema),
     defaultValues: {
@@ -142,22 +159,6 @@ export default function ClinicAppointmentPage({
     resolver: zodResolver(formSchema),
   });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (auth) {
-        const user = await fetchUserWithToken(auth?.accessToken as string);
-        setUser(user);
-      }
-      setMounted(true);
-    };
-
-    fetchUser();
-  }, [auth]);
-
-  if (!mounted) {
-    return null;
-  }
-
   const onSubmit = async (formValues: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
@@ -172,9 +173,11 @@ export default function ClinicAppointmentPage({
         description,
         date,
         time,
+        ...values
       } = formValues;
 
       const formData = {
+        ...values,
         appointmentId,
         petData: {
           option: petId ? "existing" : "new",
@@ -234,6 +237,10 @@ export default function ClinicAppointmentPage({
       setCurrentStep(currentStep + 1);
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -297,9 +304,12 @@ export default function ClinicAppointmentPage({
           {currentStep === steps.length - 1 ? (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Submitting..." : "Submit"}
-                </Button>
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
+                  Submit
+                </SubmitButton>
               </form>
             </Form>
           ) : (

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format, addDays, startOfDay, addHours } from "date-fns";
+import { format, addDays, startOfDay, addHours, formatDate } from "date-fns";
 import { useRouter } from "next/router";
 import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
@@ -44,14 +44,7 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import {
-  CalendarIcon,
-  Clock,
-  Home,
-  MapPin,
-  PawPrint,
-  Star,
-} from "lucide-react";
+import { CalendarIcon, Home, MapPin, PawPrint, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CareService } from "@/types/api";
@@ -77,15 +70,15 @@ const formSchema = z.object({
   time: z.string(),
   duration: z.number().min(1).optional(),
   petName: z.string().min(1, "Pet name is required"),
-  petType: z.string().optional(),
-  breed: z.string().optional(),
+  petType: z.string(),
+  breed: z.string(),
   description: z.string().optional(),
   location: z.enum(["Client's Home", "Sitter's Home"]).optional(),
   address: z.string().optional(),
   addOns: z.any().optional(),
   card: z.string().min(1, "Card information is required"),
   month: z.string().min(2, "Month is required").max(2, "Invalid month"),
-  year: z.string().min(2, "Year is required").max(2, "Invalid year"),
+  year: z.string().min(2, "Year is required").max(4, "Invalid year"),
   cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV"),
 });
 
@@ -107,6 +100,7 @@ export default function SittingAppointment({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      date: new Date(),
       duration: 1,
       addOns: [],
     },
@@ -199,7 +193,10 @@ export default function SittingAppointment({
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Choose Service Category</FormLabel>
+                        <FormLabel className="shad-input-label">
+                          Choose Service Category{" "}
+                          <span className="text-red-400">*</span>
+                        </FormLabel>
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
@@ -399,7 +396,10 @@ export default function SittingAppointment({
                     name="sitterId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Choose a Trainer</FormLabel>
+                        <FormLabel className="shad-input-label">
+                          Choose a Pet Sitter{" "}
+                          <span className="text-red-400">*</span>
+                        </FormLabel>
                         <FormControl>
                           <RadioGroup
                             onValueChange={field.onChange}
@@ -587,7 +587,9 @@ export default function SittingAppointment({
                     name="petName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pet Name</FormLabel>
+                        <FormLabel className="shad-input-label">
+                          Pet Name <span className="text-red-400">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Enter your pet's name"
@@ -706,39 +708,29 @@ export default function SittingAppointment({
                     type="submit"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Processing..." : "Confirm Booking"}
+                    {isLoading ? "Processing..." : "Confirm Appointment"}
                   </Button>
                 </CardFooter>
               </Card>
 
+              {/* Cancellation Rules */}
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h3 className="font-semibold mb-2">Cancellation Policy</h3>
+                <h3 className="font-semibold mb-2">Cancellation policy</h3>
                 <p className="text-sm text-gray-600">
-                  Free cancellation before {form.getValues("time")} on{" "}
-                  {format(addDays(new Date(), 1), "MMM dd")}. Cancel before{" "}
-                  {format(addDays(new Date(), 7), "MMM dd")} for a partial
-                  refund.
+                  Free cancellation before {}
+                  {format(form.getValues("date"), "MMM dd")}.
                 </p>
-              </div>
-
-              <div className="space-y-4 text-sm text-gray-600">
-                <p>
-                  By confirming this booking, I agree to the Host&apos;s House
-                  Rules, Ground rules for guests, Rebooking and Refund Policy,
-                  and that the service provider can charge my payment method if
-                  I&apos;m responsible for damage.
-                </p>
-                <p>
-                  I also agree to the{" "}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Terms of Service
+                <p className="mt-4 text-sm text-gray-600">
+                  I agree to the{" "}
+                  <a href="#" className="text-blue-600">
+                    updated Terms of Service
                   </a>
                   ,{" "}
-                  <a href="#" className="text-blue-600 hover:underline">
+                  <a href="#" className="text-blue-600">
                     Payments Terms of Service
                   </a>
                   , and I acknowledge the{" "}
-                  <a href="#" className="text-blue-600 hover:underline">
+                  <a href="#" className="text-blue-600">
                     Privacy Policy
                   </a>
                   .

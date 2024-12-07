@@ -232,18 +232,21 @@ export default function CreatePackagesForm() {
             />
           </div>
 
-          <div className="flex mt-10 items-center justify-between space-x-4">
-            <div></div>
-            <div className="flex items-center justify-between space-x-4">
+          <div className="flex mt-10 items-center justify-end">
+            <div className="flex flex-row items-center gap-4 mb-4">
               <Button
                 disabled={loading}
+                type="button"
                 variant="outline"
-                className="ml-auto w-full"
+                className="ml-auto w-full sm:w-auto"
                 onClick={onReset}
               >
                 Reset
               </Button>
-              <SubmitButton isLoading={loading} className="ml-auto w-full">
+              <SubmitButton
+                isLoading={loading}
+                className="ml-auto w-full sm:w-auto"
+              >
                 Create
               </SubmitButton>
             </div>

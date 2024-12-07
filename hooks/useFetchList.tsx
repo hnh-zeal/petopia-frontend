@@ -20,7 +20,6 @@ export const useFetchList = <T extends unknown>(
       setError(null);
       try {
         const response = await fetchFunction(token);
-        console.log(response);
         setData(response);
       } catch (error: any) {
         console.error("Failed to fetch data", error);

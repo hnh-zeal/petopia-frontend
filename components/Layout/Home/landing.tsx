@@ -30,14 +30,14 @@ export default function Landing() {
         </p>
         <div className="space-y-4 md:space-y-0 md:space-x-4">
           <Button
-            onClick={() => router.push(`/pet-clinics/appointments`)}
-            className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8]"
+            onClick={() => router.push(`/pet-clinics`)}
+            className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6]"
           >
             Make an appointment
           </Button>
           {mounted && auth && (
             <Button
-              className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8]"
+              className="w-full md:w-2/5 rounded-3xl bg-[#00b2d8] hover:bg-[#2cc4e6]"
               onClick={() => {
                 router.push("/profile/appointments");
               }}

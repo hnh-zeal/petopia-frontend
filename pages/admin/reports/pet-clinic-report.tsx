@@ -4,13 +4,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
@@ -89,7 +82,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const auth = useRecoilValue(adminAuthState);
   const [date, setDate] = useState<DateRange | undefined>({
-    from: addDays(new Date(), -20),
+    from: addDays(new Date(), -5),
     to: new Date(),
   });
 
@@ -118,18 +111,16 @@ const Dashboard = () => {
     date_from: Date | undefined,
     date_to: Date | undefined
   ) => {
+    setDate({ from: date_from, to: date_to });
     if (date_from && date_to) {
       setLoading(true);
-      setDate({ from: date_from, to: date_to });
       try {
-        const data = await fetchClinicReport(
-          {
-            date_from: new Date(date_from),
-            date_to: new Date(date_to),
-          },
-          auth?.accessToken as string
+        setClinicData(
+          await fetchClinicReport(
+            { date_from: new Date(date_from), date_to: new Date(date_to) },
+            auth?.accessToken as string
+          )
         );
-        setClinicData(data);
       } catch (error) {
         console.error("Error fetching report:", error);
       } finally {
@@ -180,9 +171,10 @@ const Dashboard = () => {
                       mode="range"
                       defaultMonth={date?.from}
                       selected={date}
-                      onSelect={(range) =>
-                        handleDateChange(range?.from, range?.to)
-                      }
+                      onSelect={(range) => {
+                        setDate(range || { from: undefined, to: undefined });
+                        if (range) handleDateChange(range.from, range.to);
+                      }}
                       numberOfMonths={2}
                     />
                   </PopoverContent>
@@ -312,7 +304,7 @@ const Dashboard = () => {
                       >
                         <CardHeader className="flex flex-row items-center justify-between">
                           <CardTitle className="text-xl font-semibold">
-                            Revenue Data
+                            Appointments Data
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="flex items-center justify-center">

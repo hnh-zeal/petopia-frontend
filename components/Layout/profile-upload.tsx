@@ -9,12 +9,13 @@ import { PencilIcon } from "lucide-react";
 interface ProfilePictureUploadProps {
   field: any;
   defaultImage?: string;
+  setImageUrl?: any;
 }
 
 const ProfilePictureUpload = forwardRef<
   HTMLInputElement,
   ProfilePictureUploadProps
->(({ field, defaultImage }, ref) => {
+>(({ field, defaultImage, setImageUrl }, ref) => {
   const [preview, setPreview] = useState<string | null>(defaultImage || null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -24,6 +25,7 @@ const ProfilePictureUpload = forwardRef<
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
+        setImageUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
       // Update the form field with the file

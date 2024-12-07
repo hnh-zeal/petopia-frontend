@@ -1,13 +1,13 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator
-} from '@/components/ui/breadcrumb';
-import { Fragment } from 'react';
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Fragment } from "react";
 
 type BreadcrumbItemProps = {
   title: string;

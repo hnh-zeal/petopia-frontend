@@ -20,7 +20,7 @@ export const getServerSideProps: GetServerSideProps<{
 }> = async (context) => {
   try {
     const packagesData = await fetchPackages({});
-    return { props: { packages: packagesData.packages } };
+    return { props: { packages: packagesData.data } };
   } catch (error) {
     console.error("Error fetching appointment:", error);
     return {

@@ -16,25 +16,7 @@ const breadcrumbItems = [
   { title: "Packages", link: "/admin/packages" },
 ];
 
-export const getServerSideProps: GetServerSideProps<{
-  packagesData: PackagesData;
-}> = async (context) => {
-  try {
-    const packagesData = await fetchPackages({});
-    return { props: { packagesData } };
-  } catch (error) {
-    console.error("Error fetching packages:", error);
-    return {
-      notFound: true,
-    };
-  }
-};
-
-export default function PackagesPage({
-  packagesData,
-}: {
-  packagesData: PackagesData;
-}) {
+export default function PackagesPage() {
   return (
     <>
       <Header />
@@ -43,7 +25,7 @@ export default function PackagesPage({
         <main className="flex-1 overflow-hidden pt-16">
           <div className="flex-1 space-y-4  p-4 pt-6 md:p-8">
             <Breadcrumbs items={breadcrumbItems} />
-            <PackagesCards packagesData={packagesData} />
+            <PackagesCards />
           </div>
           <div>
             <Toaster />

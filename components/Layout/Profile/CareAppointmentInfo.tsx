@@ -61,6 +61,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
   appointment,
 }) => {
   const auth = useRecoilValue(adminAuthState);
+  const [status, setStatus] = useState(appointment.status);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +92,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
           variant: "success",
           description: "Appointment approved successfully.",
         });
-        window.location.reload();
+        setStatus("ACCEPTED");
       }
     } catch (error: any) {
       toast({
@@ -125,7 +126,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
           variant: "success",
           description: "Appointment rejected successfully.",
         });
-        window.location.reload();
+        setStatus("REJECTED");
       }
     } finally {
       setIsLoading(false);
@@ -140,7 +141,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
 
   return (
     <ScrollArea className="h-[calc(100vh-80px)]">
-      <div className="container mx-auto p-4 bg-gradient-to-br from-gray-50 to-gray-50 min-h-screen">
+      <div className="container m-auto mb-5 p-4 bg-gradient-to-br from-gray-50 to-gray-50 min-h-screen">
         <Card className="px-2 mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex flex-col gap-2">
@@ -149,11 +150,11 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
                   Appointment Details #{appointment.id}
                 </CardTitle>
                 <div>
-                  {appointment.status === "ACCEPTED" ? (
+                  {status === "ACCEPTED" ? (
                     <Badge className="bg-green-500">Accepted</Badge>
-                  ) : appointment.status === "PENDING" ? (
+                  ) : status === "PENDING" ? (
                     <Badge className="bg-orange-500">Pending</Badge>
-                  ) : appointment.status === "REJECTED" ? (
+                  ) : status === "REJECTED" ? (
                     <Badge variant="destructive">Rejected</Badge>
                   ) : (
                     <Badge className="bg-gray-500">Cancelled</Badge>
@@ -170,7 +171,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
             </div>
             <div className="flex flex-col items-end gap-2">
               <div className="flex justify-end space-x-4">
-                {appointment.status === "PENDING" && (
+                {status === "PENDING" && (
                   <>
                     <Button
                       type="button"
@@ -196,9 +197,8 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
           <CardContent className="space-y-6">
             <div className="flex justify-between items-center">
               <div className="flex items-center">
-                <DollarSign className="w-5 h-5 mr-1 text-green-600" />
                 <span className="text-2xl font-bold">
-                  ${appointment.totalPrice}
+                  Total Price: ${appointment.totalPrice}
                 </span>
               </div>
             </div>
@@ -306,7 +306,7 @@ const CareAppointmentDetails: React.FC<{ appointment: CareAppointment }> = ({
                     <p>Base Price:</p>
                   </div>
                   <span className="w-full md:w-3/4">
-                    ${appointment.service.price}
+                    $ {appointment.service.price}
                   </span>
                 </div>
                 <div className="flex flex-row items-center">

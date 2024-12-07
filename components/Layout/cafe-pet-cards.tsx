@@ -42,8 +42,10 @@ import { UpdateCafePetSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
 import { breeds, GenderOptions, petTypes } from "@/constants/data";
 import {
+  deleteFile,
   fetchCafePets,
   fetchCafeRooms,
+  singleFileUpload,
   updateCafePetByID,
 } from "@/pages/api/api";
 import { useRouter } from "next/router";
@@ -56,6 +58,8 @@ import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { useFetchData } from "@/hooks/useFetchData";
 import Loading from "@/pages/loading";
+import ImageUpload from "../ImageUpload";
+import ProfilePictureUpload from "./profile-upload";
 
 type CafePetFormValue = z.infer<typeof UpdateCafePetSchema>;
 
@@ -72,6 +76,7 @@ const CafePetsCards: React.FC = () => {
   const [isLoading, setLoading] = useState(false);
   const [cafePet, setCafePet] = useState<CafePet>();
   const [roomData, setRoomData] = useState<CafeRoom[]>();
+  const [imageUrl, setImageUrl] = useState(cafePet?.imageUrl);
   const form = useForm<CafePetFormValue>({
     resolver: zodResolver(UpdateCafePetSchema),
   });
@@ -107,9 +112,38 @@ const CafePetsCards: React.FC = () => {
   const onSubmit = async (formValues: CafePetFormValue) => {
     setLoading(true);
     try {
+      const { imageUrl, ...otherValues } = formValues;
+
+      let profileUrl;
+
+      if (imageUrl instanceof File) {
+        // Delete the file first
+        if (cafePet?.imageUrl) {
+          const key = cafePet?.imageUrl.split("/").pop() as string;
+          await deleteFile(key, adminAuth?.accessToken as string);
+        }
+
+        // Upload
+        const fileData = await singleFileUpload(
+          { file: imageUrl, isPublic: false },
+          adminAuth?.accessToken as string
+        );
+
+        if (fileData.error) {
+          toast({
+            variant: "destructive",
+            description: fileData.message,
+          });
+          return;
+        }
+
+        profileUrl = fileData.url;
+      }
+
       const formData = {
-        ...formValues,
+        ...otherValues,
         ...{ roomId: Number(formValues.roomId) },
+        imageUrl: profileUrl,
       };
 
       const data = await updateCafePetByID(Number(cafePet?.id), formData);
@@ -120,11 +154,11 @@ const CafePetsCards: React.FC = () => {
           description: `${data.message}`,
         });
       } else {
+        window.location.reload();
         toast({
           variant: "success",
           description: "Cafe Pet updated.",
         });
-        window.location.reload();
       }
     } finally {
       setLoading(false);
@@ -246,19 +280,39 @@ const CafePetsCards: React.FC = () => {
         <DialogContent className="w-1/2">
           <DialogHeader>
             <DialogTitle>Edit Pet</DialogTitle>
-            <DialogDescription></DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="w-full space-y-5"
             >
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="shad-input-label">
+                      Profile Picture
+                    </FormLabel>
+                    <FormControl>
+                      <ProfilePictureUpload
+                        field={field}
+                        defaultImage={cafePet?.imageUrl}
+                        setImageUrl={setImageUrl}
+                      />
+                    </FormControl>
+                    <FormMessage className="shad-error" />
+                  </FormItem>
+                )}
+              />
+
               <div className="flex flex-col gap-6 xl:flex-row">
                 <CustomFormField
                   fieldType={FormFieldType.INPUT}
                   control={form.control}
                   name="name"
                   label="Name"
+                  required={true}
                 />
 
                 <CustomFormField
@@ -267,6 +321,7 @@ const CafePetsCards: React.FC = () => {
                   control={form.control}
                   name="roomId"
                   label="Room"
+                  required={true}
                 >
                   {roomData?.map((room: CafeRoom, i: number) => (
                     <SelectItem key={room.name + i} value={`${room.id}`}>

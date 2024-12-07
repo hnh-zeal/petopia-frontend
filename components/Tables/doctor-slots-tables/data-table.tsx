@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fetchAppointmentSlots } from "@/pages/api/api";
 import { useRouter } from "next/router";
+import Loading from "@/pages/loading";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -67,8 +68,9 @@ export function DataTable<TData, TValue>({
   const router = useRouter();
   const { id } = router.query;
   const [tableData, setTableData] = React.useState<TData[]>(data); // State to hold the filtered data
-  const [date, setDate] = React.useState<Date>();
+  const [date, setDate] = React.useState<Date | any>();
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [loading, setLoading] = React.useState(false);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -92,10 +94,20 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const filterDate = async (selectedDate: Date | null) => {
-    if (!selectedDate) return;
+  const [isOpen, setIsOpen] = React.useState(false);
+  const handleOpenChange = (open: any) => {
+    setIsOpen(open);
+  };
 
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
+
+  const handleDateChange = async (selectedDate: Date | undefined) => {
+    if (!selectedDate) return;
+    setLoading(true);
     try {
+      setDate(selectedDate);
       const data = await fetchAppointmentSlots({
         doctorId: Number(id),
         date: selectedDate.toISOString(),
@@ -105,18 +117,28 @@ export function DataTable<TData, TValue>({
 
       const filteredData: any[] = data.slots;
       setTableData(filteredData);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching filtered data:", error);
     }
   };
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const handleOpenChange = (open: any) => {
-    setIsOpen(open);
-  };
+  const resetDate = async () => {
+    setLoading(true);
+    try {
+      setDate(null);
+      const data = await fetchAppointmentSlots({
+        ...(router.query.id && { doctorId: Number(id) }),
+        page: 1,
+        pageSize: 10,
+      });
 
-  const handleCancel = () => {
-    setIsOpen(false);
+      const resetData: any[] = data.slots;
+      setTableData(resetData);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+    }
   };
 
   return (
@@ -140,12 +162,12 @@ export function DataTable<TData, TValue>({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={handleDateChange}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-          <Button onClick={() => filterDate(date as Date)}>Filter</Button>
+          <Button onClick={resetDate}>Reset</Button>
         </div>
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
@@ -153,7 +175,7 @@ export function DataTable<TData, TValue>({
               className="text-xs md:text-sm"
               onClick={() => setIsOpen(true)}
             >
-              Create Schedule
+              Create Appointment Slots
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -164,62 +186,68 @@ export function DataTable<TData, TValue>({
           </DialogContent>
         </Dialog>
       </div>
-      <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
-        <Table className="relative">
-          <TableHeader className="bg-zinc-300">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="text-black">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="hover:cursor-pointer"
-                  onClick={() =>
-                    !!onClickRow && onClickRow((row.original as any).id)
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      {!loading ? (
+        <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
+          <Table className="relative">
+            <TableHeader className="bg-zinc-300">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} className="text-black">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-          <ScrollBar orientation="horizontal" />
-        </Table>
-      </ScrollArea>
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="hover:cursor-pointer"
+                    onClick={() =>
+                      !!onClickRow && onClickRow((row.original as any).id)
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+            <ScrollBar orientation="horizontal" />
+          </Table>
+        </ScrollArea>
+      ) : (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
+      )}
 
       <div className="flex items-center justify-end space-x-2 py-4">
         {/* <div className="flex-1 text-sm text-muted-foreground">

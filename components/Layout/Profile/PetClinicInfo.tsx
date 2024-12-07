@@ -1,42 +1,38 @@
 "use client";
-import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/router";
 import { format } from "date-fns";
-import DoctorSchedule from "./DoctorSchedule";
 import { toast } from "@/components/ui/use-toast";
-import { fetchDoctorByID, updateDoctorByID } from "@/pages/api/api";
+import { updatePetClinicByID } from "@/pages/api/api";
 import { Badge } from "@/components/ui/badge";
 import {
-  User,
   Mail,
   Phone,
   Stethoscope,
   Globe,
-  Briefcase,
-  GraduationCap,
   Building,
   Clock,
+  Edit,
 } from "lucide-react";
 import { Clinic } from "@/types/api";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 export default function PetClinicInfo({ petClinic }: { petClinic: Clinic }) {
   const router = useRouter();
-  const [doctorData, setDoctorData] = useState(petClinic);
   const [isActive, setIsActive] = useState(petClinic.isActive);
   const [loading, setLoading] = useState(false);
 
   const handleStatusToggle = async () => {
     setLoading(true);
     try {
-      const data = await updateDoctorByID(petClinic.id, {
+      const data = await updatePetClinicByID(petClinic.id, {
         isActive: !isActive,
       });
       if (data.error) {
@@ -49,8 +45,6 @@ export default function PetClinicInfo({ petClinic }: { petClinic: Clinic }) {
           variant: "success",
           description: `${data.message}`,
         });
-        const doctorData = await fetchDoctorByID(petClinic.id);
-        setDoctorData(doctorData);
       }
     } finally {
       setLoading(false);
@@ -62,31 +56,53 @@ export default function PetClinicInfo({ petClinic }: { petClinic: Clinic }) {
     <div className="container mx-auto p-4 bg-gradient-to-br from-gray-50 to-gray-50 min-h-screen">
       <Card className="mb-6 overflow-hidden">
         <div className="flex items-start">
-          {/* <div className="relative w-1/2 h-full">
-            <Image
-              src={petClinic.mainImage || "/default-pet-clinic.png"}
-              fill
-              alt="Clinic Image"
-              className="object-cover w-full h-full"
-            />
-          </div> */}
-          <div className="w-1/2 p-4">
-            <CardHeader>
+          <CardHeader className="w-full flex flex-row gap-6">
+            <motion.div
+              className="relative md:w-1/2 h-80 aspect-square rounded-lg overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Image
+                src={petClinic.mainImage || `/default-clinic.png`}
+                alt={`Room image ${petClinic.name}`}
+                fill
+                className="object-cover"
+              />
+            </motion.div>
+
+            <div className="flex-1 flex flex-col items-center justify-center">
               <CardTitle className="text-3xl font-bold">
                 {petClinic.name}
               </CardTitle>
               <div className="flex items-center mt-2 space-x-4">
-                <Badge variant={petClinic.isActive ? "success" : "destructive"}>
-                  {petClinic.isActive ? "Active" : "Inactive"}
+                <Badge variant={isActive ? "success" : "destructive"}>
+                  {isActive ? "Active" : "Inactive"}
                 </Badge>
                 <span className="text-sm text-gray-500">
                   Created on{" "}
                   {format(new Date(petClinic.createdAt), "MMMM d, yyyy")}
                 </span>
-                <div></div>
               </div>
-            </CardHeader>
-          </div>
+            </div>
+
+            <div className="w-full md:w-1/6 flex items-center justify-between">
+              <Switch
+                checked={isActive}
+                disabled={loading}
+                onCheckedChange={handleStatusToggle}
+              />
+              <Button
+                onClick={() =>
+                  router.push(
+                    `/admin/pet-clinic/pet-centers/${petClinic.id}/edit`
+                  )
+                }
+                className="bg-black hover:bg-black"
+              >
+                <Edit className="h-4 w-4 mr-2" /> Edit
+              </Button>
+            </div>
+          </CardHeader>
         </div>
       </Card>
 

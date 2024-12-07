@@ -260,7 +260,7 @@ export interface CafeBooking {
   endTime: Date;
   duration: number;
   totalPrice: number;
-  status: boolean;
+  status: boolean | string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -291,6 +291,7 @@ export interface Packages {
   type: string;
   price: number;
   duration: number;
+  status: boolean;
   durationType: "day" | "week" | "month" | "year";
   discountPercent: number;
 }
@@ -305,8 +306,10 @@ export interface PetSitter {
   phoneNumber: string;
   specialties: string[];
   languages: string[];
+  isActive: boolean;
   reviews: string;
   services: CareService[];
+  createdAt: Date;
 }
 
 export interface Category {

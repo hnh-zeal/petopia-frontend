@@ -1,10 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
 import { DataTable } from "./data-table";
-import { useRouter } from "next/navigation";
 import { adminColumns, roomColumns, userColumns } from "./columns";
 import { useEffect, useState } from "react";
 import { fetchRoomBooking } from "@/pages/api/api";
@@ -20,7 +17,6 @@ export const CafeBookingClient = ({
   isAdmin: boolean;
   cafeRoom?: CafeRoom;
 }) => {
-  const router = useRouter();
   const userAuth = useRecoilValue(userAuthState);
   const adminAuth = useRecoilValue(adminAuthState);
   const [bookingData, setBookingData] = useState({
@@ -28,7 +24,7 @@ export const CafeBookingClient = ({
     count: 0,
     totalPages: 0,
     page: 1,
-    pageSize: 5,
+    pageSize: 6,
   });
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,10 +33,12 @@ export const CafeBookingClient = ({
     const getRoomBooking = async () => {
       setLoading(true);
       try {
+        const roomId = cafeRoom?.id;
         const userId = userAuth?.user?.id || null; // Extract userId only once
         const data = await fetchRoomBooking({
           page: currentPage,
           pageSize: bookingData.pageSize,
+          ...(roomId && { roomId }),
           userId,
         });
 
@@ -49,14 +47,14 @@ export const CafeBookingClient = ({
           ...data,
         }));
       } catch (error) {
-        console.error("Failed to fetch clinic appointments", error);
+        console.error("Failed to fetch cafe booking", error);
       } finally {
         setLoading(false);
       }
     };
 
     getRoomBooking();
-  }, [userAuth, adminAuth, currentPage, bookingData.pageSize]);
+  }, [userAuth, adminAuth, cafeRoom, currentPage, bookingData.pageSize]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(Number(page));

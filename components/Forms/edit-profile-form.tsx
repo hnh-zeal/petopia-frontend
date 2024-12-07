@@ -9,7 +9,7 @@ import * as z from "zod";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import { useToast } from "../ui/use-toast";
 import { EditProfileSchema } from "@/validations/formValidation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Edit, PencilIcon } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -23,6 +23,7 @@ import Image from "next/image";
 import { Input } from "../ui/input";
 import { Password } from "../password";
 import { User } from "@/types/api";
+import SubmitButton from "../submit-button";
 
 type ProfileFormValue = z.infer<typeof EditProfileSchema>;
 
@@ -129,6 +130,10 @@ export default function EditProfileForm({ user }: EditProfileProps) {
     fileInputRef.current?.click();
   };
 
+  if (!auth) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col md:flex-row gap-8">
       <div className="w-full md:w-1/3">
@@ -190,12 +195,14 @@ export default function EditProfileForm({ user }: EditProfileProps) {
             <p className="text-sm text-gray-500">Pets</p>
           </div>
           <div className="text-center">
-            <p className="font-semibold">{user?.packages?.length || 0}</p>
+            <p className="font-semibold">{user?.packageHistory?.length || 0}</p>
             <p className="text-sm text-gray-500">Packages</p>
           </div>
           <div className="text-center">
             <p className="font-semibold">
-              {user?.clinicAppointments?.length || 0}
+              {user?.clinicAppointments?.length +
+                user?.careAppointments.length +
+                user?.bookings.length || 0}
             </p>
             <p className="text-sm text-gray-500">Appointments</p>
           </div>
@@ -270,9 +277,12 @@ export default function EditProfileForm({ user }: EditProfileProps) {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : "Save"}
-                </Button>
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
+                  Save
+                </SubmitButton>
               </div>
             </form>
           </Form>

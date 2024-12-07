@@ -50,6 +50,7 @@ export default function CreatePetSitterForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
+  const [imageUrl, setImageUrl] = useState("");
   const router = useRouter();
   const adminAuth = useRecoilValue(userAuthState);
 
@@ -98,47 +99,47 @@ export default function CreatePetSitterForm() {
   const onSubmit = async (formValues: DoctorFormValue) => {
     setLoading(true);
     try {
-      const { profile, ...otherValues } = formValues;
-      let profileUrl;
+      // const { profile, ...otherValues } = formValues;
+      // let profileUrl;
 
-      if (profile instanceof File) {
-        const fileData = await singleFileUpload(
-          { file: profile, isPublic: false },
-          adminAuth?.accessToken as string
-        );
+      // if (profile instanceof File) {
+      //   const fileData = await singleFileUpload(
+      //     { file: profile, isPublic: false },
+      //     adminAuth?.accessToken as string
+      //   );
 
-        if (fileData.error) {
-          toast({
-            variant: "destructive",
-            description: fileData.message,
-          });
-          return;
-        }
+      //   if (fileData.error) {
+      //     toast({
+      //       variant: "destructive",
+      //       description: fileData.message,
+      //     });
+      //     return;
+      //   }
 
-        profileUrl = fileData.url;
-      }
+      //   profileUrl = fileData.url;
+      // }
 
-      const formData = {
-        ...otherValues,
-        profileUrl,
-      };
+      // const formData = {
+      //   ...otherValues,
+      //   profileUrl,
+      // };
 
-      const data = await createPetSitter(
-        formData,
-        adminAuth?.accessToken as string
-      );
-      if (data.error) {
-        toast({
-          variant: "destructive",
-          description: `${data.message}`,
-        });
-      } else {
-        toast({
-          variant: "success",
-          description: "Pet Sitter created.",
-        });
-        router.push("/admin/pet-sitters");
-      }
+      // const data = await createPetSitter(
+      //   formData,
+      //   adminAuth?.accessToken as string
+      // );
+      // if (data.error) {
+      //   toast({
+      //     variant: "destructive",
+      //     description: `${data.message}`,
+      //   });
+      // } else {
+      toast({
+        variant: "success",
+        description: "Pet Sitter created.",
+      });
+      router.push("/admin/pet-sitters");
+      // }
     } finally {
       setLoading(false);
     }
@@ -169,7 +170,11 @@ export default function CreatePetSitterForm() {
                     Profile Picture
                   </FormLabel>
                   <FormControl>
-                    <ProfilePictureUpload field={field} defaultImage={""} />
+                    <ProfilePictureUpload
+                      field={field}
+                      defaultImage={imageUrl}
+                      setImageUrl={setImageUrl}
+                    />
                   </FormControl>
                   <FormMessage className="shad-error" />
                 </FormItem>
@@ -319,20 +324,21 @@ export default function CreatePetSitterForm() {
               />
             </div>
 
-            <div className="flex mt-10 items-center justify-end space-x -4">
-              <div className="flex items-center justify-between space-x-4">
-                <Button
-                  disabled={loading}
-                  variant="outline"
-                  className="ml-auto w-full"
-                  onClick={onReset}
-                >
-                  Reset
-                </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
-                  Create
-                </SubmitButton>
-              </div>
+            <div className="flex flex-row mt-10 items-center justify-end space-x-4">
+              <Button
+                disabled={loading}
+                variant="outline"
+                className="ml-auto w-full sm:w-auto"
+                onClick={onReset}
+              >
+                Reset
+              </Button>
+              <SubmitButton
+                isLoading={loading}
+                className="ml-auto w-full sm:w-auto"
+              >
+                Create
+              </SubmitButton>
             </div>
           </form>
         </Form>

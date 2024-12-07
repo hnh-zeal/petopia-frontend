@@ -26,7 +26,7 @@ export default function CafeRooms() {
 
   const adminAuth = useRecoilValue(adminAuthState);
   const { data, totalPages, loading, currentPage, handlePageChange } =
-    useFetchData<CafeRoom>(fetchCafeRooms, 1, 6, adminAuth?.accessToken);
+    useFetchData<CafeRoom>(fetchCafeRooms, 1, 3, adminAuth?.accessToken);
 
   return (
     <>

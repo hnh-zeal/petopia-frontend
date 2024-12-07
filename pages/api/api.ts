@@ -238,11 +238,12 @@ export async function createDoctor(formValues: any, adminToken: string) {
 }
 
 export async function fetchDoctors(queryData: any, adminToken?: string) {
-  const { page, pageSize } = queryData;
+  const { page, pageSize, isActive } = queryData;
 
   const query = {
     ...(page && { page }),
     ...(pageSize && { pageSize }),
+    ...(isActive && { isActive }),
   };
 
   const queryString = qs.stringify(query);
@@ -303,6 +304,24 @@ export async function addDoctorSchedule(formValues: any) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function fetchDoctorSchedule(queryData: any) {
+  const queryString = qs.stringify(queryData);
+  const queryUrl = queryString ? `?${queryString}` : "";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/doctor-schedules${queryUrl}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     }
   );
 
@@ -794,6 +813,27 @@ export async function fetchRoomBooking(queryData: any, token?: string) {
   return data;
 }
 
+export async function updateRoomBooking(
+  id: number,
+  formValues: any,
+  token: string
+) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/room-booking/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formValues),
+    }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
 export async function fetchAdminWithToken(token: string) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admins/profile`,
@@ -1121,10 +1161,11 @@ export async function updateCareAppointment(
 }
 
 export async function fetchCareAppointments(queryData: any, token?: string) {
-  const { userId, date, page, pageSize } = queryData;
+  const { userId, petSitterId, date, page, pageSize } = queryData;
 
   const query = {
     ...(userId && { userId }),
+    ...(petSitterId && { petSitterId }),
     ...(date && { date: format(date, "yyyy-MM-dd") }),
     ...(page && { page }),
     ...(pageSize && { pageSize }),
@@ -1359,13 +1400,18 @@ export async function fetchAdmins(queryData: any, adminToken?: string) {
   return data;
 }
 
-export async function updateAdminByID(id: number, formValues: any) {
+export async function updateAdminByID(
+  id: number,
+  formValues: any,
+  adminToken?: string
+) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admins/${id}`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
       },
       body: JSON.stringify(formValues),
     }

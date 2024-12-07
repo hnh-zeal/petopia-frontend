@@ -18,7 +18,7 @@ export const AdminClient = () => {
   const adminAuth = useRecoilValue(adminAuthState);
 
   const { data, totalPages, loading, currentPage, handlePageChange } =
-    useFetchData<Admin>(fetchAdmins, 1, 5, adminAuth?.accessToken);
+    useFetchData<Admin>(fetchAdmins, 1, 6, adminAuth?.accessToken);
 
   return (
     <>

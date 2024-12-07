@@ -37,7 +37,6 @@ export default function CreateCafeRoomForm() {
     defaultValues: {
       name: "",
       roomNo: "",
-      roomType: "",
       description: "",
       mainImage: "",
       images: [],
@@ -62,7 +61,7 @@ export default function CreateCafeRoomForm() {
       } else {
         toast({
           variant: "success",
-          description: "Service created.",
+          description: `Pet cafe room`,
         });
         router.push("/admin/pet-cafe/cafe-rooms");
       }
@@ -184,17 +183,20 @@ export default function CreateCafeRoomForm() {
               />
             </div>
 
-            <div className="flex my-10 items-center justify-end space-x-4">
-              <div className="flex items-center justify-around space-x-4">
+            <div className="flex mt-10 items-center justify-end">
+              <div className="flex flex-row items-center justify-between space-x-4 mb-4">
                 <Button
                   disabled={loading}
                   variant="outline"
-                  className="ml-auto w-full"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onReset}
                 >
                   Reset
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Create
                 </SubmitButton>
               </div>

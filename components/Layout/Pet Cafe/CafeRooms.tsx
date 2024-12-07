@@ -78,7 +78,7 @@ export default function CafeRooms({ cafeRooms }: { cafeRooms: CafeRoom[] }) {
                       {room.name}
                     </h2>
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                      {truncate(room.description, 150)}
+                      {truncate(room.description, 100)}
                     </p>
 
                     <div className="flex items-center text-gray-500 mb-2">

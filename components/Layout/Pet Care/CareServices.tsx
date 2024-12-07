@@ -86,7 +86,7 @@ export default function CareServices({
                         {service.name}
                       </h2>
                       <p className="text-gray-600 text-pretty mb-4">
-                        {truncate(service.description, 200)}
+                        {truncate(service.description, 90)}
                       </p>
 
                       {/* <div className="flex items-center mb-4">

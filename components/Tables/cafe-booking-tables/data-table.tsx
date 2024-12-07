@@ -180,7 +180,7 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu> */}
       </div>
-      <ScrollArea className="h-[calc(80vh-200px)] border-">
+      <ScrollArea className="h-[calc(80vh-200px)] rounded-md border">
         <Table className="relative">
           <TableHeader className="bg-zinc-300">
             {table.getHeaderGroups().map((headerGroup) => (

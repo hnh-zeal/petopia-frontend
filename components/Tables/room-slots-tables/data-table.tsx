@@ -43,6 +43,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import CreateRoomSlotForm from "@/components/Forms/create-room-slot";
+import Loading from "@/pages/loading";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -115,6 +116,7 @@ export function DataTable<TData, TValue>({
       });
 
       const filteredData: any[] = data.data;
+      setDate(selectedDate);
       setTableData(filteredData);
       setLoading(false);
     } catch (error) {
@@ -185,7 +187,7 @@ export function DataTable<TData, TValue>({
           </DialogContent>
         </Dialog>
       </div>
-      {!loading && (
+      {!loading ? (
         <ScrollArea className="h-[calc(80vh-220px)] rounded-md border">
           <Table className="relative">
             <TableHeader className="bg-zinc-300">
@@ -245,6 +247,10 @@ export function DataTable<TData, TValue>({
             <ScrollBar orientation="horizontal" />
           </Table>
         </ScrollArea>
+      ) : (
+        <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+          <Loading />
+        </div>
       )}
 
       <div className="flex items-center justify-end space-x-2 py-4">

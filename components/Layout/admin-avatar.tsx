@@ -47,7 +47,11 @@ export function AdminAvatar() {
           className="relative h-10 w-10 mr-5 rounded-full"
         >
           <Avatar className="h-10 w-10">
-            <AvatarImage src={auth?.admin.profileUrl} alt="A" />
+            <AvatarImage
+              src={auth?.admin.profileUrl}
+              className="object-cover"
+              alt="A"
+            />
             <AvatarFallback>{auth?.admin.name?.[0] || "A"}</AvatarFallback>
           </Avatar>
         </Button>
@@ -72,10 +76,10 @@ export function AdminAvatar() {
             Profile
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem className="hover:cursor-pointer">
+          {/* <DropdownMenuItem className="hover:cursor-pointer">
             Settings
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem

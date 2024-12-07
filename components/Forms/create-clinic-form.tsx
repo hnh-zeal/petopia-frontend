@@ -23,7 +23,7 @@ type PetClinicFormValue = z.infer<typeof CreatePetClinicSchema>;
 export default function CreatePetClinicForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [mainImage, setMainImage] = useState<string>("");
   const [sections, setSections] = useState([
     { dow: "", startTime: "", endTime: "" },
   ]);
@@ -73,7 +73,7 @@ export default function CreatePetClinicForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ ...formValues, imageUrl }),
+          body: JSON.stringify({ ...formValues, mainImage }),
         }
       );
 
@@ -116,10 +116,10 @@ export default function CreatePetClinicForm() {
               <ImageUpload
                 image={""}
                 onImageUpload={(url: string) => {
-                  setImageUrl(url);
+                  setMainImage(url);
                 }}
                 onImageRemove={() => {
-                  setImageUrl("");
+                  setMainImage("");
                 }}
                 label="Clinic Image"
                 description="Upload an image"
@@ -133,6 +133,7 @@ export default function CreatePetClinicForm() {
                 control={form.control}
                 name="name"
                 label="Name"
+                required={true}
               />
               <CustomFormField
                 fieldType={FormFieldType.INPUT}
@@ -140,6 +141,7 @@ export default function CreatePetClinicForm() {
                 control={form.control}
                 name="contact"
                 label="Contact No."
+                required={true}
               />
             </div>
 
@@ -149,6 +151,7 @@ export default function CreatePetClinicForm() {
               control={form.control}
               name="description"
               label="Description"
+              required={true}
             />
 
             <h3 className="font-bold">Operating Hours</h3>
@@ -167,6 +170,7 @@ export default function CreatePetClinicForm() {
                         control={form.control}
                         placeholder="Choose days of week"
                         label="Days of week"
+                        required={true}
                         {...field}
                       >
                         {daysOfWeek.map((day, i) => (
@@ -189,6 +193,7 @@ export default function CreatePetClinicForm() {
                         fieldType={FormFieldType.TIME}
                         placeholder="Start Time"
                         label="Start Time"
+                        required={true}
                         {...field}
                       />
                     )}
@@ -203,6 +208,7 @@ export default function CreatePetClinicForm() {
                         fieldType={FormFieldType.TIME}
                         placeholder="End Time"
                         label="End Time"
+                        required={true}
                         {...field}
                       />
                     )}
@@ -303,18 +309,8 @@ export default function CreatePetClinicForm() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-6 xl:flex-row">
-              <CustomFormField
-                fieldType={FormFieldType.TEXTAREA}
-                placeholder="Description"
-                control={form.control}
-                name="description"
-                label="Description"
-              />
-            </div>
-
-            <div className="flex mt-10 items-center justify-end space-x-4 ">
-              <div className="flex items-center justify-end space-x-4">
+            <div className="flex mt-10 items-center justify-end space-x-4">
+              <div className="flex items-center justify-end space-x-4 mb-4">
                 <Button
                   disabled={loading}
                   variant="outline"

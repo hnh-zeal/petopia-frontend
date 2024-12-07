@@ -20,6 +20,7 @@ import {
   addDays,
   differenceInHours,
   format,
+  formatDate,
   parse,
   startOfDay,
 } from "date-fns";
@@ -55,7 +56,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useRecoilValue } from "recoil";
 import { GetServerSideProps } from "next";
 import { userAuthState } from "@/states/auth";
-import { CafeRoom } from "@/types/api";
+import { CafeRoom, RoomSlot } from "@/types/api";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export const getServerSideProps: GetServerSideProps<{
   cafeRoom: CafeRoom;
@@ -100,14 +102,23 @@ const formSchema = z.object({
   date: z.date({
     required_error: "A date is required",
   }),
-  startTime: z.string().min(1, "A time is required"),
-  endTime: z.string().min(1, "A time is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
   guests: z.number().min(1, "At least one guest is required"),
   card: z.string().min(1, "Card information is required"),
   month: z.string().min(2, "Month is required").max(2, "Invalid month"),
-  year: z.string().min(2, "Year is required").max(2, "Invalid year"),
+  year: z.string().min(2, "Year is required").max(4, "Invalid year"),
   cvv: z.string().min(3, "CVV is required").max(4, "Invalid CVV"),
 });
+
+const breadcrumbItems = (room: CafeRoom) => [
+  { title: "Pet Cafe Rooms", link: "/pet-cafe/rooms" },
+  { title: `${room.name}`, link: `/pet-cafe/rooms/${room.id}` },
+  {
+    title: `Confirm Booking`,
+    link: `/pet-cafe/rooms/${room.id}/booking`,
+  },
+];
 
 export default function ReservationConfirmation({
   cafeRoom,
@@ -130,14 +141,10 @@ export default function ReservationConfirmation({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: date || new Date(),
+      date: new Date(),
       startTime,
       endTime,
-      guests,
-      // billingAddress: "",
-      // billingCity: "",
-      // billingState: "",
-      // billingZip: "",
+      guests: 1,
     },
   });
 
@@ -205,6 +212,7 @@ export default function ReservationConfirmation({
 
   const handleDateChange = async (date: Date | undefined) => {
     if (date) {
+      form.setValue("date", date as Date);
       try {
         const fetchedTimeSlots = await fetchRoomSlots({
           roomId: cafeRoom.id,
@@ -212,7 +220,7 @@ export default function ReservationConfirmation({
           date,
         });
 
-        const formattedTimeSlots = fetchedTimeSlots.slots.map((slot: any) =>
+        const formattedTimeSlots = fetchedTimeSlots.data.map((slot: RoomSlot) =>
           format(new Date(slot.startTime), "h:mm a")
         );
         setTimeSlots(formattedTimeSlots);
@@ -223,7 +231,6 @@ export default function ReservationConfirmation({
     } else {
       setTimeSlots(defaultTimeSlots);
     }
-    form.setValue("date", date as Date);
   };
 
   const handleStartTimeChange = (startTime: string) => {
@@ -231,9 +238,7 @@ export default function ReservationConfirmation({
     setDuration(calculateDuration(startTime, form.getValues("endTime")));
     const startTimeIndex = defaultTimeSlots.indexOf(startTime);
     const updatedEndTimeSlots =
-      startTimeIndex === 0
-        ? defaultEndSlots
-        : defaultEndSlots.slice(startTimeIndex);
+      startTimeIndex >= 0 ? defaultEndSlots.slice(startTimeIndex) : [];
 
     setEndTimeSlots(updatedEndTimeSlots);
   };
@@ -244,13 +249,10 @@ export default function ReservationConfirmation({
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      <nav className="mb-6">
-        <ol className="flex text-sm text-gray-500">
-          <li className="after:content-['>'] after:mx-2">Room detail</li>
-          <li>Booking</li>
-        </ol>
-      </nav>
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="mb-6">
+        <Breadcrumbs items={breadcrumbItems(cafeRoom)} />
+      </div>
 
       <h1 className="text-2xl font-bold mb-6">Confirm your room booking</h1>
 
@@ -276,7 +278,9 @@ export default function ReservationConfirmation({
                         name="date"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>Date</FormLabel>
+                            <FormLabel>
+                              Date <span className="text-red-400">*</span>
+                            </FormLabel>
                             <Popover>
                               <PopoverTrigger
                                 asChild
@@ -323,7 +327,10 @@ export default function ReservationConfirmation({
                         name="guests"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>Number of Guests</FormLabel>
+                            <FormLabel>
+                              Number of Guests{" "}
+                              <span className="text-red-400">*</span>
+                            </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input
@@ -352,7 +359,9 @@ export default function ReservationConfirmation({
                         name="startTime"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>Start Time</FormLabel>
+                            <FormLabel>
+                              Start Time <span className="text-red-400">*</span>
+                            </FormLabel>
                             <Select
                               onValueChange={handleStartTimeChange}
                               defaultValue={field.value}
@@ -388,7 +397,9 @@ export default function ReservationConfirmation({
                         name="endTime"
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>End Time</FormLabel>
+                            <FormLabel>
+                              End Time <span className="text-red-400">*</span>
+                            </FormLabel>
                             <Select
                               onValueChange={handleEndTimeChange}
                               defaultValue={field.value}
@@ -497,17 +508,17 @@ export default function ReservationConfirmation({
                             <h2 className="text-xl font-semibold">
                               {cafeRoom?.name} ({cafeRoom?.roomNo})
                             </h2>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <MapPinIcon className="w-4 h-4" />
-                              <span>Bangkok, Thailand</span>
-                            </div>
                           </div>
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <MapPinIcon className="w-4 h-4" />
+                            <span>Bangkok, Thailand</span>
+                          </div>
+                          {/* <div className="flex items-center space-x-1">
                             <StarIcon className="w-5 h-5 text-yellow-400 fill-current" />
                             <span className="font-semibold">
                               {cafeRoom?.rating || 4.8}
                             </span>
-                          </div>
+                          </div> */}
                         </div>
 
                         <div className="space-y-2">
@@ -584,20 +595,11 @@ export default function ReservationConfirmation({
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">Cancellation policy</h3>
                 <p className="text-sm text-gray-600">
-                  Free cancellation before 2:00 PM on Oct 20. Cancel before Oct
-                  27 for a partial refund.
+                  Free cancellation before{" "}
+                  {formatDate(form.getValues("date"), "MMM dd")}.
                 </p>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  By selecting the button below, I agree to the Host&apos;s
-                  House Rules, Ground rules for guests, Teraluxe&apos;s
-                  Rebooking and Refund Policy, and that Teraluxe can charge my
-                  payment method if I&apos;m responsible for damage.
-                </p>
-                <p className="text-sm text-gray-600">
-                  I also agree to the{" "}
+                <p className="mt-4 text-sm text-gray-600">
+                  I agree to the{" "}
                   <a href="#" className="text-blue-600">
                     updated Terms of Service
                   </a>

@@ -11,8 +11,8 @@ import SubmitButton from "../submit-button";
 import { useToast } from "../ui/use-toast";
 import { CreateServiceSchema } from "@/validations/formValidation";
 import { SelectItem } from "../ui/select";
-import { useEffect, useState } from "react";
-import { createCareService, fetchCategories } from "@/pages/api/api";
+import { useState } from "react";
+import { createCareService } from "@/pages/api/api";
 import MultiSelect from "../multiple-selector";
 import {
   Form,
@@ -25,7 +25,6 @@ import {
 import { Input } from "../ui/input";
 import { Category } from "@/types/api";
 import { CirclePlus, Trash2 } from "lucide-react";
-import { Card } from "../ui/card";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import MultiImageUpload from "../MultiImageUpload";
@@ -178,16 +177,14 @@ export default function CreateServiceForm({
                       <></>
                     </FormLabel>
                     <FormControl>
-                      <>
-                        <MultiSelect
-                          values={categories}
-                          onChange={field.onChange}
-                          value={field.value || []}
-                          placeholder="Select Categories"
-                        />
-                      </>
+                      <MultiSelect
+                        values={categories}
+                        onChange={field.onChange}
+                        value={field.value || []}
+                        placeholder="Select Categories"
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="shad-error" />
                   </FormItem>
                 )}
               />
@@ -248,6 +245,7 @@ export default function CreateServiceForm({
                           placeholder="Name"
                           label="Name"
                           {...field}
+                          required={true}
                         />
                       )}
                     />
@@ -301,18 +299,21 @@ export default function CreateServiceForm({
               ))}
             </div>
 
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end space-x-4">
+              <div className="flex flex-row mt-10 items-center justify-between space-x-4 mb-4">
                 <Button
                   disabled={loading}
                   variant="outline"
-                  className="ml-auto w-full"
+                  type="button"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={onReset}
                 >
-                  Reset
+                  Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Create
                 </SubmitButton>
               </div>

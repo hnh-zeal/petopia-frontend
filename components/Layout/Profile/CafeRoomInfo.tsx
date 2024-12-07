@@ -81,6 +81,7 @@ export default function CafeRoomInfo({ cafeRoom }: CafeRoomInfoProps) {
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <div className="flex items-center space-x-2">
               <Switch
+                disabled={loading}
                 checked={isActive}
                 onCheckedChange={handleStatusToggle}
                 aria-label="Toggle room active status"

@@ -1,6 +1,6 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { UserCellAction } from "./cell-action";
+import { AdminCellActions, UserCellAction } from "./cell-action";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import SortColumn from "../sortColumn";
@@ -14,7 +14,7 @@ export const userColumns: ColumnDef<CafeBooking>[] = [
   },
   {
     accessorFn: (row) => row.room.name,
-    id: "clinic.name",
+    id: "room.name",
     header: ({ column }) => <SortColumn column={column} title="Room" />,
   },
   {
@@ -49,7 +49,7 @@ export const userColumns: ColumnDef<CafeBooking>[] = [
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.status ? (
+        {row.original?.status === "true" ? (
           <Badge className="bg-green-500">Booked</Badge>
         ) : (
           <Badge variant="destructive">Cancelled</Badge>
@@ -57,9 +57,16 @@ export const userColumns: ColumnDef<CafeBooking>[] = [
       </>
     ),
   },
+
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "true" && (
+          <UserCellAction data={row.original} />
+        )}
+      </>
+    ),
   },
 ];
 
@@ -90,7 +97,7 @@ export const adminColumns: ColumnDef<CafeBooking>[] = [
   {
     accessorFn: (row) => row.user.name,
     id: "user.name",
-    header: ({ column }) => <SortColumn column={column} title="Room" />,
+    header: ({ column }) => <SortColumn column={column} title="User" />,
   },
   {
     accessorFn: (row) => row.room.name,
@@ -133,17 +140,23 @@ export const adminColumns: ColumnDef<CafeBooking>[] = [
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.status ? (
+        {row.original?.status === "true" ? (
           <Badge className="bg-green-500">Booked</Badge>
         ) : (
-          <Badge className="bg-gray-500">Cancelled</Badge>
+          <Badge variant="destructive">Cancelled</Badge>
         )}
       </>
     ),
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "true" && (
+          <AdminCellActions data={row.original} />
+        )}
+      </>
+    ),
   },
 ];
 
@@ -174,12 +187,7 @@ export const roomColumns: ColumnDef<CafeBooking>[] = [
   {
     accessorFn: (row) => row.user.name,
     id: "user.name",
-    header: ({ column }) => <SortColumn column={column} title="Room" />,
-  },
-  {
-    accessorFn: (row) => row.room.name,
-    id: "clinic.name",
-    header: ({ column }) => <SortColumn column={column} title="Room" />,
+    header: ({ column }) => <SortColumn column={column} title="User" />,
   },
   {
     accessorKey: "date",
@@ -213,7 +221,7 @@ export const roomColumns: ColumnDef<CafeBooking>[] = [
     header: ({ column }) => <SortColumn column={column} title="Status" />,
     cell: ({ row }) => (
       <>
-        {row.original?.status ? (
+        {row.original?.status === "true" ? (
           <Badge className="bg-green-500">Booked</Badge>
         ) : (
           <Badge variant="destructive">Cancelled</Badge>
@@ -223,6 +231,12 @@ export const roomColumns: ColumnDef<CafeBooking>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserCellAction data={row.original} />,
+    cell: ({ row }) => (
+      <>
+        {row.original?.status === "true" && (
+          <UserCellAction data={row.original} />
+        )}
+      </>
+    ),
   },
 ];

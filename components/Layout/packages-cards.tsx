@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardFooter,
@@ -14,15 +14,15 @@ import { Heading } from "../ui/heading";
 import { Edit, PlusCircle } from "lucide-react";
 import { useRouter } from "next/router";
 import { ScrollArea } from "../ui/scroll-area";
-import { Packages, PackagesData } from "@/types/api";
+import { Packages } from "@/types/api";
 import { Badge } from "../ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -35,7 +35,7 @@ import {
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editPackageByID } from "@/pages/api/api";
+import { editPackageByID, fetchPackages } from "@/pages/api/api";
 import { useRecoilValue } from "recoil";
 import { adminAuthState } from "@/states/auth";
 import { toast } from "../ui/use-toast";
@@ -47,6 +47,9 @@ import {
   packagesType,
 } from "../Forms/create-packages-form";
 import { Input } from "../ui/input";
+import { useFetchData } from "@/hooks/useFetchData";
+import Loading from "@/pages/loading";
+import SubmitButton from "../submit-button";
 
 const EditPackageSchema = z.object({
   id: z.number().optional(),
@@ -63,32 +66,34 @@ const EditPackageSchema = z.object({
 
 type PackagesFormValue = z.infer<typeof EditPackageSchema>;
 
-export default function PackagesCards({
-  packagesData,
-}: {
-  packagesData: PackagesData;
-}) {
+export default function PackagesCards() {
   const router = useRouter();
-  const auth = useRecoilValue(adminAuthState);
-  const [currentPage, setCurrentPage] = useState(1);
+  const adminAuth = useRecoilValue(adminAuthState);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const handlePageChange = (page: number) => {
-    setCurrentPage(Number(page));
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [packages, setPackages] = useState<Packages[]>([]);
+
+  const { data, totalPages, loading, currentPage, handlePageChange } =
+    useFetchData<Packages>(fetchPackages, 1, 3, adminAuth?.accessToken);
+
+  useEffect(() => {
+    if (data) {
+      setPackages(data);
+    }
+  }, [data]);
 
   const form = useForm<PackagesFormValue>({
     resolver: zodResolver(EditPackageSchema),
   });
 
   const onSubmit = async (formValues: PackagesFormValue) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const { id, ...formData } = formValues;
       const data = await editPackageByID(
         Number(id),
         formData,
-        auth?.accessToken as string
+        adminAuth?.accessToken as string
       );
       if (data.error) {
         toast({
@@ -100,11 +105,14 @@ export default function PackagesCards({
           variant: "success",
           description: "Package updated.",
         });
-        window.location.reload();
+
+        setPackages((prevPackages) =>
+          prevPackages.map((pkg) => (pkg.id === data.data.id ? data.data : pkg))
+        );
         setDialogOpen(false);
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -145,61 +153,59 @@ export default function PackagesCards({
       <Separator />
       <ScrollArea className="h-[calc(100vh-220px)] rounded-md px-3">
         <div className="container mx-auto p-4">
-          {packagesData.packages?.length === 0 ? (
+          {packages?.length === 0 ? (
             <p>No Results Found</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {packagesData.packages?.map((pkg: Packages) => (
-                <Card key={pkg.id} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                    <CardDescription>{pkg.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <div className="text-3xl font-bold mb-4">
-                      {/* ฿
-                      {getDiscountedPrice(
-                        pkg.price,
-                        pkg.discountPercent
-                      ).toFixed(2)}
-                      {pkg.discountPercent > 0 && (
-                        <span className="text-lg line-through text-muted-foreground ml-2">
-                          ฿ {pkg.price.toFixed(2)}
-                        </span>
-                      )} */}
-                      ฿ {pkg.price}
-                    </div>
-                    <div className="space-y-2">
-                      <p>
-                        Duration:{" "}
-                        {getDurationText(pkg.duration, pkg.durationType)}
-                      </p>
-                      {pkg.discountPercent > 0 && (
-                        <>
-                          Discount Percent:{" "}
-                          <Badge variant="secondary" className="text-sm">
-                            {pkg.discountPercent} % off
-                          </Badge>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-row justify-end">
-                    <Button onClick={() => onEdit(pkg)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            <>
+              {loading ? (
+                <div className="flex items-center justify-center h-[calc(100vh-220px)]">
+                  <Loading />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {packages?.map((pkg: Packages) => (
+                    <Card key={pkg.id} className="flex flex-col">
+                      <CardHeader>
+                        <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+                        <CardDescription>{pkg.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                        <div className="text-3xl font-bold mb-4">
+                          ฿ {pkg.price}
+                        </div>
+                        <div className="space-y-2">
+                          <p>
+                            Duration:{" "}
+                            {getDurationText(pkg.duration, pkg.durationType)}
+                          </p>
+                          {pkg.discountPercent > 0 && (
+                            <>
+                              Discount Percent:{" "}
+                              <Badge variant="secondary" className="text-sm">
+                                {pkg.discountPercent} % off
+                              </Badge>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex flex-row justify-end">
+                        <Button onClick={() => onEdit(pkg)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           )}
           {/* Pagination */}
           <div className="flex items-center justify-end space-x-2 py-4">
             <div className="space-x-2">
               <Pagination
                 currentPage={currentPage}
-                totalPages={packagesData?.totalPages || 0}
+                totalPages={totalPages}
                 onPageChange={handlePageChange}
               />
             </div>
@@ -208,6 +214,7 @@ export default function PackagesCards({
       </ScrollArea>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild></DialogTrigger>
         <DialogContent className="w-1/2">
           <DialogHeader>
             <DialogTitle>Edit Package</DialogTitle>
@@ -342,21 +349,23 @@ export default function PackagesCards({
                 />
               </div>
 
-              <div className="flex mt-10 items-center justify-between space-x-4">
-                <div></div>
-                <div className="flex items-center justify-between space-x-4">
-                  <DialogFooter>
-                    <Button
-                      disabled={loading}
-                      variant="outline"
-                      type="button"
-                      className="ml-auto w-full"
-                      onClick={onCancel}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit">Submit</Button>
-                  </DialogFooter>
+              <div className="flex mt-10 items-center justify-end">
+                <div className="flex flex-row items-center gap-4 mb-4">
+                  <Button
+                    disabled={isLoading}
+                    type="button"
+                    variant="outline"
+                    className="ml-auto w-full sm:w-auto"
+                    onClick={onCancel}
+                  >
+                    Cancel
+                  </Button>
+                  <SubmitButton
+                    isLoading={isLoading}
+                    className="ml-auto w-full sm:w-auto"
+                  >
+                    Update
+                  </SubmitButton>
                 </div>
               </div>
             </form>

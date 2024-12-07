@@ -39,13 +39,13 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
   const router = useRouter();
   const auth = useRecoilValue(adminAuthState);
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(doctor.imageUrl);
 
   const form = useForm<DoctorFormValue>({
     resolver: zodResolver(CreateDoctorSchema),
     defaultValues: {
       name: doctor.name,
       email: doctor.email,
-      profile: doctor.profileUrl,
       phoneNumber: doctor.phoneNumber,
       clinicId: String(doctor.clinic.id),
       about: doctor.about,
@@ -166,6 +166,7 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
                     <ProfilePictureUpload
                       field={field}
                       defaultImage={doctor.profileUrl}
+                      setImageUrl={setImageUrl}
                     />
                   </FormControl>
                   <FormMessage className="shad-error" />
@@ -379,18 +380,21 @@ export default function EditDoctorForm({ doctor, petClinics }: any) {
             </div>
 
             {/* Update Button */}
-            <div className="flex mt-10 items-center justify-between space-x-4">
-              <div></div>
-              <div className="flex items-center justify-between space-x-4">
+            <div className="flex mt-10 items-center justify-end space-x-4">
+              <div className="flex flex-row mt-10 items-center justify-between space-x-4">
                 <Button
                   disabled={loading}
                   variant="outline"
-                  className="ml-auto w-full"
+                  type="button"
+                  className="ml-auto w-full sm:w-auto"
                   onClick={() => router.push("/admin/doctors")}
                 >
                   Cancel
                 </Button>
-                <SubmitButton isLoading={loading} className="ml-auto w-full">
+                <SubmitButton
+                  isLoading={loading}
+                  className="ml-auto w-full sm:w-auto"
+                >
                   Update
                 </SubmitButton>
               </div>

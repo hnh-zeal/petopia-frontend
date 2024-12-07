@@ -59,6 +59,7 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
   const auth = useRecoilValue(userAuthState);
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -97,9 +98,10 @@ export default function ConfirmationPage({ pkg }: { pkg: Packages }) {
     if (!auth) {
       router.push("/login");
     }
+    setMounted(true);
   }, [auth, router]);
 
-  if (!auth) {
+  if (!auth || !mounted) {
     return null;
   }
 

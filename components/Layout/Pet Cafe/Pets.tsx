@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { truncate } from "@/utils/truncate";
 
 export default function Pets({ petsData }: { petsData: CafePetData }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -147,7 +148,9 @@ export default function Pets({ petsData }: { petsData: CafePetData }) {
                     <div className="mt-6 space-y-4">
                       <div>
                         <h3 className="font-semibold mb-2">Description</h3>
-                        <p className="text-gray-600">{pet.description}</p>
+                        <p className="text-gray-600">
+                          {truncate(pet.description, 90)}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 text-gray-600">
                         <Home className="h-4 w-4" />

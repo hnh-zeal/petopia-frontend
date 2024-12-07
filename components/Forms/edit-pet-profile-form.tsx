@@ -48,6 +48,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import Image from "next/image";
 import CustomFormField, { FormFieldType } from "../custom-form-field";
 import { deleteFile } from "@/pages/api/api";
+import SubmitButton from "../submit-button";
 
 const petSchema = z.object({
   profile: z.any().optional(),
@@ -236,9 +237,12 @@ const PetProfile = ({ pet }: PetProfileProps) => {
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={loading}>
-                        {loading ? "Saving..." : "Save"}
-                      </Button>
+                      <SubmitButton
+                        isLoading={loading}
+                        className="ml-auto w-full sm:w-auto"
+                      >
+                        Save
+                      </SubmitButton>
                     </div>
                   </form>
                 </Form>
