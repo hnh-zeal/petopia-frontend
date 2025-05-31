@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
 import { fetchUserByID, toggleActiveUser } from "@/pages/api/api";
+import { useRecoilValue } from "recoil";
+import { adminAuthState } from "@/states/auth";
 
 export default function ToggleActive({ row }: { row: any }) {
   const [user, setUser] = useState<any>(row);
+  const auth = useRecoilValue(adminAuthState);
   const toggle = async () => {
     await toggleActiveUser(row.original.id);
-    await fetchUserByID(row.original.id);
+    await fetchUserByID(row.original.id, auth?.accessToken as string);
   };
 
   useEffect(() => {
     const getUserByID = async () => {
       try {
-        const data = await fetchUserByID(row.original.id);
+        const data = await fetchUserByID(
+          row.original.id,
+          auth?.accessToken as string
+        );
         setUser((prevState: any) => ({
           ...prevState,
           ...data,
