@@ -142,12 +142,10 @@ const ScheduleForm = ({
     };
 
     try {
-      console.log(schedule);
       const data = schedule
         ? await updateDoctorScheduleByID(schedule.id, payload)
         : await addDoctorSchedule(payload);
 
-      console.log("DATA", data);
       if (data.error) {
         toast({
           variant: "destructive",
